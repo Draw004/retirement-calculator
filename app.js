@@ -444,6 +444,13 @@
     $('todayVsRetirementNote').textContent = s.mode === 'quick'
       ? "Today's spending versus your selected retirement-spending percentage, both shown in today's purchasing power."
       : "Today's listed spending versus the first retirement-year lifestyle, before future inflation is applied.";
+    const lifestyleDeltaPct = r.currentTodayExpense > 0 ? ((r.retirementLifestyleToday - r.currentTodayExpense) / r.currentTodayExpense) * 100 : 0;
+    const narrative = $('budgetNarrative');
+    if (narrative) {
+      if (Math.abs(lifestyleDeltaPct) < 1) narrative.textContent = "Your retirement lifestyle is currently set to be about the same as today's spending, before future inflation.";
+      else if (lifestyleDeltaPct < 0) narrative.textContent = `Based on these inputs, the retirement lifestyle is ${Math.abs(lifestyleDeltaPct).toFixed(0)}% lower than today's listed spending in today's purchasing power.`;
+      else narrative.textContent = `Based on these inputs, the retirement lifestyle is ${lifestyleDeltaPct.toFixed(0)}% higher than today's listed spending in today's purchasing power.`;
+    }
     $('monthlyReduced').textContent = `${formatINR(r.monthlyReduced, true)}/mo`;
     $('monthlyIncreased').textContent = `${formatINR(r.monthlyIncreased, true)}/mo`;
 
@@ -713,7 +720,7 @@
     bindDelegatedRows();
     bindEvents();
     setMode(DEFAULTS.mode, false);
-    $('year').textContent = new Date().getFullYear();
+    const legacyYear = $('year'); if (legacyYear) legacyYear.textContent = new Date().getFullYear();
     calculateAndRender();
   }
 

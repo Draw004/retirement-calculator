@@ -3,444 +3,129 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RetireWise | Smart Retirement Planner India</title>
-  <meta name="description" content="Build a retirement plan that reflects how expenses really change. Model school fees and EMIs ending, healthcare rising, pension income, future goals, inflation and investment returns." />
+  <title>RetireWise | Retirement Planning That Models Changing Expenses</title>
+  <meta name="description" content="Plan retirement around the life you may actually live. Model expenses that end or rise, retirement income, inflation, future goals and portfolio withdrawals." />
   <meta name="robots" content="index,follow" />
   <meta name="theme-color" content="#0e827a" />
-  <meta property="og:title" content="RetireWise - Smart Retirement Planner" />
-  <meta property="og:description" content="A retirement planner that understands your expenses change after retirement." />
+  <link rel="canonical" href="https://draw004.github.io/retirement-calculator/" />
+  <meta property="og:title" content="RetireWise | Retirement Planning That Models Changing Expenses" />
+  <meta property="og:description" content="Plan retirement around the life you may actually live. Model expenses that end or rise, retirement income, inflation, future goals and portfolio withdrawals." />
   <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://draw004.github.io/retirement-calculator/" />
+  <meta name="twitter:card" content="summary" />
+  <!-- SEARCH CONSOLE: paste Google's verification meta tag here after creating your Search Console property. -->
   <link rel="stylesheet" href="styles.css" />
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "RetireWise Smart Retirement Planner",
-    "applicationCategory": "FinanceApplication",
-    "operatingSystem": "Any",
-    "description": "A retirement planning calculator that models changing expenses, retirement income, inflation, one-time goals and portfolio withdrawals."
-  }
-  </script>
+  <script type="application/ld+json">{
+  "@context":"https://schema.org",
+  "@type":"WebSite",
+  "name":"RetireWise",
+  "url":"https://draw004.github.io/retirement-calculator/",
+  "description":"A retirement planning tool that models how expenses and income can change after retirement."
+}</script>
 </head>
 <body>
+
   <header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="#top" aria-label="RetireWise home">
+      <a class="brand" href="index.html" aria-label="RetireWise home">
         <span class="brand-mark">R</span>
         <span>RetireWise</span>
-        <span class="version-badge">V2.1</span>
+        <span class="version-badge">V2.2</span>
       </a>
       <nav class="top-nav" aria-label="Primary navigation">
-        <a href="#planner">Planner</a>
-        <a href="#results">Results</a>
-        <a href="#how-it-works">How it works</a>
-        <a href="#faq">FAQ</a>
+        <a href="planner.html">Planner</a>
+        <a href="how-it-works.html">How it works</a>
+        <a href="methodology.html">Methodology</a>
+        <a href="about.html">About</a>
       </nav>
+      <details class="mobile-nav">
+        <summary aria-label="Open navigation">Menu</summary>
+        <div class="mobile-nav-links">
+          <a href="index.html">Home</a>
+          <a href="planner.html">Planner</a>
+          <a href="how-it-works.html">How it works</a>
+          <a href="methodology.html">Methodology</a>
+          <a href="faq.html">FAQ</a>
+          <a href="about.html">About</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </details>
     </div>
   </header>
-
-  <main id="top">
-    <section class="hero">
-      <div class="container hero-grid">
-        <div>
-          <span class="eyebrow">Smart retirement planning</span>
-          <h1>Your expenses will change. Your retirement calculator should too.</h1>
-          <p class="hero-copy">School fees, EMIs and commuting may disappear. Healthcare, travel or domestic help may rise. RetireWise models those changes instead of blindly inflating today's total spending.</p>
-          <div class="hero-points">
-            <span>Expense-by-expense planning</span>
-            <span>Retirement income offsets</span>
-            <span>Year-by-year cash-flow model</span>
-          </div>
-          <a class="hero-cta" href="#planner">Build my retirement plan</a>
-        </div>
-        <aside class="hero-card" aria-label="How RetireWise differs">
-          <div class="hero-card-label">Why this is different</div>
-          <div class="before-after">
-            <div>
-              <span>Today's household spending</span>
-              <strong>₹90,000/mo</strong>
-            </div>
-            <span class="arrow">→</span>
-            <div>
-              <span>Retirement lifestyle in today's ₹</span>
-              <strong>can be very different</strong>
-            </div>
-          </div>
-          <ul class="mini-list">
-            <li>School fees can end at a chosen age</li>
-            <li>Loan/rent can end or continue</li>
-            <li>Healthcare can use a separate inflation rate</li>
-            <li>Pension and rent can reduce portfolio withdrawals</li>
-          </ul>
-        </aside>
+<main>
+  <section class="home-hero">
+    <div class="container hero-grid home-hero-grid">
+      <div>
+        <span class="eyebrow">Smart retirement planning</span>
+        <h1>Plan retirement around the life you'll actually live.</h1>
+        <p class="hero-copy">School fees and EMIs may disappear. Healthcare or travel may rise. RetireWise lets you model those changes instead of assuming today's household spending continues forever.</p>
+        <div class="hero-actions"><a class="hero-cta" href="planner.html">Build my retirement plan</a><a class="secondary-link-button" href="methodology.html">See how the math works</a></div>
+        <div class="trust-points"><span>Calculations run in your browser</span><span>No sign-up required</span><span>India-friendly ₹ formatting</span></div>
       </div>
-    </section>
-
-    <div class="container ad-slot no-print" aria-label="Advertisement placeholder">
-      <span>Advertisement / sponsor space</span>
+      <aside class="hero-card home-example-card" aria-label="Illustrative example">
+        <div class="hero-card-label">Illustrative example</div>
+        <div class="example-flow">
+          <div><span>Household spending today</span><strong>₹90,000/mo</strong></div>
+          <span class="arrow">→</span>
+          <div><span>Retirement lifestyle in today's money</span><strong>₹54,900/mo</strong></div>
+        </div>
+        <p>Why can it fall? A detailed plan can remove school fees and loan payments while increasing healthcare, travel or domestic help.</p>
+        <small>Example only. Your result depends entirely on the assumptions you enter.</small>
+      </aside>
     </div>
+  </section>
 
-    <section class="planner-section" id="planner">
-      <div class="container planner-grid">
-        <div class="panel inputs-panel">
-          <div class="panel-heading">
-            <div>
-              <span class="section-kicker">Your plan</span>
-              <h2>Build the assumptions</h2>
-            </div>
-            <button class="text-button" id="resetBtn" type="button">Reset</button>
-          </div>
-
-          <div class="mode-switch" role="tablist" aria-label="Calculator mode">
-            <button type="button" id="quickModeBtn" class="mode-button active" data-mode="quick">Quick estimate</button>
-            <button type="button" id="detailedModeBtn" class="mode-button" data-mode="detailed">Detailed planner</button>
-          </div>
-          <p class="mode-help" id="modeHelp">Fast estimate: choose what percentage of today's spending is likely to remain after retirement.</p>
-
-          <section class="form-section">
-            <div class="section-title-row">
-              <div>
-                <span class="form-step">1</span>
-                <div><h3>Your timeline</h3><p>When do you plan to retire, and how long should the plan last?</p></div>
-              </div>
-            </div>
-            <div class="three-col form-grid">
-              <label class="field-card">Current age
-                <div class="number-wrap suffix"><input id="currentAge" type="number" min="18" max="80" value="35" /><span>yrs</span></div>
-              </label>
-              <label class="field-card">Retirement age
-                <div class="number-wrap suffix"><input id="retirementAge" type="number" min="19" max="85" value="60" /><span>yrs</span></div>
-              </label>
-              <label class="field-card">Plan until age
-                <div class="number-wrap suffix"><input id="planningAge" type="number" min="40" max="110" value="90" /><span>yrs</span></div>
-              </label>
-            </div>
-          </section>
-
-          <section class="form-section">
-            <div class="section-title-row">
-              <div>
-                <span class="form-step">2</span>
-                <div><h3>Savings & returns</h3><p>These assumptions affect what you may have at retirement and how long the portfolio can support withdrawals.</p></div>
-              </div>
-            </div>
-            <div class="two-col form-grid">
-              <label class="field-card">Existing retirement savings
-                <div class="number-wrap money"><span>₹</span><input id="currentSavings" type="number" min="0" step="10000" value="1000000" /></div>
-                <small>EPF, NPS, mutual funds and other assets earmarked for retirement</small>
-              </label>
-              <label class="field-card">Current monthly retirement investment
-                <div class="number-wrap money"><span>₹</span><input id="currentMonthlyInvestment" type="number" min="0" step="1000" value="20000" /></div>
-                <small>Your current SIP/retirement contribution, if any</small>
-              </label>
-              <label class="field-card">Return before retirement
-                <div class="number-wrap suffix"><input id="preReturn" type="number" min="0" max="30" step="0.1" value="10" /><span>%</span></div>
-              </label>
-              <label class="field-card">Return during retirement
-                <div class="number-wrap suffix"><input id="postReturn" type="number" min="0" max="25" step="0.1" value="7.5" /><span>%</span></div>
-              </label>
-              <label class="field-card">Safety buffer
-                <div class="number-wrap suffix"><input id="bufferRate" type="number" min="0" max="50" step="1" value="10" /><span>%</span></div>
-                <small>Extra cushion added to the modelled corpus</small>
-              </label>
-            </div>
-          </section>
-
-          <section class="form-section mode-panel" id="quickPanel">
-            <div class="section-title-row">
-              <div>
-                <span class="form-step">3</span>
-                <div><h3>Quick retirement budget</h3><p>Use this when you want a fast estimate without entering every expense.</p></div>
-              </div>
-            </div>
-            <div class="two-col form-grid">
-              <label class="field-card">Current monthly household expenses
-                <div class="number-wrap money"><span>₹</span><input id="quickMonthlyExpense" type="number" min="1000" step="1000" value="90000" /></div>
-              </label>
-              <label class="field-card">Expected spending remaining at retirement
-                <div class="number-wrap suffix"><input id="quickRetirementPct" type="number" min="10" max="200" step="1" value="65" /><span>%</span></div>
-                <small>Example: 65% means 35% of today's lifestyle costs disappear</small>
-              </label>
-              <label class="field-card">General inflation
-                <div class="number-wrap suffix"><input id="quickInflation" type="number" min="0" max="15" step="0.1" value="5" /><span>%</span></div>
-              </label>
-            </div>
-            <div class="insight-box">
-              <strong id="quickTodayRetirementBudget">₹58,500/mo</strong>
-              <span>estimated retirement lifestyle in today's purchasing power before inflation</span>
-            </div>
-          </section>
-
-          <section class="form-section mode-panel hidden" id="detailedPanel">
-            <div class="section-title-row">
-              <div>
-                <span class="form-step">3</span>
-                <div><h3>Expense-by-expense planner</h3><p>Tell RetireWise what really happens to each cost. Amounts are monthly and entered in today's rupees.</p></div>
-              </div>
-              <button id="addExpenseBtn" class="secondary-button" type="button">+ Add expense</button>
-            </div>
-
-            <div class="inflation-grid">
-              <label class="mini-field">General inflation <span><input id="generalInflation" type="number" min="0" max="15" step="0.1" value="5" />%</span></label>
-              <label class="mini-field">Healthcare inflation <span><input id="healthInflation" type="number" min="0" max="20" step="0.1" value="7" />%</span></label>
-              <label class="mini-field">Lifestyle inflation <span><input id="lifestyleInflation" type="number" min="0" max="15" step="0.1" value="5" />%</span></label>
-              <label class="mini-field">Education inflation <span><input id="educationInflation" type="number" min="0" max="20" step="0.1" value="7" />%</span></label>
-            </div>
-
-            <div class="table-help">
-              <span><strong>Continue / adjust:</strong> enter the % of that expense that remains at retirement.</span>
-              <span><strong>Ends at age:</strong> useful for school fees or EMIs.</span>
-              <span><strong>Starts at retirement:</strong> useful for new travel, care or medical budgets.</span>
-            </div>
-
-            <div class="data-table-wrap">
-              <table class="data-table expense-table">
-                <thead><tr><th>Expense</th><th>Today / mo</th><th>Inflation</th><th>Retirement rule</th><th>Setting</th><th></th></tr></thead>
-                <tbody id="expenseRows"></tbody>
-              </table>
-            </div>
-            <div class="table-total"><span>Current monthly total from listed expenses</span><strong id="detailedExpenseTotal">₹0</strong></div>
-
-            <details class="sub-panel" open>
-              <summary>Retirement lifestyle phases</summary>
-              <p>These multipliers apply only to expenses tagged <strong>Lifestyle</strong>, allowing travel and leisure to change over time.</p>
-              <div class="three-col form-grid compact-grid">
-                <label class="field-card">First 10 years <div class="number-wrap suffix"><input id="phase1Pct" type="number" min="0" max="300" value="110" /><span>%</span></div></label>
-                <label class="field-card">Next 10 years <div class="number-wrap suffix"><input id="phase2Pct" type="number" min="0" max="300" value="90" /><span>%</span></div></label>
-                <label class="field-card">Later years <div class="number-wrap suffix"><input id="phase3Pct" type="number" min="0" max="300" value="70" /><span>%</span></div></label>
-              </div>
-            </details>
-
-            <div class="subsection-heading">
-              <div><h4>Retirement income</h4><p>Pension, rent or annuity income reduces the amount your portfolio needs to provide.</p></div>
-              <button id="addIncomeBtn" class="secondary-button" type="button">+ Add income</button>
-            </div>
-            <div class="data-table-wrap">
-              <table class="data-table"><thead><tr><th>Income source</th><th>Monthly amount when it starts</th><th>Starts age</th><th>Annual increase</th><th></th></tr></thead><tbody id="incomeRows"></tbody></table>
-            </div>
-
-            <div class="subsection-heading">
-              <div><h4>One-time retirement goals</h4><p>Add a car replacement, renovation, family support or medical reserve. Enter the amount in today's rupees.</p></div>
-              <button id="addGoalBtn" class="secondary-button" type="button">+ Add goal</button>
-            </div>
-            <div class="data-table-wrap">
-              <table class="data-table"><thead><tr><th>Goal</th><th>Today's amount</th><th>Age</th><th>Inflation</th><th></th></tr></thead><tbody id="goalRows"></tbody></table>
-            </div>
-          </section>
-
-          <div class="validation" id="validationMsg" role="alert" aria-live="polite"></div>
-          <div class="local-actions no-print">
-            <button class="secondary-button" id="savePlanBtn" type="button">Save plan on this device</button>
-            <button class="secondary-button" id="loadPlanBtn" type="button">Load saved plan</button>
-            <span id="saveStatus" class="save-status" aria-live="polite"></span>
-          </div>
-        </div>
-
-        <aside class="panel result-panel" id="results" aria-live="polite">
-          <span class="section-kicker">Your estimate</span>
-          <h2>Retirement snapshot</h2>
-          <div class="years-chip"><strong id="yearsToRetire">25</strong>&nbsp;years to retirement · plan through age <strong id="resultPlanningAge">90</strong></div>
-
-          <div class="primary-result">
-            <span>Estimated corpus needed at retirement</span>
-            <strong id="requiredCorpus">₹0</strong>
-            <small>Month-by-month retirement cash flows + selected safety buffer</small>
-          </div>
-
-          <div class="result-list">
-            <div class="result-item"><span>Average monthly expenses in first retirement year</span><strong id="firstYearExpense">₹0</strong></div>
-            <div class="result-item"><span>Average retirement income in first year</span><strong id="firstYearIncome">₹0</strong></div>
-            <div class="result-item"><span>Portfolio needs to provide</span><strong id="firstYearNet">₹0/mo</strong></div>
-            <div class="result-item"><span>Projected corpus from your current plan</span><strong id="projectedCorpus">₹0</strong></div>
-            <div class="result-item emphasized"><span>Retirement funding gap</span><strong id="corpusGap">₹0</strong></div>
-            <div class="result-item sip"><span>Total monthly investment needed from today</span><strong id="totalMonthlyNeeded">₹0</strong></div>
-            <div class="result-item"><span>Additional monthly investment vs current plan</span><strong id="extraMonthlyNeeded">₹0</strong></div>
-          </div>
-
-          <div class="funding-card">
-            <div><span>Projected funding</span><strong id="fundedPercent">0%</strong></div>
-            <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-            <small id="fundingMessage">Based on the assumptions entered above.</small>
-          </div>
-
-          <div class="retirement-budget-card" id="retirementBudgetCard">
-            <span>Why the spending number changed</span>
-            <strong id="todayVsRetirement">₹0 → ₹0</strong>
-            <small id="todayVsRetirementNote">Today's monthly spending compared with your retirement lifestyle in today's purchasing power.</small>
-          </div>
-
-          <div class="mini-metrics" aria-label="Retirement budget change summary">
-            <div><span>Costs removed / reduced</span><strong id="monthlyReduced">₹0/mo</strong></div>
-            <div><span>Costs added / increased</span><strong id="monthlyIncreased">₹0/mo</strong></div>
-          </div>
-
-          <div class="readiness-card">
-            <div><span>Funding status</span><strong id="fundingStatus">Building plan</strong></div>
-            <small id="fundingStatusNote">Compares the retirement target with your projected savings at retirement.</small>
-          </div>
-
-          <div class="result-actions no-print">
-            <button class="share-button" id="copyBtn" type="button">Copy summary</button>
-            <button class="share-button primary-action" id="printBtn" type="button">Create retirement report</button>
-          </div>
-          <div class="copy-status" id="copyStatus" aria-live="polite"></div>
-          <p class="disclaimer">Illustrative planning tool only. Results depend on your assumptions and do not predict actual inflation, investment returns, taxes, longevity, healthcare costs or market sequence. This is not investment, tax or legal advice.</p>
-        </aside>
+  <section class="feature-section">
+    <div class="container">
+      <div class="section-heading-centered"><span class="section-kicker">Different by design</span><h2>More than “today's expenses × inflation”</h2><p>RetireWise separates the pieces that actually drive a retirement plan.</p></div>
+      <div class="feature-grid three-feature-grid">
+        <article class="feature-card"><span class="feature-number">01</span><h3>Expenses can change</h3><p>Mark school fees or EMIs as ending, reduce commuting, or increase healthcare and lifestyle costs after retirement.</p></article>
+        <article class="feature-card"><span class="feature-number">02</span><h3>Income offsets withdrawals</h3><p>Add pension, rent or annuity income so the portfolio only needs to fund the remaining retirement cash flow.</p></article>
+        <article class="feature-card"><span class="feature-number">03</span><h3>Cash flows are modelled over time</h3><p>The planner evaluates retirement expenses, income and one-time goals across the years rather than relying on one static multiple.</p></article>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="dashboard-section">
-      <div class="container">
-        <div class="dashboard-heading">
-          <div><span class="section-kicker">Visual plan</span><h2>See how your retirement evolves</h2></div>
-          <p>Charts update automatically as you change the plan.</p>
-        </div>
-        <div class="glance-grid" aria-label="Plan at a glance">
-          <article class="glance-card"><span>Today's monthly spending</span><strong id="glanceTodaySpend">₹0</strong><small>From the inputs in your current mode</small></article>
-          <article class="glance-card"><span>Retirement lifestyle in today's ₹</span><strong id="glanceRetirementSpend">₹0</strong><small>Before future inflation</small></article>
-          <article class="glance-card"><span>Monthly costs removed / reduced</span><strong id="glanceReduced">₹0</strong><small>Compared with today's listed lifestyle</small></article>
-          <article class="glance-card"><span>Monthly costs added / increased</span><strong id="glanceIncreased">₹0</strong><small>Compared with today's listed lifestyle</small></article>
-        </div>
-
-        <div class="analysis-grid">
-          <article class="analysis-card">
-            <div class="analysis-heading"><div><span class="section-kicker">Corpus construction</span><h3>How the retirement target is built</h3></div><span>Values are measured at retirement</span></div>
-            <div class="breakdown-list">
-              <div><span>Recurring retirement expenses</span><strong id="breakdownExpensePV">₹0</strong></div>
-              <div class="offset"><span>Less retirement income</span><strong id="breakdownIncomePV">−₹0</strong></div>
-              <div><span>One-time retirement goals</span><strong id="breakdownGoalsPV">₹0</strong></div>
-              <div><span>Safety buffer</span><strong id="breakdownBuffer">₹0</strong></div>
-              <div class="total"><span>Estimated corpus needed</span><strong id="breakdownTotal">₹0</strong></div>
-            </div>
-          </article>
-          <article class="analysis-card">
-            <div class="analysis-heading"><div><span class="section-kicker">What changed?</span><h3>Expense changes at retirement</h3></div><span>Shown in today's purchasing power</span></div>
-            <div id="expenseChangeList" class="expense-change-list"></div>
-          </article>
-        </div>
-
-        <div class="chart-grid">
-          <article class="chart-card">
-            <div class="chart-title"><h3>Household expense timeline</h3><span id="expenseChartCaption">Today's spending through retirement</span></div>
-            <div id="expenseChart" class="chart" role="img" aria-label="Household expense timeline chart"></div>
-          </article>
-          <article class="chart-card">
-            <div class="chart-title"><h3>Retirement portfolio path</h3><span>Starts with the calculated corpus including your buffer</span></div>
-            <div id="portfolioChart" class="chart" role="img" aria-label="Retirement portfolio chart"></div>
-          </article>
-        </div>
-
-        <div class="scenario-card">
-          <div class="scenario-heading"><div><span class="section-kicker">What if?</span><h2>Compare retirement ages</h2></div><p>Same assumptions, different retirement date.</p></div>
-          <div id="scenarioGrid" class="scenario-grid"></div>
-        </div>
+  <section class="split-section">
+    <div class="container split-grid">
+      <div><span class="section-kicker">What you can model</span><h2>Your plan, category by category.</h2><p>Use Quick Estimate for a fast answer, or Detailed Planner when you want to explain why your retirement lifestyle may cost less—or more—than life today.</p><a class="text-link" href="how-it-works.html">See the planning workflow →</a></div>
+      <div class="capability-grid">
+        <div><strong>Expenses</strong><span>General, healthcare, lifestyle and education inflation</span></div>
+        <div><strong>Expense rules</strong><span>Continue, end at age, change at retirement, start at retirement</span></div>
+        <div><strong>Income</strong><span>Pension, rent, annuity and annual increases</span></div>
+        <div><strong>Goals</strong><span>Car, renovation, family support and medical reserves</span></div>
+        <div><strong>Savings</strong><span>Existing corpus plus current monthly investing</span></div>
+        <div><strong>Scenarios</strong><span>Compare earlier or later retirement ages</span></div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section id="printReport" class="print-only report-section" aria-label="RetireWise retirement planning report">
-      <div class="report-shell">
-        <header class="report-header">
-          <div><span class="report-brand">RetireWise</span><h1>Retirement Planning Report</h1><p>Cash-flow based retirement estimate</p></div>
-          <div class="report-meta"><strong id="reportGenerated">Generated</strong><span>Illustrative planning report</span></div>
-        </header>
+  <section class="trust-section">
+    <div class="container trust-card">
+      <div><span class="section-kicker">Trust by transparency</span><h2>See the assumptions behind the answer.</h2><p>A retirement number is only as useful as the assumptions underneath it. RetireWise shows the funding gap, expense changes, corpus construction and portfolio path instead of hiding the calculation behind a single result.</p></div>
+      <div class="trust-links"><a href="methodology.html">Read methodology</a><a href="disclaimer.html">Read financial disclaimer</a><a href="privacy.html">Read privacy policy</a></div>
+    </div>
+  </section>
 
-        <div class="report-hero">
-          <div><span>Estimated corpus needed at retirement</span><strong id="reportCorpus">₹0</strong><small id="reportRetireLine">Retire at age 60 · plan through age 90</small></div>
-          <div class="report-hero-side"><span>Monthly investment indicated</span><strong id="reportMonthlyNeeded">₹0</strong><small id="reportFundingLine">Projected funding 0%</small></div>
-        </div>
+  <section class="launch-cta-section"><div class="container launch-cta"><div><span class="section-kicker">Start with your own numbers</span><h2>Build a retirement plan in minutes.</h2><p>No account is required. You can optionally save the plan locally in your browser.</p></div><a class="hero-cta" href="planner.html">Open RetireWise Planner</a></div></section>
+</main>
 
-        <div class="report-summary-grid">
-          <div><span>Today's spending</span><strong id="reportTodaySpend">₹0/mo</strong></div>
-          <div><span>Retirement lifestyle in today's ₹</span><strong id="reportRetirementSpend">₹0/mo</strong></div>
-          <div><span>First-year retirement expenses</span><strong id="reportFirstYearExpense">₹0/mo</strong></div>
-          <div><span>First-year retirement income</span><strong id="reportFirstYearIncome">₹0/mo</strong></div>
-        </div>
-
-        <section class="report-block">
-          <h2>Plan assumptions</h2>
-          <table class="report-table"><tbody id="reportAssumptions"></tbody></table>
-        </section>
-
-        <section class="report-block report-two-col">
-          <div>
-            <h2>How the corpus is built</h2>
-            <table class="report-table"><tbody id="reportBreakdown"></tbody></table>
-          </div>
-          <div>
-            <h2>Retirement funding</h2>
-            <table class="report-table"><tbody id="reportFunding"></tbody></table>
-          </div>
-        </section>
-
-        <section class="report-block" id="reportExpenseChangesBlock">
-          <h2>Expense changes at retirement</h2>
-          <table class="report-table report-change-table">
-            <thead><tr><th>Expense</th><th>Today</th><th>At retirement in today's ₹</th><th>Change</th></tr></thead>
-            <tbody id="reportExpenseChanges"></tbody>
-          </table>
-        </section>
-
-        <section class="report-block">
-          <h2>Retirement-age comparison</h2>
-          <table class="report-table report-scenario-table">
-            <thead><tr><th>Retirement age</th><th>Corpus needed</th><th>Monthly investment</th><th>Projected funding</th></tr></thead>
-            <tbody id="reportScenarios"></tbody>
-          </table>
-        </section>
-
-        <section class="report-block report-chart-block">
-          <h2>Expense timeline</h2>
-          <div id="reportExpenseChart" class="report-chart"></div>
-        </section>
-        <section class="report-block report-chart-block">
-          <h2>Retirement portfolio path</h2>
-          <div id="reportPortfolioChart" class="report-chart"></div>
-        </section>
-
-        <section class="report-notes">
-          <h2>Important notes</h2>
-          <p>This report is an illustrative planning output based entirely on the assumptions entered by the user. It does not predict investment returns, inflation, taxes, healthcare costs, longevity or market conditions. It is not investment, tax, legal or insurance advice.</p>
-          <p>The model estimates the amount needed at retirement by discounting projected month-by-month retirement cash flows using the entered post-retirement return, then applies the selected safety buffer. Actual outcomes can differ materially.</p>
-        </section>
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand-block">
+        <a class="brand footer-brand" href="index.html"><span class="brand-mark">R</span><span>RetireWise</span></a>
+        <p>A transparent retirement-planning tool built around the expenses and income your future life may actually have.</p>
+        <span class="footer-small">Educational planning tool · Version 2.2</span>
       </div>
-    </section>
-
-    <section class="content-section" id="how-it-works">
-      <div class="container content-grid">
-        <div><span class="section-kicker">How it works</span><h2>Built around cash flows, not a single expense number</h2></div>
-        <div class="steps">
-          <article><span>1</span><div><h3>Model changing expenses</h3><p>Each detailed expense is inflated independently and can continue, change at retirement, end at a chosen age or start only after retirement.</p></div></article>
-          <article><span>2</span><div><h3>Subtract retirement income</h3><p>Pension, rent and annuity income reduce the monthly withdrawal required from the retirement portfolio.</p></div></article>
-          <article><span>3</span><div><h3>Insert future goals</h3><p>One-time goals that occur during retirement are inflation-adjusted to their chosen age and added to the retirement cash-flow schedule.</p></div></article>
-          <article><span>4</span><div><h3>Discount every future cash flow</h3><p>The engine calculates the amount required at retirement to finance the month-by-month net cash flows while the remaining portfolio earns your assumed post-retirement return.</p></div></article>
-          <article><span>5</span><div><h3>Compare with your savings plan</h3><p>Existing savings and monthly contributions are projected to retirement to estimate the gap and the additional contribution required.</p></div></article>
-        </div>
-      </div>
-    </section>
-
-    <section class="monetize-section no-print">
-      <div class="container monetize-card">
-        <div><span class="section-kicker">Monetization-ready</span><h2>Keep the calculator free. Monetize around the value.</h2><p>This area can later promote a premium retirement report, saved scenarios, an advisor consultation or an ad-free subscription. Ad placements are already separated from the planning experience.</p></div>
-        <a class="cta-button" href="#planner">Try another scenario</a>
-      </div>
-    </section>
-
-    <section class="faq-section" id="faq">
-      <div class="container faq-wrap">
-        <span class="section-kicker">FAQ</span><h2>Important questions</h2>
-        <details><summary>Why not simply inflate today's household spending?</summary><p>Because many expenses change structurally. Education and loan payments may end, work-related transport can fall, while healthcare or travel can rise. Detailed mode lets you model those changes explicitly.</p></details>
-        <details><summary>What does “today's rupees” mean?</summary><p>For expense categories and one-time goals, enter what the item costs today. RetireWise applies the selected inflation assumption from your current age to the age when the cash flow occurs.</p></details>
-        <details><summary>How should I enter a pension?</summary><p>Enter the monthly amount you expect when that income begins and the age it begins. You can also give it an annual increase rate. The calculator does not estimate pension entitlement for you.</p></details>
-        <details><summary>What happens if a home loan continues after retirement?</summary><p>Set the expense rule to “Ends at age” and enter the actual expected payoff age. The model will include the payment during the early retirement years until that age.</p></details>
-        <details><summary>Does this guarantee that the money will last?</summary><p>No. The model uses constant assumptions. Actual market returns, inflation, taxes, healthcare needs and longevity can differ materially. A future version can add variable-return or Monte Carlo analysis.</p></details>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="container footer-inner"><div><strong>RetireWise</strong><span>Smart retirement planning</span></div><span>© <span id="year"></span> · Educational planning tool</span></div>
+      <div><strong>Product</strong><a href="planner.html">Retirement Planner</a><a href="how-it-works.html">How it works</a><a href="faq.html">FAQ</a></div>
+      <div><strong>Trust</strong><a href="methodology.html">Methodology</a><a href="disclaimer.html">Financial disclaimer</a><a href="privacy.html">Privacy</a></div>
+      <div><strong>Company</strong><a href="about.html">About</a><a href="contact.html">Contact</a><a href="terms.html">Terms</a></div>
+    </div>
+    <div class="container footer-bottom"><span>© <span data-current-year></span> RetireWise</span><span>Illustrative estimates, not financial advice.</span></div>
   </footer>
 
-  <script src="app.js"></script>
+  <script src="site-config.js"></script>
+  <script src="site.js"></script>
+
 </body>
 </html>

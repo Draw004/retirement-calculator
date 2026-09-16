@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://draw004.github.io/retirement-calculator/sitemap.xml

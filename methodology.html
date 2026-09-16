@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Methodology | How RetireWise Calculates Retirement Corpus</title>
+  <meta name="description" content="Read the RetireWise methodology for changing expenses, inflation, retirement income, future goals, corpus present value and funding-gap calculations." />
+  <meta name="robots" content="index,follow" />
+  <meta name="theme-color" content="#0e827a" />
+  <link rel="canonical" href="https://draw004.github.io/retirement-calculator/methodology.html" />
+  <meta property="og:title" content="Methodology | How RetireWise Calculates Retirement Corpus" />
+  <meta property="og:description" content="Read the RetireWise methodology for changing expenses, inflation, retirement income, future goals, corpus present value and funding-gap calculations." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://draw004.github.io/retirement-calculator/methodology.html" />
+  <meta name="twitter:card" content="summary" />
+  <!-- SEARCH CONSOLE: paste Google's verification meta tag here after creating your Search Console property. -->
+  <link rel="stylesheet" href="styles.css" />
+  
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="RetireWise home">
+        <span class="brand-mark">R</span>
+        <span>RetireWise</span>
+        <span class="version-badge">V2.2</span>
+      </a>
+      <nav class="top-nav" aria-label="Primary navigation">
+        <a href="planner.html">Planner</a>
+        <a href="how-it-works.html">How it works</a>
+        <a href="methodology.html">Methodology</a>
+        <a href="about.html">About</a>
+      </nav>
+      <details class="mobile-nav">
+        <summary aria-label="Open navigation">Menu</summary>
+        <div class="mobile-nav-links">
+          <a href="index.html">Home</a>
+          <a href="planner.html">Planner</a>
+          <a href="how-it-works.html">How it works</a>
+          <a href="methodology.html">Methodology</a>
+          <a href="faq.html">FAQ</a>
+          <a href="about.html">About</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </details>
+    </div>
+  </header>
+<main>
+  <section class="page-hero">
+    <div class="container narrow-page">
+      <span class="eyebrow">Methodology</span>
+      <h1>Understand the calculation before you trust the number.</h1>
+      <p class="page-lead">RetireWise is intentionally transparent about how the retirement estimate is constructed and where the model can be wrong.</p>
+    </div>
+  </section>
+  <section class="page-content">
+    <div class="container narrow-page rich-copy">
+      
+<div class="methodology-note"><strong>Methodology version 2.2</strong><span>This page describes the calculation logic used by the current browser-based planner. It is an educational model, not a prediction.</span></div>
+<section class="content-block"><h2>1. Timeline</h2><p>The model uses your current age, selected retirement age and planning age. Calculations between retirement and the planning age are performed monthly.</p></section>
+<section class="content-block"><h2>2. Expense modelling</h2><p>In Quick Estimate, the planner applies your selected retirement-spending percentage to today's monthly expense and then inflates it over time.</p><p>In Detailed Planner, each expense can use one of four rules:</p><ul><li><strong>Continue:</strong> the expense remains through the plan.</li><li><strong>End at age:</strong> the expense is included until the chosen age and then becomes zero.</li><li><strong>Change at retirement:</strong> the expense is multiplied by the percentage you specify once retirement begins.</li><li><strong>Start at retirement:</strong> the expense begins only once retirement starts.</li></ul><p>Categories can be assigned to general, healthcare, lifestyle or education inflation. Those inflation rates are user-entered assumptions.</p></section>
+<section class="content-block"><h2>3. Inflation</h2><p>Amounts entered in Detailed Planner are treated as today's rupee amounts. For a cash flow occurring in a future month, the model compounds the relevant annual inflation rate from the current age to that month.</p><div class="formula-box"><span>Future expense</span><strong>Today's expense × (1 + inflation rate)<sup>years</sup></strong></div><p>Different categories can therefore grow at different assumed rates.</p></section>
+<section class="content-block"><h2>4. Retirement income</h2><p>Pension, rental income and annuity income can begin at a chosen age. The amount entered is treated as the monthly amount when that income starts, then grows using the annual increase you specify. Retirement income reduces the amount that must be withdrawn from the investment portfolio.</p></section>
+<section class="content-block"><h2>5. One-time retirement goals</h2><p>One-time goals are entered in today's rupees, assigned to an age and inflated to that point in time. Examples include a vehicle replacement, renovation, family support or a medical reserve.</p></section>
+<section class="content-block"><h2>6. Required retirement corpus</h2><p>The planner builds the net monthly cash flow after retirement:</p><div class="formula-box"><span>Net portfolio withdrawal</span><strong>Retirement expenses − retirement income</strong></div><p>Each future monthly withdrawal and one-time goal is discounted back to the retirement date using the post-retirement return assumption. The present values are added together, then the selected safety buffer is applied.</p><div class="formula-box"><span>Required corpus</span><strong>PV of recurring net withdrawals + PV of goals + safety buffer</strong></div></section>
+<section class="content-block"><h2>7. Projected assets at retirement</h2><p>Existing retirement savings are compounded using the pre-retirement return assumption. Current monthly retirement contributions are projected as a monthly recurring investment until retirement. The model compares those projected assets with the required corpus.</p></section>
+<section class="content-block"><h2>8. Funding gap and monthly investment</h2><p>If projected assets are below the required corpus, the difference is the funding gap. The planner also estimates the total monthly investment that would be required from today, under the selected constant return assumption, to reach the modelled target. “Additional monthly investment” subtracts the monthly contribution you already entered.</p></section>
+<section class="content-block"><h2>9. Portfolio path</h2><p>The retirement portfolio chart begins with the calculated corpus, subtracts each month's net withdrawal and goals, and applies the entered post-retirement return. It is a deterministic path. It does not simulate market volatility or sequence-of-returns risk.</p></section>
+<section class="content-block"><h2>10. Important limitations</h2><ul><li>Returns and inflation are assumed rather than predicted.</li><li>The model does not automatically calculate taxes, investment fees or product-specific rules.</li><li>Healthcare and longevity can differ materially from assumptions.</li><li>Market returns do not occur smoothly each month in real life.</li><li>Results can change substantially when assumptions change.</li></ul><p>For consequential financial decisions, consider reviewing the assumptions with an appropriately qualified financial, tax or legal professional.</p></section>
+
+      <div class="page-cta"><div><span class="section-kicker">Try your numbers</span><h2>Build a plan around your own assumptions.</h2><p>Use Quick Estimate for speed or Detailed Planner to model expenses that end, rise or change after retirement.</p></div><a class="hero-cta" href="planner.html">Open retirement planner</a></div>
+    </div>
+  </section>
+</main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand-block">
+        <a class="brand footer-brand" href="index.html"><span class="brand-mark">R</span><span>RetireWise</span></a>
+        <p>A transparent retirement-planning tool built around the expenses and income your future life may actually have.</p>
+        <span class="footer-small">Educational planning tool · Version 2.2</span>
+      </div>
+      <div><strong>Product</strong><a href="planner.html">Retirement Planner</a><a href="how-it-works.html">How it works</a><a href="faq.html">FAQ</a></div>
+      <div><strong>Trust</strong><a href="methodology.html">Methodology</a><a href="disclaimer.html">Financial disclaimer</a><a href="privacy.html">Privacy</a></div>
+      <div><strong>Company</strong><a href="about.html">About</a><a href="contact.html">Contact</a><a href="terms.html">Terms</a></div>
+    </div>
+    <div class="container footer-bottom"><span>© <span data-current-year></span> RetireWise</span><span>Illustrative estimates, not financial advice.</span></div>
+  </footer>
+
+  <script src="site-config.js"></script>
+  <script src="site.js"></script>
+
+</body>
+</html>
