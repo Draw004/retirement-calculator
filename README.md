@@ -1,74 +1,51 @@
-# RetireWise – Retirement Corpus Calculator
+# RetireWise V2 - Smart Retirement Planner
 
-A static, mobile-friendly retirement calculator that can be hosted on any normal web host. No database or server is required for this first version.
+A static, mobile-friendly retirement planning web app for GitHub Pages. No server, database, framework or API key is required.
 
-## What it calculates
+## What changed in V2
 
-- Years remaining until retirement
-- Monthly expenses at retirement after inflation
-- Inflation-adjusted retirement corpus using a monthly growing-withdrawal model
-- Future value of existing retirement savings
-- Remaining retirement corpus gap
-- Estimated monthly investment needed to close the gap
-- Optional safety buffer
+- Quick estimate mode: model the percentage of today's spending likely to remain after retirement.
+- Detailed planner: each expense can continue/change, end at a chosen age, or start at retirement.
+- Separate inflation assumptions for general, healthcare, lifestyle and education spending.
+- Lifestyle phases for the first 10 years, next 10 years and later retirement.
+- Pension, rental and annuity income can offset portfolio withdrawals.
+- One-time retirement goals are added at the selected age and inflation-adjusted from today's value.
+- Month-by-month retirement cash-flow model.
+- Existing savings + current monthly retirement contributions are projected to retirement.
+- Calculates modelled corpus, funding gap, total monthly contribution requirement and extra contribution versus the current plan.
+- Expense timeline, portfolio path and retirement-age scenario comparison.
+- Save/load plan locally in the browser.
+- Print / Save PDF through the browser's print dialog.
 
-## Formula notes
+## Replace your existing GitHub Pages site
 
-1. Future monthly expense = current monthly expense × (1 + annual inflation) ^ years to retirement.
-2. Retirement corpus is modeled as a monthly growing annuity due. The first monthly withdrawal occurs at retirement, withdrawals rise with inflation, and the remaining corpus earns the post-retirement return.
-3. Existing savings grow at the assumed pre-retirement return.
-4. Monthly investment is the regular end-of-month contribution required to fund the remaining gap at the assumed pre-retirement return.
+Your existing repository already contains `index.html`, `styles.css`, `app.js` and `README.md`.
 
-This is an educational planning model, not investment advice. It does not model taxes, pension income, sequence-of-return risk, fees, irregular cash flows or product-specific features.
+1. Open your `retirement-calculator` repository on GitHub.
+2. Choose **Add file -> Upload files**.
+3. Upload the four V2 files from this folder.
+4. GitHub will warn that files with the same names already exist; continue so the uploaded versions replace them in the new commit.
+5. Scroll down and click **Commit changes**.
+6. Wait about 1-3 minutes for GitHub Pages to redeploy.
+7. Refresh your existing live URL. You do not need a new repository or Pages configuration.
 
-## Run locally
+## Calculation model
 
-Open `index.html` directly, or from this folder run:
+The detailed planner creates monthly cash flows from retirement age through the selected planning age.
 
-```bash
-python -m http.server 8000
-```
+For each expense, RetireWise:
 
-Then visit `http://localhost:8000`.
+1. Starts from the user-entered amount in today's rupees.
+2. Applies the inflation rate assigned to that category from current age to each future month.
+3. Applies the retirement rule (continue/change, end at age, or start at retirement).
+4. Applies lifestyle-phase multipliers only to categories tagged Lifestyle.
 
-## Put it online
+Retirement income is subtracted from expenses. One-time goals are inserted in the selected retirement month after being inflated from today's rupees.
 
-### Easiest route: GitHub Pages
-1. Create a GitHub account and a new repository.
-2. Upload `index.html`, `styles.css`, and `app.js`.
-3. In the repository settings, enable Pages from the main branch.
-4. Connect a custom domain when ready.
+The required corpus is the present value at retirement of those monthly net cash flows using the selected post-retirement return, plus the chosen safety buffer.
 
-### Other easy hosts
-The same folder can be deployed on Cloudflare Pages, Netlify, Vercel, or nearly any shared web host.
+Existing savings and monthly contributions are projected to retirement using the selected pre-retirement return.
 
-## Monetization placeholders
+## Important limitation
 
-The page intentionally includes:
-- an advertisement placeholder below the hero area;
-- a monetization CTA block below the calculator.
-
-Possible revenue models:
-- display ads after the site develops meaningful traffic;
-- sponsored financial-education placements;
-- paid premium calculators/reports;
-- newsletter or membership;
-- lead generation for appropriately licensed professionals, subject to applicable law and platform rules.
-
-Before monetizing personalized financial recommendations or regulated financial products, obtain appropriate legal/compliance advice for the markets you serve.
-
-## Rebranding
-
-Search the files for `RetireWise` and replace it with your chosen brand. Update the page title, description, logo letter and footer.
-
-## Recommended next version
-
-- optional pension/EPF/NPS income;
-- one-time retirement goals (travel, child's education, home, medical reserve);
-- step-up SIP calculation;
-- downloadable PDF retirement report;
-- save/share via URL;
-- charts showing corpus depletion by age;
-- email capture and premium report;
-- analytics and consent management;
-- admin-editable assumptions and content.
+The model assumes fixed inflation and fixed investment returns. Actual returns and inflation vary, taxes are not modelled, and sequence-of-returns risk can materially affect outcomes. The app is an educational planning tool, not financial advice.
