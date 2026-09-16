@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Retirement Corpus Calculator | Inflation-Adjusted Retirement Planning</title>
+  <meta name="description" content="Estimate the retirement corpus you may need after accounting for inflation, retirement duration, investment returns and current savings." />
+  <meta name="robots" content="index,follow" />
+  <meta property="og:title" content="Retirement Corpus Calculator" />
+  <meta property="og:description" content="Estimate inflation-adjusted retirement expenses, target corpus and monthly investment required." />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="styles.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Retirement Corpus Calculator",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "Any",
+    "description": "An inflation-adjusted retirement corpus calculator."
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#" aria-label="RetireWise home">
+        <span class="brand-mark">R</span>
+        <span>RetireWise</span>
+      </a>
+      <nav class="top-nav" aria-label="Primary navigation">
+        <a href="#calculator">Calculator</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <span class="eyebrow">Free retirement planning tool</span>
+          <h1>How much money will you need to retire?</h1>
+          <p class="hero-copy">Estimate your future monthly expenses, inflation-adjusted retirement corpus and the monthly investment needed to reach it.</p>
+          <div class="hero-points">
+            <span>Inflation adjusted</span>
+            <span>India-friendly ₹ formatting</span>
+            <span>No sign-up required</span>
+          </div>
+        </div>
+        <div class="hero-card" aria-label="Example retirement plan">
+          <div class="hero-card-label">Example</div>
+          <div class="hero-card-row"><span>Current monthly expenses</span><strong>₹60,000</strong></div>
+          <div class="hero-card-row"><span>After 25 years at 6% inflation</span><strong>₹2.58 lakh/mo</strong></div>
+          <div class="hero-card-note">Small changes in inflation can make a large difference over long periods.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="container ad-slot" aria-label="Advertisement placeholder">
+      <span>Advertisement space — add Google AdSense or a sponsor here after launch</span>
+    </div>
+
+    <section class="calculator-section" id="calculator">
+      <div class="container calculator-grid">
+        <div class="panel inputs-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="section-kicker">Step 1</span>
+              <h2>Enter your assumptions</h2>
+            </div>
+            <button class="text-button" id="resetBtn" type="button">Reset</button>
+          </div>
+
+          <div class="input-group">
+            <div class="input-label-row">
+              <label for="currentAge">Current age</label>
+              <div class="number-wrap compact"><input id="currentAge" type="number" min="18" max="79" value="35" /><span>yrs</span></div>
+            </div>
+            <input class="range" id="currentAgeRange" type="range" min="18" max="79" value="35" />
+          </div>
+
+          <div class="input-group">
+            <div class="input-label-row">
+              <label for="retirementAge">Retirement age</label>
+              <div class="number-wrap compact"><input id="retirementAge" type="number" min="19" max="80" value="60" /><span>yrs</span></div>
+            </div>
+            <input class="range" id="retirementAgeRange" type="range" min="19" max="80" value="60" />
+          </div>
+
+          <div class="input-group">
+            <div class="input-label-row">
+              <label for="monthlyExpense">Current monthly household expenses</label>
+              <div class="number-wrap money"><span>₹</span><input id="monthlyExpense" type="number" min="1000" step="1000" value="60000" /></div>
+            </div>
+            <input class="range" id="monthlyExpenseRange" type="range" min="5000" max="500000" step="5000" value="60000" />
+            <small>Use today's spending level. Exclude investments/EMIs you know will end before retirement.</small>
+          </div>
+
+          <div class="two-col">
+            <div class="input-group card-input">
+              <label for="inflationRate">Inflation</label>
+              <div class="number-wrap percent"><input id="inflationRate" type="number" min="0" max="15" step="0.1" value="6" /><span>%</span></div>
+              <small>Annual assumption</small>
+            </div>
+            <div class="input-group card-input">
+              <label for="retirementYears">Years in retirement</label>
+              <div class="number-wrap compact"><input id="retirementYears" type="number" min="1" max="50" value="25" /><span>yrs</span></div>
+              <small>e.g. age 60 to 85</small>
+            </div>
+          </div>
+
+          <details class="advanced" open>
+            <summary>Investment & savings assumptions</summary>
+            <div class="advanced-grid">
+              <div class="input-group card-input">
+                <label for="postReturn">Return during retirement</label>
+                <div class="number-wrap percent"><input id="postReturn" type="number" min="0" max="20" step="0.1" value="8" /><span>%</span></div>
+                <small>Nominal annual return</small>
+              </div>
+              <div class="input-group card-input">
+                <label for="preReturn">Return before retirement</label>
+                <div class="number-wrap percent"><input id="preReturn" type="number" min="0" max="30" step="0.1" value="10" /><span>%</span></div>
+                <small>Used for savings & SIP</small>
+              </div>
+              <div class="input-group card-input wide">
+                <label for="currentSavings">Existing retirement savings</label>
+                <div class="number-wrap money"><span>₹</span><input id="currentSavings" type="number" min="0" step="10000" value="1000000" /></div>
+                <small>EPF/NPS/mutual funds or other assets earmarked for retirement</small>
+              </div>
+              <div class="input-group card-input wide">
+                <label for="bufferRate">Safety buffer</label>
+                <div class="number-wrap percent"><input id="bufferRate" type="number" min="0" max="50" step="1" value="10" /><span>%</span></div>
+                <small>Optional cushion for uncertainty, healthcare or unplanned costs</small>
+              </div>
+            </div>
+          </details>
+
+          <div class="validation" id="validationMsg" role="alert" aria-live="polite"></div>
+        </div>
+
+        <aside class="panel result-panel" aria-live="polite">
+          <span class="section-kicker">Your estimate</span>
+          <h2>Retirement snapshot</h2>
+          <div class="years-chip"><strong id="yearsToRetire">25</strong> years to retirement</div>
+
+          <div class="primary-result">
+            <span>Estimated corpus needed at retirement</span>
+            <strong id="requiredCorpus">₹0</strong>
+            <small>Includes your selected safety buffer</small>
+          </div>
+
+          <div class="result-list">
+            <div class="result-item">
+              <span>Monthly expense at retirement</span>
+              <strong id="futureMonthlyExpense">₹0</strong>
+            </div>
+            <div class="result-item">
+              <span>Future value of existing savings</span>
+              <strong id="futureSavings">₹0</strong>
+            </div>
+            <div class="result-item emphasized">
+              <span>Additional corpus to build</span>
+              <strong id="corpusGap">₹0</strong>
+            </div>
+            <div class="result-item sip">
+              <span>Estimated monthly investment needed</span>
+              <strong id="monthlySip">₹0</strong>
+            </div>
+          </div>
+
+          <div class="corpus-visual" aria-label="Retirement corpus funding progress">
+            <div class="progress-label"><span>Projected existing savings</span><span id="fundedPercent">0% funded</span></div>
+            <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+          </div>
+
+          <button class="share-button" id="copyBtn" type="button">Copy result summary</button>
+          <div class="copy-status" id="copyStatus" aria-live="polite"></div>
+
+          <p class="disclaimer">Illustrative estimate only. This calculator does not account for taxes, sequence-of-return risk, pension income or individual financial circumstances, and is not investment advice.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="content-section" id="how-it-works">
+      <div class="container content-grid">
+        <div>
+          <span class="section-kicker">How it works</span>
+          <h2>Three calculations behind the result</h2>
+        </div>
+        <div class="steps">
+          <article><span>1</span><div><h3>Inflate today's expenses</h3><p>Your current monthly expenses are compounded by your inflation assumption until retirement.</p></div></article>
+          <article><span>2</span><div><h3>Estimate retirement corpus</h3><p>The calculator models monthly withdrawals throughout retirement, increasing them with inflation while the remaining corpus earns your assumed post-retirement return.</p></div></article>
+          <article><span>3</span><div><h3>Calculate the funding gap</h3><p>Your existing savings are projected to retirement. The remaining gap is converted into an estimated monthly investment using your pre-retirement return assumption.</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="monetize-section">
+      <div class="container monetize-card">
+        <div>
+          <span class="section-kicker">Monetization-ready area</span>
+          <h2>Turn calculator traffic into revenue</h2>
+          <p>Replace this block with a sponsor, newsletter signup, premium planning tool, advisor lead form or relevant financial education product.</p>
+        </div>
+        <a class="cta-button" href="#calculator">Plan retirement</a>
+      </div>
+    </section>
+
+    <section class="faq-section" id="faq">
+      <div class="container faq-wrap">
+        <span class="section-kicker">FAQ</span>
+        <h2>Common questions</h2>
+        <details><summary>Why does inflation matter so much?</summary><p>Inflation reduces purchasing power. A lifestyle costing ₹60,000 per month today can require substantially more rupees decades from now even if the lifestyle itself does not change.</p></details>
+        <details><summary>Does the corpus stay invested after retirement?</summary><p>Yes. The calculation assumes the remaining corpus continues earning the post-retirement return you enter while withdrawals rise with inflation.</p></details>
+        <details><summary>Is the monthly investment a guaranteed amount?</summary><p>No. It is a mathematical estimate based on constant return and inflation assumptions. Actual market returns, taxes, expenses and personal circumstances will differ.</p></details>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div><strong>RetireWise</strong><span>Inflation-adjusted retirement calculator</span></div>
+      <span>© <span id="year"></span> • Educational use only</span>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
