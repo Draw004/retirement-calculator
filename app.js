@@ -497,7 +497,10 @@
       ? `<line x1="${x(opts.retirementAge)}" y1="${T}" x2="${x(opts.retirementAge)}" y2="${H-B}" stroke="#d8a83b" stroke-width="1.5" stroke-dasharray="5 5"/><text x="${x(opts.retirementAge)+5}" y="${T+13}" font-size="11" fill="#856112">Retire ${opts.retirementAge}</text>` : '';
     const tickValues = [0, maxY/2, maxY];
     const yGrid = tickValues.map(v => `<line x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}" stroke="#e7edf1"/><text x="${L-7}" y="${y(v)+4}" text-anchor="end" font-size="10" fill="#748292">${escapeXml(opts.valueFormatter ? opts.valueFormatter(v) : String(Math.round(v)))}</text>`).join('');
-    const xTicks = [minX, (minX+maxX)/2, maxX].map(v => `<text x="${x(v)}" y="${H-19}" text-anchor="middle" font-size="10" fill="#748292">Age ${Math.round(v)}</text>`).join('');
+    const xTickValues = opts.retirementAge && opts.retirementAge > minX && opts.retirementAge < maxX
+      ? [minX, opts.retirementAge, maxX]
+      : [minX, (minX + maxX) / 2, maxX];
+    const xTicks = [...new Set(xTickValues.map(v => Math.round(v)))].map(v => `<text x="${x(v)}" y="${H-19}" text-anchor="middle" font-size="10" fill="#748292">Age ${Math.round(v)}</text>`).join('');
     container.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="presentation" aria-hidden="true">
       ${yGrid}${retirementLine}
       <polyline fill="none" stroke="#0e827a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" points="${poly}"/>
@@ -526,6 +529,7 @@
       const card = document.createElement('article');
       card.className = `scenario-item ${current ? 'current' : ''}`;
       card.innerHTML = `<span class="scenario-age">Retire at ${age}${current ? ' · current choice' : ''}</span>
+        <span class="scenario-corpus-label">Corpus at age ${age} (future ₹)</span>
         <strong>${formatINR(scenario.requiredCorpus, true)}</strong>
         <dl>
           <div><dt>Years to save</dt><dd>${age - s.currentAge}</dd></div>

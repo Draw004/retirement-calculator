@@ -475,3 +475,14 @@ footer { background: #0e1f33; color: #fff; padding: 27px 0; }
   .hero-actions { align-items: stretch; }
   .hero-actions a { width: 100%; }
 }
+
+/* V2.2.1 visual polish */
+.planning-age-value { margin-left: .28em; }
+.scenario-explainer { margin: -8px 0 16px; color: var(--muted); font-size: .82rem; line-height: 1.55; max-width: 920px; }
+.scenario-corpus-label { display: block; color: var(--muted); font-size: .7rem; margin-top: 6px; }
+.scenario-corpus-label + strong { margin-top: 2px; }
+@media (min-width: 1100px) {
+  .planner-hero { padding-top: 62px; padding-bottom: 48px; }
+  .planner-hero .hero-points { margin-top: 22px; }
+  .planner-hero .hero-cta { margin-top: 20px; }
+}

@@ -1,8 +1,8 @@
-# RetireWise V2.2 — Website Readiness Release
+# RetireWise V2.2.1 — Visual Polish Patch
 
 This package is a static website designed to replace the current GitHub Pages files in the `retirement-calculator` repository.
 
-## What changed in V2.2
+## What changed in V2.2.1
 
 - New public home page (`index.html`)
 - Retirement calculator moved to `planner.html`
@@ -25,7 +25,7 @@ Because the calculator now lives at `planner.html`, upload **all files in this p
 1. Open the existing `retirement-calculator` repository.
 2. Choose **Add file → Upload files**.
 3. Upload every file from this folder (or extract the ZIP and drag all files).
-4. Commit with a message such as `Upgrade to RetireWise V2.2`.
+4. Commit with a message such as `Upgrade to RetireWise V2.2.1`.
 5. Wait 1–3 minutes, then refresh the existing GitHub Pages URL with Ctrl+F5.
 6. Do not change the Pages branch/root settings.
 
@@ -51,3 +51,11 @@ When Search Console gives you an HTML meta verification tag, paste it into the `
 - Re-run calculator validation tests after any formula change.
 
 The site is educational and does not provide investment, tax, legal or insurance advice.
+
+
+## V2.2.1 fixes
+- Adds visible spacing in “plan through age 90”.
+- Aligns the household-expense chart x-axis with the selected retirement age instead of showing a misleading midpoint age.
+- Clarifies that retirement-age comparison corpus values are future rupees at each retirement date.
+- Clarifies why the buffered portfolio can finish the planning horizon with a remaining balance.
+- Slightly tightens the desktop planner hero so the main call-to-action stays comfortably above the fold.
