@@ -1,8 +1,21 @@
-# RetireWise V2 - Smart Retirement Planner
+# RetireWise V2.1 - Smart Retirement Planner
 
 A static, mobile-friendly retirement planning web app for GitHub Pages. No server, database, framework or API key is required.
 
-## What changed in V2
+## What is new in V2.1
+
+V2.1 keeps the V2 cash-flow engine and adds a stronger results and reporting layer:
+
+- Clear comparison of today's spending vs retirement lifestyle in today's purchasing power.
+- Monthly costs removed/reduced and costs added/increased.
+- Funding-status explanation based on the projected funding ratio.
+- Corpus construction breakdown: recurring retirement expenses, retirement-income offset, one-time goals and safety buffer.
+- Expense-change list showing which categories disappear, reduce or increase.
+- Clickable retirement-age scenarios so users can switch to an earlier or later retirement age in one click.
+- Dedicated print-ready Retirement Planning Report with assumptions, funding breakdown, expense changes, scenario comparison and charts.
+- The report can be saved as PDF using the browser's Print / Save as PDF option.
+
+## Core planner features
 
 - Quick estimate mode: model the percentage of today's spending likely to remain after retirement.
 - Detailed planner: each expense can continue/change, end at a chosen age, or start at retirement.
@@ -13,9 +26,8 @@ A static, mobile-friendly retirement planning web app for GitHub Pages. No serve
 - Month-by-month retirement cash-flow model.
 - Existing savings + current monthly retirement contributions are projected to retirement.
 - Calculates modelled corpus, funding gap, total monthly contribution requirement and extra contribution versus the current plan.
-- Expense timeline, portfolio path and retirement-age scenario comparison.
+- Expense timeline and retirement portfolio path.
 - Save/load plan locally in the browser.
-- Print / Save PDF through the browser's print dialog.
 
 ## Replace your existing GitHub Pages site
 
@@ -23,29 +35,25 @@ Your existing repository already contains `index.html`, `styles.css`, `app.js` a
 
 1. Open your `retirement-calculator` repository on GitHub.
 2. Choose **Add file -> Upload files**.
-3. Upload the four V2 files from this folder.
-4. GitHub will warn that files with the same names already exist; continue so the uploaded versions replace them in the new commit.
-5. Scroll down and click **Commit changes**.
-6. Wait about 1-3 minutes for GitHub Pages to redeploy.
-7. Refresh your existing live URL. You do not need a new repository or Pages configuration.
+3. Upload the four V2.1 files from this folder.
+4. Confirm replacement of the existing files and commit the changes.
+5. Wait about 1-3 minutes for GitHub Pages to redeploy.
+6. Refresh your existing live URL. You do not need a new repository or new Pages configuration.
 
 ## Calculation model
 
 The detailed planner creates monthly cash flows from retirement age through the selected planning age.
 
-For each expense, RetireWise:
+For each expense, RetireWise starts from the user-entered amount in today's rupees, applies the selected inflation category, applies the retirement rule, and applies lifestyle-phase multipliers to categories tagged Lifestyle.
 
-1. Starts from the user-entered amount in today's rupees.
-2. Applies the inflation rate assigned to that category from current age to each future month.
-3. Applies the retirement rule (continue/change, end at age, or start at retirement).
-4. Applies lifestyle-phase multipliers only to categories tagged Lifestyle.
+Retirement income is subtracted from expenses. One-time goals are inserted at the selected retirement month after being inflation-adjusted from today's value.
 
-Retirement income is subtracted from expenses. One-time goals are inserted in the selected retirement month after being inflated from today's rupees.
+The estimated corpus is the amount required at retirement to fund those month-by-month net cash flows using the selected post-retirement return, plus the selected safety buffer.
 
-The required corpus is the present value at retirement of those monthly net cash flows using the selected post-retirement return, plus the chosen safety buffer.
+The V2.1 corpus breakdown reports the recurring-expense present value, retirement-income offset, one-time-goal present value and safety buffer separately so the user can see how the target is constructed.
 
 Existing savings and monthly contributions are projected to retirement using the selected pre-retirement return.
 
 ## Important limitation
 
-The model assumes fixed inflation and fixed investment returns. Actual returns and inflation vary, taxes are not modelled, and sequence-of-returns risk can materially affect outcomes. The app is an educational planning tool, not financial advice.
+The model uses constant assumptions and does not model taxes, investment fees, market volatility or sequence-of-returns risk. Actual inflation, returns, healthcare costs and longevity can differ materially. Results are educational planning estimates and are not investment, tax, legal or insurance advice.

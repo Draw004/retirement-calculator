@@ -28,7 +28,7 @@
       <a class="brand" href="#top" aria-label="RetireWise home">
         <span class="brand-mark">R</span>
         <span>RetireWise</span>
-        <span class="version-badge">V2</span>
+        <span class="version-badge">V2.1</span>
       </a>
       <nav class="top-nav" aria-label="Primary navigation">
         <a href="#planner">Planner</a>
@@ -269,9 +269,19 @@
             <small id="todayVsRetirementNote">Today's monthly spending compared with your retirement lifestyle in today's purchasing power.</small>
           </div>
 
+          <div class="mini-metrics" aria-label="Retirement budget change summary">
+            <div><span>Costs removed / reduced</span><strong id="monthlyReduced">₹0/mo</strong></div>
+            <div><span>Costs added / increased</span><strong id="monthlyIncreased">₹0/mo</strong></div>
+          </div>
+
+          <div class="readiness-card">
+            <div><span>Funding status</span><strong id="fundingStatus">Building plan</strong></div>
+            <small id="fundingStatusNote">Compares the retirement target with your projected savings at retirement.</small>
+          </div>
+
           <div class="result-actions no-print">
             <button class="share-button" id="copyBtn" type="button">Copy summary</button>
-            <button class="share-button" id="printBtn" type="button">Print / Save PDF</button>
+            <button class="share-button primary-action" id="printBtn" type="button">Create retirement report</button>
           </div>
           <div class="copy-status" id="copyStatus" aria-live="polite"></div>
           <p class="disclaimer">Illustrative planning tool only. Results depend on your assumptions and do not predict actual inflation, investment returns, taxes, longevity, healthcare costs or market sequence. This is not investment, tax or legal advice.</p>
@@ -285,6 +295,30 @@
           <div><span class="section-kicker">Visual plan</span><h2>See how your retirement evolves</h2></div>
           <p>Charts update automatically as you change the plan.</p>
         </div>
+        <div class="glance-grid" aria-label="Plan at a glance">
+          <article class="glance-card"><span>Today's monthly spending</span><strong id="glanceTodaySpend">₹0</strong><small>From the inputs in your current mode</small></article>
+          <article class="glance-card"><span>Retirement lifestyle in today's ₹</span><strong id="glanceRetirementSpend">₹0</strong><small>Before future inflation</small></article>
+          <article class="glance-card"><span>Monthly costs removed / reduced</span><strong id="glanceReduced">₹0</strong><small>Compared with today's listed lifestyle</small></article>
+          <article class="glance-card"><span>Monthly costs added / increased</span><strong id="glanceIncreased">₹0</strong><small>Compared with today's listed lifestyle</small></article>
+        </div>
+
+        <div class="analysis-grid">
+          <article class="analysis-card">
+            <div class="analysis-heading"><div><span class="section-kicker">Corpus construction</span><h3>How the retirement target is built</h3></div><span>Values are measured at retirement</span></div>
+            <div class="breakdown-list">
+              <div><span>Recurring retirement expenses</span><strong id="breakdownExpensePV">₹0</strong></div>
+              <div class="offset"><span>Less retirement income</span><strong id="breakdownIncomePV">−₹0</strong></div>
+              <div><span>One-time retirement goals</span><strong id="breakdownGoalsPV">₹0</strong></div>
+              <div><span>Safety buffer</span><strong id="breakdownBuffer">₹0</strong></div>
+              <div class="total"><span>Estimated corpus needed</span><strong id="breakdownTotal">₹0</strong></div>
+            </div>
+          </article>
+          <article class="analysis-card">
+            <div class="analysis-heading"><div><span class="section-kicker">What changed?</span><h3>Expense changes at retirement</h3></div><span>Shown in today's purchasing power</span></div>
+            <div id="expenseChangeList" class="expense-change-list"></div>
+          </article>
+        </div>
+
         <div class="chart-grid">
           <article class="chart-card">
             <div class="chart-title"><h3>Household expense timeline</h3><span id="expenseChartCaption">Today's spending through retirement</span></div>
@@ -300,6 +334,74 @@
           <div class="scenario-heading"><div><span class="section-kicker">What if?</span><h2>Compare retirement ages</h2></div><p>Same assumptions, different retirement date.</p></div>
           <div id="scenarioGrid" class="scenario-grid"></div>
         </div>
+      </div>
+    </section>
+
+    <section id="printReport" class="print-only report-section" aria-label="RetireWise retirement planning report">
+      <div class="report-shell">
+        <header class="report-header">
+          <div><span class="report-brand">RetireWise</span><h1>Retirement Planning Report</h1><p>Cash-flow based retirement estimate</p></div>
+          <div class="report-meta"><strong id="reportGenerated">Generated</strong><span>Illustrative planning report</span></div>
+        </header>
+
+        <div class="report-hero">
+          <div><span>Estimated corpus needed at retirement</span><strong id="reportCorpus">₹0</strong><small id="reportRetireLine">Retire at age 60 · plan through age 90</small></div>
+          <div class="report-hero-side"><span>Monthly investment indicated</span><strong id="reportMonthlyNeeded">₹0</strong><small id="reportFundingLine">Projected funding 0%</small></div>
+        </div>
+
+        <div class="report-summary-grid">
+          <div><span>Today's spending</span><strong id="reportTodaySpend">₹0/mo</strong></div>
+          <div><span>Retirement lifestyle in today's ₹</span><strong id="reportRetirementSpend">₹0/mo</strong></div>
+          <div><span>First-year retirement expenses</span><strong id="reportFirstYearExpense">₹0/mo</strong></div>
+          <div><span>First-year retirement income</span><strong id="reportFirstYearIncome">₹0/mo</strong></div>
+        </div>
+
+        <section class="report-block">
+          <h2>Plan assumptions</h2>
+          <table class="report-table"><tbody id="reportAssumptions"></tbody></table>
+        </section>
+
+        <section class="report-block report-two-col">
+          <div>
+            <h2>How the corpus is built</h2>
+            <table class="report-table"><tbody id="reportBreakdown"></tbody></table>
+          </div>
+          <div>
+            <h2>Retirement funding</h2>
+            <table class="report-table"><tbody id="reportFunding"></tbody></table>
+          </div>
+        </section>
+
+        <section class="report-block" id="reportExpenseChangesBlock">
+          <h2>Expense changes at retirement</h2>
+          <table class="report-table report-change-table">
+            <thead><tr><th>Expense</th><th>Today</th><th>At retirement in today's ₹</th><th>Change</th></tr></thead>
+            <tbody id="reportExpenseChanges"></tbody>
+          </table>
+        </section>
+
+        <section class="report-block">
+          <h2>Retirement-age comparison</h2>
+          <table class="report-table report-scenario-table">
+            <thead><tr><th>Retirement age</th><th>Corpus needed</th><th>Monthly investment</th><th>Projected funding</th></tr></thead>
+            <tbody id="reportScenarios"></tbody>
+          </table>
+        </section>
+
+        <section class="report-block report-chart-block">
+          <h2>Expense timeline</h2>
+          <div id="reportExpenseChart" class="report-chart"></div>
+        </section>
+        <section class="report-block report-chart-block">
+          <h2>Retirement portfolio path</h2>
+          <div id="reportPortfolioChart" class="report-chart"></div>
+        </section>
+
+        <section class="report-notes">
+          <h2>Important notes</h2>
+          <p>This report is an illustrative planning output based entirely on the assumptions entered by the user. It does not predict investment returns, inflation, taxes, healthcare costs, longevity or market conditions. It is not investment, tax, legal or insurance advice.</p>
+          <p>The model estimates the amount needed at retirement by discounting projected month-by-month retirement cash flows using the entered post-retirement return, then applies the selected safety buffer. Actual outcomes can differ materially.</p>
+        </section>
       </div>
     </section>
 

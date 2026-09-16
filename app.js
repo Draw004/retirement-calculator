@@ -281,7 +281,9 @@
       }
     }
 
-    let baseCorpusPV = 0;
+    let recurringExpensePV = 0;
+    let retirementIncomePV = 0;
+    let goalsPV = 0;
     let firstYearExpenseTotal = 0;
     let firstYearIncomeTotal = 0;
     const monthlyFlows = [];
@@ -293,13 +295,16 @@
       const goal = goalByMonth.get(m) || 0;
       const net = expense - income;
       const discount = Math.pow(1 + monthlyPost, m);
-      baseCorpusPV += net / discount + goal / discount;
+      recurringExpensePV += expense / discount;
+      retirementIncomePV += income / discount;
+      goalsPV += goal / discount;
       monthlyFlows.push({ m, age, expense, income, net, goal });
       if (m < 12) { firstYearExpenseTotal += expense; firstYearIncomeTotal += income; }
     }
 
-    baseCorpusPV = Math.max(0, baseCorpusPV);
-    const requiredCorpus = baseCorpusPV * (1 + s.bufferRate / 100);
+    const baseCorpusPV = Math.max(0, recurringExpensePV - retirementIncomePV + goalsPV);
+    const safetyBufferAmount = baseCorpusPV * s.bufferRate / 100;
+    const requiredCorpus = baseCorpusPV + safetyBufferAmount;
 
     const futureExisting = s.currentSavings * Math.pow(1 + s.preReturn / 100, s.retirementAge - s.currentAge);
     let fvFactor = monthsToRetire;
@@ -319,6 +324,18 @@
 
     const currentTodayExpense = expenseAtAge(s.currentAge, s, false);
     const retirementLifestyleToday = expenseAtAge(s.retirementAge, s, false);
+
+    const expenseChanges = s.mode === 'detailed' ? s.expenses.map(exp => {
+      const today = detailedExpenseAtAge(exp, s.currentAge, s, false);
+      const retirement = detailedExpenseAtAge(exp, s.retirementAge, s, false);
+      return { name: exp.name, today, retirement, change: retirement - today, rule: exp.rule, inflationType: exp.inflationType };
+    }).filter(x => x.today > 0 || x.retirement > 0).sort((a,b) => Math.abs(b.change) - Math.abs(a.change)) : [];
+    const monthlyReduced = s.mode === 'quick'
+      ? Math.max(0, currentTodayExpense - retirementLifestyleToday)
+      : expenseChanges.reduce((sum, x) => sum + Math.max(0, x.today - x.retirement), 0);
+    const monthlyIncreased = s.mode === 'quick'
+      ? Math.max(0, retirementLifestyleToday - currentTodayExpense)
+      : expenseChanges.reduce((sum, x) => sum + Math.max(0, x.retirement - x.today), 0);
 
     // Simulate the portfolio path from the buffered required corpus.
     let balance = requiredCorpus;
@@ -342,9 +359,10 @@
     expensePoints.sort((a,b) => a.age - b.age);
 
     return {
-      errors: [], s, requiredCorpus, baseCorpusPV, futureExisting, futureCurrentContrib, projectedCorpus, gap,
-      totalMonthlyNeeded, extraMonthlyNeeded, fundedPct, firstYearExpense, firstYearIncome, firstYearNet,
-      currentTodayExpense, retirementLifestyleToday, portfolioPoints, expensePoints, monthlyFlows,
+      errors: [], s, requiredCorpus, baseCorpusPV, recurringExpensePV, retirementIncomePV, goalsPV, safetyBufferAmount,
+      futureExisting, futureCurrentContrib, projectedCorpus, gap, totalMonthlyNeeded, extraMonthlyNeeded, fundedPct,
+      firstYearExpense, firstYearIncome, firstYearNet, currentTodayExpense, retirementLifestyleToday, monthlyReduced, monthlyIncreased,
+      expenseChanges, portfolioPoints, expensePoints, monthlyFlows,
     };
   }
 
@@ -371,6 +389,33 @@
     renderResult(result);
   }
 
+  function fundingStatusText(fundedPct) {
+    if (fundedPct >= 110) return ['Above target under assumptions', 'Your projected retirement assets exceed the modelled target by at least 10% under the assumptions entered.'];
+    if (fundedPct >= 100) return ['Target funded under assumptions', 'Your projected retirement assets meet or exceed the modelled target under the assumptions entered.'];
+    if (fundedPct >= 75) return ['Most of the target is funded', 'Your projected retirement assets cover at least three quarters of the modelled target.'];
+    if (fundedPct >= 50) return ['Partly funded', 'Your current savings plan covers roughly half to three quarters of the modelled target.'];
+    return ['Funding gap to address', 'Your projected retirement assets cover less than half of the modelled target under these assumptions.'];
+  }
+
+  function renderExpenseChanges(r) {
+    const list = $('expenseChangeList');
+    if (r.s.mode !== 'detailed') {
+      const pct = r.currentTodayExpense > 0 ? (r.retirementLifestyleToday / r.currentTodayExpense) * 100 : 0;
+      list.innerHTML = `<div class="change-summary-only"><strong>${pct.toFixed(0)}%</strong><span>of today's spending is set to remain at retirement in Quick mode. Switch to Detailed planner to see category-by-category changes.</span></div>`;
+      return;
+    }
+    const changed = r.expenseChanges.filter(x => Math.abs(x.change) >= 1);
+    if (!changed.length) {
+      list.innerHTML = '<div class="change-summary-only"><strong>No material changes</strong><span>Your detailed expenses are currently set to stay broadly the same in today\'s purchasing power.</span></div>';
+      return;
+    }
+    list.innerHTML = changed.slice(0, 7).map(x => {
+      const cls = x.change > 0 ? 'up' : 'down';
+      const label = x.change > 0 ? `+${formatINR(x.change)}` : `−${formatINR(Math.abs(x.change))}`;
+      return `<div class="expense-change-row"><div><strong>${escapeXml(x.name)}</strong><span>${formatINR(x.today)}/mo → ${formatINR(x.retirement)}/mo</span></div><b class="${cls}">${label}</b></div>`;
+    }).join('');
+  }
+
   function renderResult(r) {
     const s = r.s;
     $('yearsToRetire').textContent = (s.retirementAge - s.currentAge).toFixed(0);
@@ -391,13 +436,31 @@
       ? 'Your entered savings and current monthly investment meet or exceed the modelled target under these assumptions.'
       : `The current plan is projected to fund about ${Math.max(0, r.fundedPct).toFixed(0)}% of the modelled target.`;
 
+    const [status, statusNote] = fundingStatusText(r.fundedPct);
+    $('fundingStatus').textContent = status;
+    $('fundingStatusNote').textContent = statusNote;
+
     $('todayVsRetirement').textContent = `${formatINR(r.currentTodayExpense, true)}/mo → ${formatINR(r.retirementLifestyleToday, true)}/mo`;
     $('todayVsRetirementNote').textContent = s.mode === 'quick'
       ? "Today's spending versus your selected retirement-spending percentage, both shown in today's purchasing power."
       : "Today's listed spending versus the first retirement-year lifestyle, before future inflation is applied.";
+    $('monthlyReduced').textContent = `${formatINR(r.monthlyReduced, true)}/mo`;
+    $('monthlyIncreased').textContent = `${formatINR(r.monthlyIncreased, true)}/mo`;
 
     $('quickTodayRetirementBudget').textContent = `${formatINR(s.quickMonthlyExpense * s.quickRetirementPct / 100)}/mo`;
     $('detailedExpenseTotal').textContent = formatINR(s.expenses.reduce((a,e) => a + Math.max(0,e.amount), 0));
+
+    $('glanceTodaySpend').textContent = `${formatINR(r.currentTodayExpense, true)}/mo`;
+    $('glanceRetirementSpend').textContent = `${formatINR(r.retirementLifestyleToday, true)}/mo`;
+    $('glanceReduced').textContent = `${formatINR(r.monthlyReduced, true)}/mo`;
+    $('glanceIncreased').textContent = `${formatINR(r.monthlyIncreased, true)}/mo`;
+
+    $('breakdownExpensePV').textContent = formatINR(r.recurringExpensePV, true);
+    $('breakdownIncomePV').textContent = `−${formatINR(r.retirementIncomePV, true)}`;
+    $('breakdownGoalsPV').textContent = formatINR(r.goalsPV, true);
+    $('breakdownBuffer').textContent = formatINR(r.safetyBufferAmount, true);
+    $('breakdownTotal').textContent = formatINR(r.requiredCorpus, true);
+    renderExpenseChanges(r);
 
     renderLineChart($('expenseChart'), r.expensePoints, {
       retirementAge: s.retirementAge, valueFormatter: v => formatINR(v, true), yLabel: 'Monthly spending'
@@ -407,6 +470,7 @@
     });
     $('expenseChartCaption').textContent = s.mode === 'detailed' ? 'Shows expenses ending or changing at retirement' : 'Quick mode applies your chosen retirement spending percentage';
     renderScenarios(s);
+    buildPrintReport(r);
   }
 
   function renderLineChart(container, points, opts = {}) {
@@ -439,26 +503,115 @@
 
   function escapeXml(s) { return String(s).replace(/[<>&'\"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[c])); }
 
-  function renderScenarios(s) {
-    const candidates = [s.retirementAge - 5, s.retirementAge, s.retirementAge + 5]
+  function scenarioResults(s) {
+    return [s.retirementAge - 5, s.retirementAge, s.retirementAge + 5]
       .map(a => Math.round(a))
-      .filter((a, i, arr) => a > s.currentAge && a < s.planningAge && arr.indexOf(a) === i);
+      .filter((a, i, arr) => a > s.currentAge && a < s.planningAge && arr.indexOf(a) === i)
+      .map(age => ({ age, result: calculatePlan({ ...s, retirementAge: age }) }))
+      .filter(x => !x.result.errors?.length);
+  }
+
+  function renderScenarios(s) {
     const grid = $('scenarioGrid');
     grid.innerHTML = '';
-    for (const age of candidates) {
-      const scenario = calculatePlan({ ...s, retirementAge: age });
-      if (scenario.errors?.length) continue;
+    for (const { age, result: scenario } of scenarioResults(s)) {
+      const current = age === Math.round(s.retirementAge);
       const card = document.createElement('article');
-      card.className = `scenario-item ${age === Math.round(s.retirementAge) ? 'current' : ''}`;
-      card.innerHTML = `<span class="scenario-age">Retire at ${age}${age === Math.round(s.retirementAge) ? ' · current choice' : ''}</span>
+      card.className = `scenario-item ${current ? 'current' : ''}`;
+      card.innerHTML = `<span class="scenario-age">Retire at ${age}${current ? ' · current choice' : ''}</span>
         <strong>${formatINR(scenario.requiredCorpus, true)}</strong>
         <dl>
           <div><dt>Years to save</dt><dd>${age - s.currentAge}</dd></div>
           <div><dt>Total monthly investment</dt><dd>${formatINR(scenario.totalMonthlyNeeded)}</dd></div>
           <div><dt>Projected funding</dt><dd>${Math.min(999, Math.max(0, scenario.fundedPct)).toFixed(0)}%</dd></div>
-        </dl>`;
+        </dl>
+        ${current ? '<span class="current-scenario-note">Your selected retirement age</span>' : `<button type="button" class="scenario-use-button no-print" data-retirement-age="${age}">Use age ${age}</button>`}`;
       grid.appendChild(card);
     }
+  }
+
+  function reportRow(label, value, valueClass = '') {
+    return `<tr><th>${escapeXml(label)}</th><td class="${valueClass}">${escapeXml(value)}</td></tr>`;
+  }
+
+  function buildPrintReport(r) {
+    const s = r.s;
+    const dateText = new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date());
+    $('reportGenerated').textContent = `Generated ${dateText}`;
+    $('reportCorpus').textContent = formatINR(r.requiredCorpus, true);
+    $('reportRetireLine').textContent = `Retire at age ${Math.round(s.retirementAge)} · plan through age ${Math.round(s.planningAge)}`;
+    $('reportMonthlyNeeded').textContent = formatINR(r.totalMonthlyNeeded);
+    $('reportFundingLine').textContent = `Projected funding ${Math.max(0, r.fundedPct).toFixed(0)}%`;
+    $('reportTodaySpend').textContent = `${formatINR(r.currentTodayExpense)}/mo`;
+    $('reportRetirementSpend').textContent = `${formatINR(r.retirementLifestyleToday)}/mo`;
+    $('reportFirstYearExpense').textContent = `${formatINR(r.firstYearExpense)}/mo`;
+    $('reportFirstYearIncome').textContent = r.firstYearIncome > 0 ? `${formatINR(r.firstYearIncome)}/mo` : 'None entered';
+
+    const assumptions = [
+      ['Planner mode', s.mode === 'detailed' ? 'Detailed expense planner' : 'Quick estimate'],
+      ['Current age', `${Math.round(s.currentAge)}`],
+      ['Retirement age', `${Math.round(s.retirementAge)}`],
+      ['Plan until age', `${Math.round(s.planningAge)}`],
+      ['Current retirement savings', formatINR(s.currentSavings)],
+      ['Current monthly retirement investment', formatINR(s.currentMonthlyInvestment)],
+      ['Return before retirement', `${s.preReturn.toFixed(1)}% p.a.`],
+      ['Return during retirement', `${s.postReturn.toFixed(1)}% p.a.`],
+      ['Safety buffer', `${s.bufferRate.toFixed(0)}%`],
+    ];
+    if (s.mode === 'quick') {
+      assumptions.push(['Current household expenses', `${formatINR(s.quickMonthlyExpense)}/mo`]);
+      assumptions.push(['Spending remaining at retirement', `${s.quickRetirementPct.toFixed(0)}%`]);
+      assumptions.push(['Inflation', `${s.quickInflation.toFixed(1)}% p.a.`]);
+    } else {
+      assumptions.push(['General inflation', `${s.generalInflation.toFixed(1)}% p.a.`]);
+      assumptions.push(['Healthcare inflation', `${s.healthInflation.toFixed(1)}% p.a.`]);
+      assumptions.push(['Lifestyle inflation', `${s.lifestyleInflation.toFixed(1)}% p.a.`]);
+      assumptions.push(['Education inflation', `${s.educationInflation.toFixed(1)}% p.a.`]);
+    }
+    $('reportAssumptions').innerHTML = assumptions.map(([a,b]) => reportRow(a,b)).join('');
+
+    $('reportBreakdown').innerHTML = [
+      ['Recurring retirement expenses', formatINR(r.recurringExpensePV)],
+      ['Less retirement income', `−${formatINR(r.retirementIncomePV)}`],
+      ['One-time retirement goals', formatINR(r.goalsPV)],
+      ['Safety buffer', formatINR(r.safetyBufferAmount)],
+      ['Estimated corpus needed', formatINR(r.requiredCorpus)],
+    ].map(([a,b], i, arr) => reportRow(a,b, i === arr.length - 1 ? 'report-total-value' : '')).join('');
+
+    $('reportFunding').innerHTML = [
+      ['Future value of existing savings', formatINR(r.futureExisting)],
+      ['Future value of current contributions', formatINR(r.futureCurrentContrib)],
+      ['Projected corpus at retirement', formatINR(r.projectedCorpus)],
+      ['Funding gap', r.gap > 0 ? formatINR(r.gap) : 'No gap under assumptions'],
+      ['Total monthly investment indicated', formatINR(r.totalMonthlyNeeded)],
+      ['Additional monthly investment indicated', r.extraMonthlyNeeded > 1 ? formatINR(r.extraMonthlyNeeded) : '₹0 under assumptions'],
+    ].map(([a,b]) => reportRow(a,b)).join('');
+
+    const changesBlock = $('reportExpenseChangesBlock');
+    if (s.mode === 'detailed' && r.expenseChanges.length) {
+      changesBlock.style.display = '';
+      $('reportExpenseChanges').innerHTML = r.expenseChanges.map(x => {
+        const change = Math.abs(x.change) < 1 ? 'No change' : x.change > 0 ? `+${formatINR(x.change)}` : `−${formatINR(Math.abs(x.change))}`;
+        return `<tr><td>${escapeXml(x.name)}</td><td>${escapeXml(formatINR(x.today))}</td><td>${escapeXml(formatINR(x.retirement))}</td><td>${escapeXml(change)}</td></tr>`;
+      }).join('');
+    } else {
+      changesBlock.style.display = 'none';
+      $('reportExpenseChanges').innerHTML = '';
+    }
+
+    $('reportScenarios').innerHTML = scenarioResults(s).map(({age, result}) => `<tr>
+      <td>${age}${age === Math.round(s.retirementAge) ? ' (selected)' : ''}</td>
+      <td>${escapeXml(formatINR(result.requiredCorpus))}</td>
+      <td>${escapeXml(formatINR(result.totalMonthlyNeeded))}</td>
+      <td>${Math.max(0, result.fundedPct).toFixed(0)}%</td>
+    </tr>`).join('');
+
+    renderLineChart($('reportExpenseChart'), r.expensePoints, {
+      retirementAge: s.retirementAge, valueFormatter: v => formatINR(v, true), yLabel: 'Monthly spending'
+    });
+    renderLineChart($('reportPortfolioChart'), r.portfolioPoints, {
+      retirementAge: null, valueFormatter: v => formatINR(v, true), yLabel: 'Portfolio'
+    });
   }
 
   function bindDelegatedRows() {
@@ -516,6 +669,13 @@
     $('addExpenseBtn').addEventListener('click', () => { addExpenseRow(); calculateAndRender(); });
     $('addIncomeBtn').addEventListener('click', () => { addIncomeRow(); calculateAndRender(); });
     $('addGoalBtn').addEventListener('click', () => { addGoalRow(); calculateAndRender(); });
+    $('scenarioGrid').addEventListener('click', (e) => {
+      const btn = e.target.closest('.scenario-use-button');
+      if (!btn) return;
+      $('retirementAge').value = btn.dataset.retirementAge;
+      calculateAndRender();
+      $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
 
     qsa('input', $('planner')).forEach(input => {
       if (!input.closest('tbody')) {
@@ -527,12 +687,12 @@
     $('copyBtn').addEventListener('click', async () => {
       if (!lastResult) return;
       const r = lastResult;
-      const text = `RetireWise estimate: retire at age ${r.s.retirementAge}, plan through ${r.s.planningAge}. Modelled corpus at retirement: ${formatINR(r.requiredCorpus)}. First-year retirement expenses: ${formatINR(r.firstYearExpense)}/month. First-year retirement income: ${formatINR(r.firstYearIncome)}/month. Projected corpus from current savings and contributions: ${formatINR(r.projectedCorpus)}. Funding gap: ${formatINR(r.gap)}. Total monthly retirement investment indicated by these assumptions: ${formatINR(r.totalMonthlyNeeded)}. Illustrative estimate only.`;
+      const text = `RetireWise estimate: retire at age ${r.s.retirementAge}, plan through ${r.s.planningAge}. Modelled corpus at retirement: ${formatINR(r.requiredCorpus)}. Today's spending: ${formatINR(r.currentTodayExpense)}/month. Retirement lifestyle in today's purchasing power: ${formatINR(r.retirementLifestyleToday)}/month. First-year retirement expenses: ${formatINR(r.firstYearExpense)}/month. First-year retirement income: ${formatINR(r.firstYearIncome)}/month. Projected corpus from current savings and contributions: ${formatINR(r.projectedCorpus)}. Funding gap: ${formatINR(r.gap)}. Total monthly retirement investment indicated by these assumptions: ${formatINR(r.totalMonthlyNeeded)}. Illustrative estimate only.`;
       try { await navigator.clipboard.writeText(text); $('copyStatus').textContent = 'Summary copied.'; }
       catch (_) { $('copyStatus').textContent = 'Copy is unavailable in this browser.'; }
     });
 
-    $('printBtn').addEventListener('click', () => window.print());
+    $('printBtn').addEventListener('click', () => { if (lastResult) buildPrintReport(lastResult); window.print(); });
     $('savePlanBtn').addEventListener('click', () => {
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(serializePlan())); $('saveStatus').textContent = 'Plan saved in this browser.'; }
       catch (_) { $('saveStatus').textContent = 'Browser storage is unavailable.'; }
