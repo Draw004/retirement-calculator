@@ -1,61 +1,21 @@
-# RetireWise V2.2.1 — Visual Polish Patch
+# RetireWise V2.2.2 — Future-Rupee Comparison Patch
 
-This package is a static website designed to replace the current GitHub Pages files in the `retirement-calculator` repository.
+V2.2.2 adds a clearer distinction between **today's purchasing power** and the **projected nominal rupee amount at the selected retirement age**.
 
-## What changed in V2.2.1
+## What changed
 
-- New public home page (`index.html`)
-- Retirement calculator moved to `planner.html`
-- Dedicated pages: How it works, Methodology, About, FAQ, Financial Disclaimer, Privacy, Terms, Contact
-- Improved desktop/mobile navigation and footer
-- Cleaner planner hero and results explanation
-- Empty advertising placeholder removed from the public experience
-- SEO titles/descriptions/canonical tags
-- `sitemap.xml` and `robots.txt`
-- Disabled Google Analytics configuration placeholder (`site-config.js`)
-- Search Console verification placeholder documented in the page `<head>` comments
-- 404 page
+- Expense-change rows now show two retirement values side by side:
+  - retirement lifestyle in today's rupees
+  - projected amount at the selected retirement age in future rupees
+- The current monthly amount remains visible for context, along with the lifestyle change in today's rupees.
+- The results sidebar now shows the same retirement lifestyle in today's rupees and projected future rupees.
+- The visual-plan summary adds a dedicated projected future-spending card.
+- The retirement report adds the projected future monthly amount and a future-rupee column for each expense.
+- The copied summary now includes the projected future monthly spending value.
+- Labels deliberately use **projected** rather than **actual**, because future prices remain estimates based on the selected inflation assumptions.
 
-## Important deployment change
+## Updating GitHub Pages
 
-Because the calculator now lives at `planner.html`, upload **all files in this package**, not only the old four files. GitHub Pages will still use `index.html` as the home page.
+Upload all files in this folder to the root of the existing `retirement-calculator` repository and commit the changes. GitHub Pages settings do not need to be changed.
 
-## Publish on GitHub Pages
-
-1. Open the existing `retirement-calculator` repository.
-2. Choose **Add file → Upload files**.
-3. Upload every file from this folder (or extract the ZIP and drag all files).
-4. Commit with a message such as `Upgrade to RetireWise V2.2.1`.
-5. Wait 1–3 minutes, then refresh the existing GitHub Pages URL with Ctrl+F5.
-6. Do not change the Pages branch/root settings.
-
-## Google Analytics (not active by default)
-
-Open `site-config.js` and change:
-
-```js
-GA_MEASUREMENT_ID: ""
-```
-
-to your future Google Analytics measurement ID, for example `G-XXXXXXXXXX`. Only do this after you intentionally choose to use Analytics and review the privacy/consent requirements that apply to your launch.
-
-## Google Search Console
-
-When Search Console gives you an HTML meta verification tag, paste it into the `<head>` of each page where the comment says `SEARCH CONSOLE`. For a custom domain, DNS verification is often easier because it covers the whole domain.
-
-## Before commercial launch
-
-- Choose and verify the permanent brand/domain.
-- Replace the beta GitHub contact route with a business email.
-- Have Privacy, Terms and Disclaimer reviewed for your actual business model, especially before enabling analytics, ads, accounts, payments, adviser referrals or storing financial data.
-- Re-run calculator validation tests after any formula change.
-
-The site is educational and does not provide investment, tax, legal or insurance advice.
-
-
-## V2.2.1 fixes
-- Adds visible spacing in “plan through age 90”.
-- Aligns the household-expense chart x-axis with the selected retirement age instead of showing a misleading midpoint age.
-- Clarifies that retirement-age comparison corpus values are future rupees at each retirement date.
-- Clarifies why the buffered portfolio can finish the planning horizon with a remaining balance.
-- Slightly tightens the desktop planner hero so the main call-to-action stays comfortably above the fold.
+Suggested commit message: `Upgrade to RetireWise V2.2.2`.

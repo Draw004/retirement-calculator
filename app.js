@@ -324,11 +324,14 @@
 
     const currentTodayExpense = expenseAtAge(s.currentAge, s, false);
     const retirementLifestyleToday = expenseAtAge(s.retirementAge, s, false);
+    // Same retirement lifestyle expressed in nominal future rupees at the selected retirement age.
+    const retirementLifestyleFuture = expenseAtAge(s.retirementAge, s, true);
 
     const expenseChanges = s.mode === 'detailed' ? s.expenses.map(exp => {
       const today = detailedExpenseAtAge(exp, s.currentAge, s, false);
       const retirement = detailedExpenseAtAge(exp, s.retirementAge, s, false);
-      return { name: exp.name, today, retirement, change: retirement - today, rule: exp.rule, inflationType: exp.inflationType };
+      const retirementFuture = detailedExpenseAtAge(exp, s.retirementAge, s, true);
+      return { name: exp.name, today, retirement, retirementFuture, change: retirement - today, rule: exp.rule, inflationType: exp.inflationType };
     }).filter(x => x.today > 0 || x.retirement > 0).sort((a,b) => Math.abs(b.change) - Math.abs(a.change)) : [];
     const monthlyReduced = s.mode === 'quick'
       ? Math.max(0, currentTodayExpense - retirementLifestyleToday)
@@ -361,7 +364,7 @@
     return {
       errors: [], s, requiredCorpus, baseCorpusPV, recurringExpensePV, retirementIncomePV, goalsPV, safetyBufferAmount,
       futureExisting, futureCurrentContrib, projectedCorpus, gap, totalMonthlyNeeded, extraMonthlyNeeded, fundedPct,
-      firstYearExpense, firstYearIncome, firstYearNet, currentTodayExpense, retirementLifestyleToday, monthlyReduced, monthlyIncreased,
+      firstYearExpense, firstYearIncome, firstYearNet, currentTodayExpense, retirementLifestyleToday, retirementLifestyleFuture, monthlyReduced, monthlyIncreased,
       expenseChanges, portfolioPoints, expensePoints, monthlyFlows,
     };
   }
@@ -399,20 +402,41 @@
 
   function renderExpenseChanges(r) {
     const list = $('expenseChangeList');
+    const retirementAge = Math.round(r.s.retirementAge);
+    const headingAge = $('expenseChangeRetirementAge');
+    if (headingAge) headingAge.textContent = `age ${retirementAge} future ₹`;
+
     if (r.s.mode !== 'detailed') {
       const pct = r.currentTodayExpense > 0 ? (r.retirementLifestyleToday / r.currentTodayExpense) * 100 : 0;
-      list.innerHTML = `<div class="change-summary-only"><strong>${pct.toFixed(0)}%</strong><span>of today's spending is set to remain at retirement in Quick mode. Switch to Detailed planner to see category-by-category changes.</span></div>`;
+      list.innerHTML = `<div class="change-summary-only">
+        <strong>${pct.toFixed(0)}%</strong>
+        <span>of today's spending is set to remain at retirement in Quick mode.</span>
+        <div class="change-quick-values">
+          <div><span>Retirement lifestyle<br>in today's ₹</span><b>${formatINR(r.retirementLifestyleToday, true)}/mo</b></div>
+          <div><span>Projected at age ${retirementAge}<br>in future ₹</span><b>${formatINR(r.retirementLifestyleFuture, true)}/mo</b></div>
+        </div>
+        <small>Switch to Detailed planner to see category-by-category changes.</small>
+      </div>`;
       return;
     }
-    const changed = r.expenseChanges.filter(x => Math.abs(x.change) >= 1);
+    const changed = r.expenseChanges.filter(x => Math.abs(x.change) >= 1 || Math.abs(x.retirementFuture - x.retirement) >= 1);
     if (!changed.length) {
       list.innerHTML = '<div class="change-summary-only"><strong>No material changes</strong><span>Your detailed expenses are currently set to stay broadly the same in today\'s purchasing power.</span></div>';
       return;
     }
     list.innerHTML = changed.slice(0, 7).map(x => {
-      const cls = x.change > 0 ? 'up' : 'down';
-      const label = x.change > 0 ? `+${formatINR(x.change)}` : `−${formatINR(Math.abs(x.change))}`;
-      return `<div class="expense-change-row"><div><strong>${escapeXml(x.name)}</strong><span>${formatINR(x.today)}/mo → ${formatINR(x.retirement)}/mo</span></div><b class="${cls}">${label}</b></div>`;
+      const cls = x.change > 0 ? 'up' : x.change < 0 ? 'down' : '';
+      const label = Math.abs(x.change) < 1 ? 'No lifestyle change' : x.change > 0 ? `+${formatINR(x.change)}` : `−${formatINR(Math.abs(x.change))}`;
+      return `<div class="expense-change-row">
+        <div class="expense-change-context">
+          <strong>${escapeXml(x.name)}</strong>
+          <span>Current today: ${formatINR(x.today)}/mo <em class="${cls}">${label}</em></span>
+        </div>
+        <div class="expense-change-values">
+          <div><span>Retirement lifestyle<br>in today's ₹</span><b>${formatINR(x.retirement)}/mo</b></div>
+          <div><span>Projected at age ${retirementAge}<br>in future ₹</span><b>${formatINR(x.retirementFuture)}/mo</b></div>
+        </div>
+      </div>`;
     }).join('');
   }
 
@@ -422,6 +446,10 @@
     $('resultPlanningAge').textContent = s.planningAge.toFixed(0);
     $('requiredCorpus').textContent = formatINR(r.requiredCorpus, true);
     $('firstYearExpense').textContent = formatINR(r.firstYearExpense, true);
+    const futureSpendLabel = $('futureSpendLabel');
+    if (futureSpendLabel) futureSpendLabel.textContent = `Projected monthly spending at age ${Math.round(s.retirementAge)} (future ₹)`;
+    const retirementProjectedSpend = $('retirementProjectedSpend');
+    if (retirementProjectedSpend) retirementProjectedSpend.textContent = `${formatINR(r.retirementLifestyleFuture, true)}/mo`;
     $('firstYearIncome').textContent = r.firstYearIncome > 0 ? formatINR(r.firstYearIncome, true) : 'None entered';
     $('firstYearNet').textContent = `${formatINR(r.firstYearNet, true)}/mo`;
     $('projectedCorpus').textContent = formatINR(r.projectedCorpus, true);
@@ -441,6 +469,8 @@
     $('fundingStatusNote').textContent = statusNote;
 
     $('todayVsRetirement').textContent = `${formatINR(r.currentTodayExpense, true)}/mo → ${formatINR(r.retirementLifestyleToday, true)}/mo`;
+    $('todayVsFutureRetirement').textContent = `${formatINR(r.retirementLifestyleToday, true)}/mo → ${formatINR(r.retirementLifestyleFuture, true)}/mo`;
+    $('todayVsFutureLabel').textContent = `Same retirement lifestyle: today's ₹ → projected age ${Math.round(s.retirementAge)} future ₹`;
     $('todayVsRetirementNote').textContent = s.mode === 'quick'
       ? "Today's spending versus your selected retirement-spending percentage, both shown in today's purchasing power."
       : "Today's listed spending versus the first retirement-year lifestyle, before future inflation is applied.";
@@ -459,6 +489,8 @@
 
     $('glanceTodaySpend').textContent = `${formatINR(r.currentTodayExpense, true)}/mo`;
     $('glanceRetirementSpend').textContent = `${formatINR(r.retirementLifestyleToday, true)}/mo`;
+    $('glanceFutureSpend').textContent = `${formatINR(r.retirementLifestyleFuture, true)}/mo`;
+    $('glanceFutureSpendLabel').textContent = `Projected monthly spending at age ${Math.round(s.retirementAge)}`;
     $('glanceReduced').textContent = `${formatINR(r.monthlyReduced, true)}/mo`;
     $('glanceIncreased').textContent = `${formatINR(r.monthlyIncreased, true)}/mo`;
 
@@ -555,6 +587,8 @@
     $('reportFundingLine').textContent = `Projected funding ${Math.max(0, r.fundedPct).toFixed(0)}%`;
     $('reportTodaySpend').textContent = `${formatINR(r.currentTodayExpense)}/mo`;
     $('reportRetirementSpend').textContent = `${formatINR(r.retirementLifestyleToday)}/mo`;
+    $('reportFutureSpend').textContent = `${formatINR(r.retirementLifestyleFuture)}/mo`;
+    $('reportFutureSpendLabel').textContent = `Projected monthly spending at age ${Math.round(s.retirementAge)} (future ₹)`;
     $('reportFirstYearExpense').textContent = `${formatINR(r.firstYearExpense)}/mo`;
     $('reportFirstYearIncome').textContent = r.firstYearIncome > 0 ? `${formatINR(r.firstYearIncome)}/mo` : 'None entered';
 
@@ -601,9 +635,11 @@
     const changesBlock = $('reportExpenseChangesBlock');
     if (s.mode === 'detailed' && r.expenseChanges.length) {
       changesBlock.style.display = '';
+      $('reportExpenseChangeFutureHead').textContent = `Projected at age ${Math.round(s.retirementAge)} (future ₹)`;
       $('reportExpenseChanges').innerHTML = r.expenseChanges.map(x => {
         const change = Math.abs(x.change) < 1 ? 'No change' : x.change > 0 ? `+${formatINR(x.change)}` : `−${formatINR(Math.abs(x.change))}`;
-        return `<tr><td>${escapeXml(x.name)}</td><td>${escapeXml(formatINR(x.today))}</td><td>${escapeXml(formatINR(x.retirement))}</td><td>${escapeXml(change)}</td></tr>`;
+        const todayToRetirement = `${formatINR(x.today)} → ${formatINR(x.retirement)}`;
+        return `<tr><td>${escapeXml(x.name)}</td><td>${escapeXml(todayToRetirement)}</td><td>${escapeXml(formatINR(x.retirementFuture))}</td><td>${escapeXml(change)}</td></tr>`;
       }).join('');
     } else {
       changesBlock.style.display = 'none';
@@ -698,7 +734,7 @@
     $('copyBtn').addEventListener('click', async () => {
       if (!lastResult) return;
       const r = lastResult;
-      const text = `RetireWise estimate: retire at age ${r.s.retirementAge}, plan through ${r.s.planningAge}. Modelled corpus at retirement: ${formatINR(r.requiredCorpus)}. Today's spending: ${formatINR(r.currentTodayExpense)}/month. Retirement lifestyle in today's purchasing power: ${formatINR(r.retirementLifestyleToday)}/month. First-year retirement expenses: ${formatINR(r.firstYearExpense)}/month. First-year retirement income: ${formatINR(r.firstYearIncome)}/month. Projected corpus from current savings and contributions: ${formatINR(r.projectedCorpus)}. Funding gap: ${formatINR(r.gap)}. Total monthly retirement investment indicated by these assumptions: ${formatINR(r.totalMonthlyNeeded)}. Illustrative estimate only.`;
+      const text = `RetireWise estimate: retire at age ${r.s.retirementAge}, plan through ${r.s.planningAge}. Modelled corpus at retirement: ${formatINR(r.requiredCorpus)}. Today's spending: ${formatINR(r.currentTodayExpense)}/month. Retirement lifestyle in today's purchasing power: ${formatINR(r.retirementLifestyleToday)}/month. Projected monthly spending at retirement age in future rupees: ${formatINR(r.retirementLifestyleFuture)}/month. First-year retirement expenses: ${formatINR(r.firstYearExpense)}/month. First-year retirement income: ${formatINR(r.firstYearIncome)}/month. Projected corpus from current savings and contributions: ${formatINR(r.projectedCorpus)}. Funding gap: ${formatINR(r.gap)}. Total monthly retirement investment indicated by these assumptions: ${formatINR(r.totalMonthlyNeeded)}. Illustrative estimate only.`;
       try { await navigator.clipboard.writeText(text); $('copyStatus').textContent = 'Summary copied.'; }
       catch (_) { $('copyStatus').textContent = 'Copy is unavailable in this browser.'; }
     });

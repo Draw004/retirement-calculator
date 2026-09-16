@@ -32,7 +32,7 @@
       <a class="brand" href="index.html" aria-label="RetireWise home">
         <span class="brand-mark">R</span>
         <span>RetireWise</span>
-        <span class="version-badge">V2.2.1</span>
+        <span class="version-badge">V2.2.2</span>
       </a>
       <nav class="top-nav" aria-label="Primary navigation">
         <a href="planner.html">Planner</a>
@@ -261,7 +261,7 @@
           </div>
 
           <div class="result-list">
-            <div class="result-item"><span>Average monthly expenses in first retirement year</span><strong id="firstYearExpense">₹0</strong></div>
+            <div class="result-item"><span>Average monthly expenses in first retirement year (future ₹)</span><strong id="firstYearExpense">₹0</strong></div>
             <div class="result-item"><span>Average retirement income in first year</span><strong id="firstYearIncome">₹0</strong></div>
             <div class="result-item"><span>Portfolio needs to provide</span><strong id="firstYearNet">₹0/mo</strong></div>
             <div class="result-item"><span>Projected corpus from your current plan</span><strong id="projectedCorpus">₹0</strong></div>
@@ -279,7 +279,7 @@
           <div class="retirement-budget-card" id="retirementBudgetCard">
             <span>Why the spending number changed</span>
             <strong id="todayVsRetirement">₹0 → ₹0</strong>
-            <small id="todayVsRetirementNote">Today's monthly spending compared with your retirement lifestyle in today's purchasing power.</small>
+            <small id="todayVsRetirementNote">Today's monthly spending compared with your retirement lifestyle in today's purchasing power.</small><div class="future-price-bridge"><span id="todayVsFutureLabel">Same retirement lifestyle: today's ₹ → projected future ₹</span><strong id="todayVsFutureRetirement">₹0/mo → ₹0/mo</strong><small>Future ₹ is an inflation-adjusted estimate at your selected retirement age, not a guaranteed price.</small></div>
             <p class="budget-narrative" id="budgetNarrative"></p>
           </div>
 
@@ -311,7 +311,8 @@
         </div>
         <div class="glance-grid" aria-label="Plan at a glance">
           <article class="glance-card"><span>Today's monthly spending</span><strong id="glanceTodaySpend">₹0</strong><small>From the inputs in your current mode</small></article>
-          <article class="glance-card"><span>Retirement lifestyle in today's ₹</span><strong id="glanceRetirementSpend">₹0</strong><small>Before future inflation</small></article>
+          <article class="glance-card"><span>Retirement lifestyle in today's ₹</span><strong id="glanceRetirementSpend">₹0</strong><small>Comparable purchasing power today</small></article>
+          <article class="glance-card future-glance"><span id="glanceFutureSpendLabel">Projected monthly spending at retirement</span><strong id="glanceFutureSpend">₹0</strong><small>Inflation-adjusted future ₹ estimate</small></article>
           <article class="glance-card"><span>Monthly costs removed / reduced</span><strong id="glanceReduced">₹0</strong><small>Compared with today's listed lifestyle</small></article>
           <article class="glance-card"><span>Monthly costs added / increased</span><strong id="glanceIncreased">₹0</strong><small>Compared with today's listed lifestyle</small></article>
         </div>
@@ -328,7 +329,7 @@
             </div>
           </article>
           <article class="analysis-card">
-            <div class="analysis-heading"><div><span class="section-kicker">What changed?</span><h3>Expense changes at retirement</h3></div><span>Shown in today's purchasing power</span></div>
+            <div class="analysis-heading"><div><span class="section-kicker">What changed?</span><h3>Expense changes at retirement</h3></div><span>Retirement lifestyle in today's ₹ vs <strong id="expenseChangeRetirementAge">future ₹</strong></span></div>
             <div id="expenseChangeList" class="expense-change-list"></div>
           </article>
         </div>
@@ -367,7 +368,8 @@
         <div class="report-summary-grid">
           <div><span>Today's spending</span><strong id="reportTodaySpend">₹0/mo</strong></div>
           <div><span>Retirement lifestyle in today's ₹</span><strong id="reportRetirementSpend">₹0/mo</strong></div>
-          <div><span>First-year retirement expenses</span><strong id="reportFirstYearExpense">₹0/mo</strong></div>
+          <div><span id="reportFutureSpendLabel">Projected monthly spending at retirement (future ₹)</span><strong id="reportFutureSpend">₹0/mo</strong></div>
+          <div><span>First-year retirement expenses (future ₹)</span><strong id="reportFirstYearExpense">₹0/mo</strong></div>
           <div><span>First-year retirement income</span><strong id="reportFirstYearIncome">₹0/mo</strong></div>
         </div>
 
@@ -390,7 +392,7 @@
         <section class="report-block" id="reportExpenseChangesBlock">
           <h2>Expense changes at retirement</h2>
           <table class="report-table report-change-table">
-            <thead><tr><th>Expense</th><th>Today</th><th>At retirement in today's ₹</th><th>Change</th></tr></thead>
+            <thead><tr><th>Expense</th><th>Today → retirement (today's ₹)</th><th id="reportExpenseChangeFutureHead">Projected at retirement (future ₹)</th><th>Change in today's ₹</th></tr></thead>
             <tbody id="reportExpenseChanges"></tbody>
           </table>
         </section>
@@ -459,7 +461,7 @@
       <div class="footer-brand-block">
         <a class="brand footer-brand" href="index.html"><span class="brand-mark">R</span><span>RetireWise</span></a>
         <p>A transparent retirement-planning tool built around the expenses and income your future life may actually have.</p>
-        <span class="footer-small">Educational planning tool · Version 2.2.1</span>
+        <span class="footer-small">Educational planning tool · Version 2.2.2</span>
       </div>
       <div><strong>Product</strong><a href="planner.html">Retirement Planner</a><a href="how-it-works.html">How it works</a><a href="faq.html">FAQ</a></div>
       <div><strong>Trust</strong><a href="methodology.html">Methodology</a><a href="disclaimer.html">Financial disclaimer</a><a href="privacy.html">Privacy</a></div>
