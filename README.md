@@ -1,6 +1,19 @@
-# RetireWise V2.2.3 — Retirement Breakdown & Mode Transparency Patch
+# RetireWise V2.2.5 — Retirement Report & UX Patch
 
-V2.2.3 improves the detailed-planner audit trail and explains why Quick Estimate and Detailed Planner can legitimately produce different retirement corpus figures.
+V2.2.5 improves retirement-value labelling, detailed-planner readability and the visual results layout while retaining the existing calculation engine.
+
+
+## V2.2.5 additions
+
+- The key future-spending label now reads **Projected monthly spending at retirement (age X)**, so the meaning remains clear whether the selected retirement age is 60, 62, 65 or another age.
+- The same “at retirement” language is used consistently in the retirement snapshot, expense breakdown and printable report.
+- **Corpus construction** is now a compact full-width summary rather than occupying half of a tall two-column block.
+- The **Retirement expense breakdown** now uses the full content width, removing the large empty area that appeared beside longer detailed expense lists.
+- Responsive rules keep the corpus summary and expense rows readable on tablets and phones.
+- **Copy summary** now creates a clean Carrowmont-branded plain-text summary for email, WhatsApp or notes.
+- **Generate retirement report** replaces the previous report button wording and opens the browser print dialog with guidance to choose **Save as PDF**.
+- The print report is now a professional **Carrowmont Retirement Planning Report** with an executive summary, funding status, projected corpus, funding gap, assumptions, corpus construction, retirement lifestyle summary, complete expense breakdown, retirement-age scenarios, charts, methodology notes and Carrowmont contact details.
+- The browser title is temporarily changed when generating the report so a saved PDF receives a clearer Carrowmont report filename.
 
 ## What changed
 
@@ -35,4 +48,4 @@ Quick Estimate remains a simplified model using one retirement-spending percenta
 
 Upload all files in this folder to the root of the existing `retirement-calculator` repository and commit the changes. GitHub Pages settings do not need to be changed.
 
-Suggested commit message: `Upgrade to RetireWise V2.2.3`.
+Suggested commit message: `Upgrade RetireWise to V2.2.5`.

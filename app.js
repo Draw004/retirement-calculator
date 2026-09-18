@@ -435,7 +435,7 @@
     const list = $('expenseChangeList');
     const retirementAge = Math.round(r.s.retirementAge);
     const headingAge = $('expenseChangeRetirementAge');
-    if (headingAge) headingAge.textContent = `all listed expenses · age ${retirementAge} future ₹`;
+    if (headingAge) headingAge.textContent = `all listed expenses · retirement age ${retirementAge} · future ₹`;
 
     if (r.s.mode !== 'detailed') {
       const pct = r.currentTodayExpense > 0 ? (r.retirementLifestyleToday / r.currentTodayExpense) * 100 : 0;
@@ -444,7 +444,7 @@
         <span>of today's spending is set to remain at retirement in Quick mode.</span>
         <div class="change-quick-values">
           <div><span>Retirement lifestyle<br>in today's ₹</span><b>${formatINR(r.retirementLifestyleToday, true)}/mo</b></div>
-          <div><span>Projected at age ${retirementAge}<br>in future ₹</span><b>${formatINR(r.retirementLifestyleFuture, true)}/mo</b></div>
+          <div><span>Projected at retirement (age ${retirementAge})<br>in future ₹</span><b>${formatINR(r.retirementLifestyleFuture, true)}/mo</b></div>
         </div>
         <small>Quick mode uses one spending percentage and one inflation rate. Switch to Detailed planner for the full expense-by-expense breakdown.</small>
       </div>`;
@@ -468,7 +468,7 @@
         </div>
         <div class="expense-change-values">
           <div><span>Retirement lifestyle<br>in today's ₹</span><b>${formatINR(x.retirement)}/mo</b></div>
-          <div><span>Projected at age ${retirementAge}<br>in future ₹</span><b>${formatINR(x.retirementFuture)}/mo</b></div>
+          <div><span>Projected at retirement (age ${retirementAge})<br>in future ₹</span><b>${formatINR(x.retirementFuture)}/mo</b></div>
         </div>
       </div>`;
     }).join('');
@@ -481,7 +481,7 @@
     $('requiredCorpus').textContent = formatINR(r.requiredCorpus, true);
     $('firstYearExpense').textContent = formatINR(r.firstYearExpense, true);
     const futureSpendLabel = $('futureSpendLabel');
-    if (futureSpendLabel) futureSpendLabel.textContent = `Projected monthly spending at age ${Math.round(s.retirementAge)} (future ₹)`;
+    if (futureSpendLabel) futureSpendLabel.textContent = `Projected monthly spending at retirement (age ${Math.round(s.retirementAge)}, future ₹)`;
     const retirementProjectedSpend = $('retirementProjectedSpend');
     if (retirementProjectedSpend) retirementProjectedSpend.textContent = `${formatINR(r.retirementLifestyleFuture, true)}/mo`;
     $('firstYearIncome').textContent = r.firstYearIncome > 0 ? formatINR(r.firstYearIncome, true) : 'None entered';
@@ -504,7 +504,7 @@
 
     $('todayVsRetirement').textContent = `${formatINR(r.currentTodayExpense, true)}/mo → ${formatINR(r.retirementLifestyleToday, true)}/mo`;
     $('todayVsFutureRetirement').textContent = `${formatINR(r.retirementLifestyleToday, true)}/mo → ${formatINR(r.retirementLifestyleFuture, true)}/mo`;
-    $('todayVsFutureLabel').textContent = `Same retirement lifestyle: today's ₹ → projected age ${Math.round(s.retirementAge)} future ₹`;
+    $('todayVsFutureLabel').textContent = `Same retirement lifestyle: today's ₹ → at retirement (age ${Math.round(s.retirementAge)}) in future ₹`;
     $('todayVsRetirementNote').textContent = s.mode === 'quick'
       ? "Today's spending versus your selected retirement-spending percentage, both shown in today's purchasing power."
       : "Today's listed spending versus the first retirement-year lifestyle, before future inflation is applied.";
@@ -524,7 +524,7 @@
     $('glanceTodaySpend').textContent = `${formatINR(r.currentTodayExpense, true)}/mo`;
     $('glanceRetirementSpend').textContent = `${formatINR(r.retirementLifestyleToday, true)}/mo`;
     $('glanceFutureSpend').textContent = `${formatINR(r.retirementLifestyleFuture, true)}/mo`;
-    $('glanceFutureSpendLabel').textContent = `Projected monthly spending at age ${Math.round(s.retirementAge)}`;
+    $('glanceFutureSpendLabel').textContent = `Projected monthly spending at retirement (age ${Math.round(s.retirementAge)})`;
     $('glanceReduced').textContent = `${formatINR(r.monthlyReduced, true)}/mo`;
     $('glanceIncreased').textContent = `${formatINR(r.monthlyIncreased, true)}/mo`;
 
@@ -618,13 +618,20 @@
     $('reportCorpus').textContent = formatINR(r.requiredCorpus, true);
     $('reportRetireLine').textContent = `Retire at age ${Math.round(s.retirementAge)} · plan through age ${Math.round(s.planningAge)}`;
     $('reportMonthlyNeeded').textContent = formatINR(r.totalMonthlyNeeded);
-    $('reportFundingLine').textContent = `Projected funding ${Math.max(0, r.fundedPct).toFixed(0)}%`;
     $('reportTodaySpend').textContent = `${formatINR(r.currentTodayExpense)}/mo`;
     $('reportRetirementSpend').textContent = `${formatINR(r.retirementLifestyleToday)}/mo`;
     $('reportFutureSpend').textContent = `${formatINR(r.retirementLifestyleFuture)}/mo`;
-    $('reportFutureSpendLabel').textContent = `Projected monthly spending at age ${Math.round(s.retirementAge)} (future ₹)`;
+    $('reportFutureSpendLabel').textContent = `Projected monthly spending at retirement (age ${Math.round(s.retirementAge)})`;
+    $('reportProjectedCorpus').textContent = formatINR(r.projectedCorpus, true);
+    $('reportFundingGap').textContent = r.gap > 0 ? formatINR(r.gap, true) : 'No gap*';
+    $('reportFundedPct').textContent = `${Math.max(0, r.fundedPct).toFixed(0)}%`;
+    const [reportStatus, reportStatusNote] = fundingStatusText(r.fundedPct);
+    $('reportFundingStatus').textContent = reportStatus;
+    $('reportExecutiveNote').textContent = reportStatusNote;
     $('reportFirstYearExpense').textContent = `${formatINR(r.firstYearExpense)}/mo`;
     $('reportFirstYearIncome').textContent = r.firstYearIncome > 0 ? `${formatINR(r.firstYearIncome)}/mo` : 'None entered';
+    $('reportReduced').textContent = `${formatINR(r.monthlyReduced)}/mo`;
+    $('reportIncreased').textContent = `${formatINR(r.monthlyIncreased)}/mo`;
 
     const assumptions = [
       ['Planner mode', s.mode === 'detailed' ? 'Detailed expense planner' : 'Quick estimate'],
@@ -669,7 +676,8 @@
     const changesBlock = $('reportExpenseChangesBlock');
     if (s.mode === 'detailed' && r.expenseChanges.length) {
       changesBlock.style.display = '';
-      $('reportExpenseChangeFutureHead').textContent = `Projected at age ${Math.round(s.retirementAge)} (future ₹)`;
+      $('reportExpenseChangeFutureHead').textContent = `Projected at retirement (age ${Math.round(s.retirementAge)}, future ₹)`;
+      $('reportExpenseContext').textContent = `All listed expenses · retirement age ${Math.round(s.retirementAge)}`;
       $('reportExpenseChanges').innerHTML = r.expenseChanges.map(x => {
         const change = Math.abs(x.change) < 1 ? 'No lifestyle change' : x.change > 0 ? `+${formatINR(x.change)}` : `−${formatINR(Math.abs(x.change))}`;
         const todayToRetirement = `${formatINR(x.today)} → ${formatINR(x.retirement)}`;
@@ -679,6 +687,7 @@
     } else {
       changesBlock.style.display = 'none';
       $('reportExpenseChanges').innerHTML = '';
+      $('reportExpenseContext').textContent = 'Detailed planner required for expense-by-expense reporting';
     }
 
     $('reportScenarios').innerHTML = scenarioResults(s).map(({age, result}) => `<tr>
@@ -769,12 +778,44 @@
     $('copyBtn').addEventListener('click', async () => {
       if (!lastResult) return;
       const r = lastResult;
-      const text = `RetireWise estimate: retire at age ${r.s.retirementAge}, plan through ${r.s.planningAge}. Modelled corpus at retirement: ${formatINR(r.requiredCorpus)}. Today's spending: ${formatINR(r.currentTodayExpense)}/month. Retirement lifestyle in today's purchasing power: ${formatINR(r.retirementLifestyleToday)}/month. Projected monthly spending at retirement age in future rupees: ${formatINR(r.retirementLifestyleFuture)}/month. First-year retirement expenses: ${formatINR(r.firstYearExpense)}/month. First-year retirement income: ${formatINR(r.firstYearIncome)}/month. Projected corpus from current savings and contributions: ${formatINR(r.projectedCorpus)}. Funding gap: ${formatINR(r.gap)}. Total monthly retirement investment indicated by these assumptions: ${formatINR(r.totalMonthlyNeeded)}. Illustrative estimate only.`;
-      try { await navigator.clipboard.writeText(text); $('copyStatus').textContent = 'Summary copied.'; }
+      const funded = Math.max(0, r.fundedPct).toFixed(0);
+      const gapText = r.gap > 0 ? formatINR(r.gap) : 'No gap under assumptions';
+      const extraText = r.extraMonthlyNeeded > 1 ? formatINR(r.extraMonthlyNeeded) : '₹0 under assumptions';
+      const text = [
+        'CARROWMONT RETIREMENT PLAN SUMMARY',
+        '',
+        `Planner mode: ${r.s.mode === 'detailed' ? 'Detailed planner' : 'Quick estimate'}`,
+        `Retirement age: ${Math.round(r.s.retirementAge)}`,
+        `Plan through age: ${Math.round(r.s.planningAge)}`,
+        '',
+        `Estimated corpus required: ${formatINR(r.requiredCorpus)}`,
+        `Projected corpus at retirement: ${formatINR(r.projectedCorpus)}`,
+        `Funding gap: ${gapText}`,
+        `Projected funding: ${funded}%`,
+        `Total monthly investment required: ${formatINR(r.totalMonthlyNeeded)}`,
+        `Additional monthly investment vs current plan: ${extraText}`,
+        '',
+        `Today's monthly spending: ${formatINR(r.currentTodayExpense)}/mo`,
+        `Retirement lifestyle in today's ₹: ${formatINR(r.retirementLifestyleToday)}/mo`,
+        `Projected monthly spending at retirement (age ${Math.round(r.s.retirementAge)}): ${formatINR(r.retirementLifestyleFuture)}/mo`,
+        '',
+        'Educational planning estimate only. Results depend on the assumptions entered and actual outcomes may differ.',
+        'carrowmont.com'
+      ].join('\n');
+      try { await navigator.clipboard.writeText(text); $('copyStatus').textContent = 'Carrowmont summary copied.'; }
       catch (_) { $('copyStatus').textContent = 'Copy is unavailable in this browser.'; }
     });
 
-    $('printBtn').addEventListener('click', () => { if (lastResult) buildPrintReport(lastResult); window.print(); });
+    $('printBtn').addEventListener('click', () => {
+      if (!lastResult) return;
+      buildPrintReport(lastResult);
+      const originalTitle = document.title;
+      document.title = `Carrowmont Retirement Planning Report - Age ${Math.round(lastResult.s.retirementAge)}`;
+      const restoreTitle = () => { document.title = originalTitle; window.removeEventListener('afterprint', restoreTitle); };
+      window.addEventListener('afterprint', restoreTitle);
+      window.print();
+      setTimeout(() => { if (document.title !== originalTitle) document.title = originalTitle; }, 2000);
+    });
     $('savePlanBtn').addEventListener('click', () => {
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(serializePlan())); $('saveStatus').textContent = 'Plan saved in this browser.'; }
       catch (_) { $('saveStatus').textContent = 'Browser storage is unavailable.'; }
