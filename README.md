@@ -1,9 +1,9 @@
-# RetireWise V2.2.5 — Retirement Report & UX Patch
+# RetireWise V2.2.6 — Retirement Report & UX Patch
 
-V2.2.5 improves retirement-value labelling, detailed-planner readability and the visual results layout while retaining the existing calculation engine.
+V2.2.6 improves retirement-value labelling, detailed-planner readability and the visual results layout while retaining the existing calculation engine.
 
 
-## V2.2.5 additions
+## V2.2.6 additions
 
 - The key future-spending label now reads **Projected monthly spending at retirement (age X)**, so the meaning remains clear whether the selected retirement age is 60, 62, 65 or another age.
 - The same “at retirement” language is used consistently in the retirement snapshot, expense breakdown and printable report.
@@ -48,4 +48,18 @@ Quick Estimate remains a simplified model using one retirement-spending percenta
 
 Upload all files in this folder to the root of the existing `retirement-calculator` repository and commit the changes. GitHub Pages settings do not need to be changed.
 
-Suggested commit message: `Upgrade RetireWise to V2.2.5`.
+Suggested commit message: `Upgrade RetireWise to V2.2.6`.
+
+
+## V2.2.6 changes
+- Added cache-busting query strings to local CSS/JS assets to prevent stale browser code after deployment.
+- Improved Edge/Chromium print reliability with a prepared-before-print fallback and delayed print launch.
+- Added clipboard fallback for browsers where the modern Clipboard API is unavailable.
+- Replaced “Quick Estimate is intentionally broad” with clearer “intentionally simplified” wording.
+- Added interactive hover/tap chart tooltips.
+- Retirement portfolio chart now compares the target-funded path with the current-plan path.
+- Added modelled current-plan runway, retirement lifestyle shift, contribution adjustment, and largest expense change insights.
+- Added current-plan runway to the generated report and copy summary.
+- Moved the retirement-age comparison earlier in the detailed report to use page space more effectively.
+- Methodology page now states that it applies to the current Carrowmont Retirement Planner and shows the last-reviewed date.
+- Added print guidance to disable browser headers/footers for a cleaner PDF.

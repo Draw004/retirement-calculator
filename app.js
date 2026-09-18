@@ -345,17 +345,30 @@
       ? Math.max(0, retirementLifestyleToday - currentTodayExpense)
       : expenseChanges.reduce((sum, x) => sum + Math.max(0, x.retirement - x.today), 0);
 
-    // Simulate the portfolio path from the buffered required corpus.
-    let balance = requiredCorpus;
-    const portfolioPoints = [{ age: s.retirementAge, value: balance }];
-    for (const flow of monthlyFlows) {
-      balance -= flow.net;
-      balance -= flow.goal;
-      balance *= (1 + monthlyPost);
-      if ((flow.m + 1) % 12 === 0 || flow.m === monthlyFlows.length - 1) {
-        portfolioPoints.push({ age: Math.min(s.planningAge, s.retirementAge + (flow.m + 1) / 12), value: balance });
+    // Simulate both the modelled target-funded portfolio and the user's projected current-plan portfolio.
+    // The second path makes the chart decision-useful: it shows whether the current savings plan may run out
+    // before the selected planning age under the same constant assumptions.
+    function simulatePortfolio(startBalance) {
+      let balance = Math.max(0, startBalance);
+      let depletionAge = null;
+      const points = [{ age: s.retirementAge, value: balance }];
+      for (const flow of monthlyFlows) {
+        const beforeReturn = balance - flow.net - flow.goal;
+        if (depletionAge === null && beforeReturn <= 0 && (flow.net + flow.goal) > 0) depletionAge = flow.age;
+        balance = Math.max(0, beforeReturn);
+        if (balance > 0) balance *= (1 + monthlyPost);
+        if ((flow.m + 1) % 12 === 0 || flow.m === monthlyFlows.length - 1) {
+          points.push({ age: Math.min(s.planningAge, s.retirementAge + (flow.m + 1) / 12), value: balance });
+        }
       }
+      return { points, depletionAge };
     }
+
+    const targetPortfolio = simulatePortfolio(requiredCorpus);
+    const currentPlanPortfolio = simulatePortfolio(projectedCorpus);
+    const portfolioPoints = targetPortfolio.points;
+    const currentPortfolioPoints = currentPlanPortfolio.points;
+    const projectedDepletionAge = currentPlanPortfolio.depletionAge;
 
     const expensePoints = [];
     const spanYears = s.planningAge - s.currentAge;
@@ -370,7 +383,7 @@
       errors: [], s, requiredCorpus, baseCorpusPV, recurringExpensePV, retirementIncomePV, goalsPV, safetyBufferAmount,
       futureExisting, futureCurrentContrib, projectedCorpus, gap, totalMonthlyNeeded, extraMonthlyNeeded, fundedPct,
       firstYearExpense, firstYearIncome, firstYearNet, currentTodayExpense, retirementLifestyleToday, retirementLifestyleFuture, monthlyReduced, monthlyIncreased,
-      expenseChanges, portfolioPoints, expensePoints, monthlyFlows,
+      expenseChanges, portfolioPoints, currentPortfolioPoints, projectedDepletionAge, expensePoints, monthlyFlows,
     };
   }
 
@@ -398,11 +411,13 @@
   }
 
   function fundingStatusText(fundedPct) {
-    if (fundedPct >= 110) return ['Above target under assumptions', 'Your projected retirement assets exceed the modelled target by at least 10% under the assumptions entered.'];
-    if (fundedPct >= 100) return ['Target funded under assumptions', 'Your projected retirement assets meet or exceed the modelled target under the assumptions entered.'];
-    if (fundedPct >= 75) return ['Most of the target is funded', 'Your projected retirement assets cover at least three quarters of the modelled target.'];
-    if (fundedPct >= 50) return ['Partly funded', 'Your current savings plan covers roughly half to three quarters of the modelled target.'];
-    return ['Funding gap to address', 'Your projected retirement assets cover less than half of the modelled target under these assumptions.'];
+    const pct = Math.max(0, fundedPct);
+    const rounded = pct.toFixed(0);
+    if (pct >= 110) return ['Above target under assumptions', `Under these assumptions, your projected retirement assets are about ${rounded}% of the modelled target.`];
+    if (pct >= 100) return ['Target funded under assumptions', `Under these assumptions, your projected retirement assets cover about ${rounded}% of the modelled target.`];
+    if (pct >= 75) return ['Most of the target is funded', `Under these assumptions, your projected retirement assets cover about ${rounded}% of the modelled target.`];
+    if (pct >= 50) return ['Partly funded', `Under these assumptions, your projected retirement assets cover about ${rounded}% of the modelled target.`];
+    return ['Funding gap to address', `Under these assumptions, your projected retirement assets cover about ${rounded}% of the modelled target.`];
   }
 
   function expenseRuleSummary(exp, s) {
@@ -474,6 +489,50 @@
     }).join('');
   }
 
+  function renderPlanInsights(r) {
+    const s = r.s;
+    const lifestyleEl = $('insightLifestyle');
+    const lifestyleNote = $('insightLifestyleNote');
+    const runwayEl = $('insightRunway');
+    const runwayNote = $('insightRunwayNote');
+    const contributionEl = $('insightContribution');
+    const contributionNote = $('insightContributionNote');
+    const expenseEl = $('insightExpense');
+    const expenseNote = $('insightExpenseNote');
+    if (!lifestyleEl || !runwayEl || !contributionEl || !expenseEl) return;
+
+    const lifestylePct = r.currentTodayExpense > 0 ? ((r.retirementLifestyleToday / r.currentTodayExpense) - 1) * 100 : 0;
+    if (Math.abs(lifestylePct) < 1) lifestyleEl.textContent = 'About the same';
+    else lifestyleEl.textContent = `${Math.abs(lifestylePct).toFixed(0)}% ${lifestylePct < 0 ? 'lower' : 'higher'}`;
+    lifestyleNote.textContent = `${formatINR(r.currentTodayExpense)}/mo today → ${formatINR(r.retirementLifestyleToday)}/mo at retirement in today's purchasing power.`;
+
+    if (r.projectedDepletionAge !== null && r.projectedDepletionAge < s.planningAge - 0.05) {
+      runwayEl.textContent = `Around age ${Math.max(s.retirementAge, r.projectedDepletionAge).toFixed(0)}`;
+      runwayNote.textContent = 'Illustrative age at which the portfolio from your current savings plan may reach ₹0 under the entered assumptions.';
+    } else {
+      runwayEl.textContent = `Through age ${Math.round(s.planningAge)}`;
+      runwayNote.textContent = 'The projected current-plan portfolio does not reach ₹0 before the selected plan-through age under these assumptions.';
+    }
+
+    if (r.extraMonthlyNeeded > 1) {
+      contributionEl.textContent = `+${formatINR(r.extraMonthlyNeeded)}/mo`;
+      contributionNote.textContent = `On top of your current ${formatINR(s.currentMonthlyInvestment)}/mo retirement investment, under these assumptions.`;
+    } else {
+      contributionEl.textContent = 'No increase indicated';
+      contributionNote.textContent = 'Your current monthly retirement investment is sufficient for the modelled target under these assumptions.';
+    }
+
+    if (s.mode === 'detailed' && r.expenseChanges.length) {
+      const biggest = r.expenseChanges.reduce((best, x) => Math.abs(x.change) > Math.abs(best.change) ? x : best, r.expenseChanges[0]);
+      const sign = biggest.change > 0 ? '+' : biggest.change < 0 ? '−' : '';
+      expenseEl.textContent = Math.abs(biggest.change) < 1 ? 'No major change' : `${biggest.name}: ${sign}${formatINR(Math.abs(biggest.change))}/mo`;
+      expenseNote.textContent = expenseRuleSummary(biggest, s);
+    } else {
+      expenseEl.textContent = `${s.quickRetirementPct.toFixed(0)}% retained`;
+      expenseNote.textContent = 'Quick Estimate applies one retirement-spending percentage to the household total.';
+    }
+  }
+
   function renderResult(r) {
     const s = r.s;
     $('yearsToRetire').textContent = (s.retirementAge - s.currentAge).toFixed(0);
@@ -534,12 +593,16 @@
     $('breakdownBuffer').textContent = formatINR(r.safetyBufferAmount, true);
     $('breakdownTotal').textContent = formatINR(r.requiredCorpus, true);
     renderExpenseChanges(r);
+    renderPlanInsights(r);
 
     renderLineChart($('expenseChart'), r.expensePoints, {
-      retirementAge: s.retirementAge, valueFormatter: v => formatINR(v, true), yLabel: 'Monthly spending'
+      retirementAge: s.retirementAge, valueFormatter: v => formatINR(v, true), yLabel: 'Monthly spending',
+      primaryLabel: 'Monthly spending', interactive: true
     });
     renderLineChart($('portfolioChart'), r.portfolioPoints, {
-      retirementAge: null, valueFormatter: v => formatINR(v, true), yLabel: 'Portfolio'
+      retirementAge: null, valueFormatter: v => formatINR(v, true), yLabel: 'Portfolio',
+      primaryLabel: 'Target-funded path', compareLabel: 'Current-plan path', comparePoints: r.currentPortfolioPoints, interactive: true,
+      primaryColor: '#123f5f', compareColor: '#0e827a'
     });
     $('expenseChartCaption').textContent = s.mode === 'detailed' ? 'Shows the full expense path, including costs that continue, change, start or end' : 'Quick mode applies your chosen retirement spending percentage';
     renderScenarios(s);
@@ -547,18 +610,22 @@
   }
 
   function renderLineChart(container, points, opts = {}) {
-    if (!points || points.length < 2 || points.some(p => !Number.isFinite(p.value))) {
+    const comparePoints = Array.isArray(opts.comparePoints) ? opts.comparePoints : [];
+    const allPoints = [...(points || []), ...comparePoints];
+    if (!points || points.length < 2 || allPoints.some(p => !Number.isFinite(p.value) || !Number.isFinite(p.age))) {
       container.innerHTML = '<div class="chart-empty">Not enough valid data to draw this chart.</div>';
       return;
     }
-    const W = 720, H = 280, L = 62, R = 18, T = 18, B = 48;
-    const xs = points.map(p => p.age), ys = points.map(p => Math.max(0, p.value));
+    const W = 720, H = 280, L = 62, R = 18, T = comparePoints.length ? 38 : 18, B = 48;
+    const xs = allPoints.map(p => p.age), ys = allPoints.map(p => Math.max(0, p.value));
     const minX = Math.min(...xs), maxX = Math.max(...xs);
     const maxYRaw = Math.max(...ys, 1);
     const maxY = maxYRaw * 1.08;
     const x = v => L + (v - minX) / Math.max(1e-9, maxX - minX) * (W - L - R);
     const y = v => T + (1 - Math.max(0,v) / maxY) * (H - T - B);
-    const poly = points.map(p => `${x(p.age).toFixed(1)},${y(p.value).toFixed(1)}`).join(' ');
+    const polyline = list => list.map(p => `${x(p.age).toFixed(1)},${y(p.value).toFixed(1)}`).join(' ');
+    const primaryColor = opts.primaryColor || '#0e827a';
+    const compareColor = opts.compareColor || '#d8a83b';
     const retirementLine = opts.retirementAge && opts.retirementAge > minX && opts.retirementAge < maxX
       ? `<line x1="${x(opts.retirementAge)}" y1="${T}" x2="${x(opts.retirementAge)}" y2="${H-B}" stroke="#d8a83b" stroke-width="1.5" stroke-dasharray="5 5"/><text x="${x(opts.retirementAge)+5}" y="${T+13}" font-size="11" fill="#856112">Retire ${opts.retirementAge}</text>` : '';
     const tickValues = [0, maxY/2, maxY];
@@ -567,14 +634,60 @@
       ? [minX, opts.retirementAge, maxX]
       : [minX, (minX + maxX) / 2, maxX];
     const xTicks = [...new Set(xTickValues.map(v => Math.round(v)))].map(v => `<text x="${x(v)}" y="${H-19}" text-anchor="middle" font-size="10" fill="#748292">Age ${Math.round(v)}</text>`).join('');
-    container.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="presentation" aria-hidden="true">
-      ${yGrid}${retirementLine}
-      <polyline fill="none" stroke="#0e827a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" points="${poly}"/>
-      <circle cx="${x(points[0].age)}" cy="${y(points[0].value)}" r="4" fill="#0e827a"/>
-      <circle cx="${x(points[points.length-1].age)}" cy="${y(points[points.length-1].value)}" r="4" fill="#0e827a"/>
+    const legend = comparePoints.length ? `<g font-size="10" fill="#536276">
+      <line x1="${L}" y1="15" x2="${L+22}" y2="15" stroke="${primaryColor}" stroke-width="4"/><text x="${L+28}" y="19">${escapeXml(opts.primaryLabel || 'Target')}</text>
+      <line x1="${L+180}" y1="15" x2="${L+202}" y2="15" stroke="${compareColor}" stroke-width="4"/><text x="${L+208}" y="19">${escapeXml(opts.compareLabel || 'Comparison')}</text>
+    </g>` : '';
+    const comparePolyline = comparePoints.length ? `<polyline fill="none" stroke="${compareColor}" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round" points="${polyline(comparePoints)}"/>` : '';
+    const tooltip = opts.interactive === false ? '' : '<div class="chart-tooltip" aria-hidden="true"></div>';
+    container.innerHTML = `${tooltip}<svg viewBox="0 0 ${W} ${H}" role="presentation" aria-hidden="true">
+      ${legend}${yGrid}${retirementLine}
+      <polyline fill="none" stroke="${primaryColor}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" points="${polyline(points)}"/>
+      ${comparePolyline}
+      <circle cx="${x(points[0].age)}" cy="${y(points[0].value)}" r="4" fill="${primaryColor}"/>
+      <circle cx="${x(points[points.length-1].age)}" cy="${y(points[points.length-1].value)}" r="4" fill="${primaryColor}"/>
       ${xTicks}
       <text x="${L}" y="${H-3}" font-size="10" fill="#8995a2">${escapeXml(opts.yLabel || '')}</text>
+      <line class="chart-hover-line" x1="0" y1="${T}" x2="0" y2="${H-B}" stroke="#9aa7b4" stroke-width="1" stroke-dasharray="3 3" visibility="hidden"/>
+      <circle class="chart-hover-dot chart-hover-primary" cx="0" cy="0" r="5" fill="${primaryColor}" stroke="#fff" stroke-width="2" visibility="hidden"/>
+      ${comparePoints.length ? `<circle class="chart-hover-dot chart-hover-compare" cx="0" cy="0" r="5" fill="${compareColor}" stroke="#fff" stroke-width="2" visibility="hidden"/>` : ''}
     </svg>`;
+
+    if (opts.interactive === false) return;
+    const svg = container.querySelector('svg');
+    const tip = container.querySelector('.chart-tooltip');
+    if (!svg || !tip) return;
+    const hoverLine = svg.querySelector('.chart-hover-line');
+    const primaryDot = svg.querySelector('.chart-hover-primary');
+    const compareDot = svg.querySelector('.chart-hover-compare');
+    const nearest = (list, age) => list.reduce((best, p) => Math.abs(p.age - age) < Math.abs(best.age - age) ? p : best, list[0]);
+    const hide = () => {
+      tip.classList.remove('visible');
+      hoverLine?.setAttribute('visibility','hidden');
+      primaryDot?.setAttribute('visibility','hidden');
+      compareDot?.setAttribute('visibility','hidden');
+    };
+    const show = (event) => {
+      const rect = svg.getBoundingClientRect();
+      if (!rect.width) return;
+      const pointerX = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
+      const viewX = pointerX / rect.width * W;
+      const age = minX + (viewX - L) / Math.max(1e-9, W - L - R) * (maxX - minX);
+      const p1 = nearest(points, age);
+      const p2 = comparePoints.length ? nearest(comparePoints, p1.age) : null;
+      const cx = x(p1.age);
+      hoverLine?.setAttribute('x1', cx); hoverLine?.setAttribute('x2', cx); hoverLine?.setAttribute('visibility','visible');
+      primaryDot?.setAttribute('cx', cx); primaryDot?.setAttribute('cy', y(p1.value)); primaryDot?.setAttribute('visibility','visible');
+      if (p2 && compareDot) { compareDot.setAttribute('cx', x(p2.age)); compareDot.setAttribute('cy', y(p2.value)); compareDot.setAttribute('visibility','visible'); }
+      const fmt = opts.valueFormatter || (v => String(Math.round(v)));
+      tip.innerHTML = `<strong>Age ${Math.round(p1.age)}</strong><span>${escapeXml(opts.primaryLabel || opts.yLabel || 'Value')}: ${escapeXml(fmt(p1.value))}</span>${p2 ? `<span>${escapeXml(opts.compareLabel || 'Comparison')}: ${escapeXml(fmt(p2.value))}</span>` : ''}`;
+      const left = Math.min(container.clientWidth - 190, Math.max(8, event.clientX - container.getBoundingClientRect().left + 12));
+      const top = Math.max(8, event.clientY - container.getBoundingClientRect().top - 54);
+      tip.style.left = `${left}px`; tip.style.top = `${top}px`; tip.classList.add('visible');
+    };
+    svg.addEventListener('pointermove', show);
+    svg.addEventListener('pointerdown', show);
+    svg.addEventListener('pointerleave', hide);
   }
 
   function escapeXml(s) { return String(s).replace(/[<>&'\"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[c])); }
@@ -671,6 +784,7 @@
       ['Funding gap', r.gap > 0 ? formatINR(r.gap) : 'No gap under assumptions'],
       ['Total monthly investment indicated', formatINR(r.totalMonthlyNeeded)],
       ['Additional monthly investment indicated', r.extraMonthlyNeeded > 1 ? formatINR(r.extraMonthlyNeeded) : '₹0 under assumptions'],
+      ['Modelled current-plan runway', r.projectedDepletionAge !== null && r.projectedDepletionAge < s.planningAge - 0.05 ? `Around age ${Math.max(s.retirementAge, r.projectedDepletionAge).toFixed(0)}` : `Through age ${Math.round(s.planningAge)}`],
     ].map(([a,b]) => reportRow(a,b)).join('');
 
     const changesBlock = $('reportExpenseChangesBlock');
@@ -698,10 +812,13 @@
     </tr>`).join('');
 
     renderLineChart($('reportExpenseChart'), r.expensePoints, {
-      retirementAge: s.retirementAge, valueFormatter: v => formatINR(v, true), yLabel: 'Monthly spending'
+      retirementAge: s.retirementAge, valueFormatter: v => formatINR(v, true), yLabel: 'Monthly spending',
+      primaryLabel: 'Monthly spending', interactive: false
     });
     renderLineChart($('reportPortfolioChart'), r.portfolioPoints, {
-      retirementAge: null, valueFormatter: v => formatINR(v, true), yLabel: 'Portfolio'
+      retirementAge: null, valueFormatter: v => formatINR(v, true), yLabel: 'Portfolio',
+      primaryLabel: 'Target-funded path', compareLabel: 'Current-plan path', comparePoints: r.currentPortfolioPoints, interactive: false,
+      primaryColor: '#123f5f', compareColor: '#0e827a'
     });
   }
 
@@ -753,6 +870,29 @@
     $('saveStatus').textContent = '';
   }
 
+  async function copyTextToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      try { await navigator.clipboard.writeText(text); return true; } catch (_) { /* fall through */ }
+    }
+    try {
+      const area = document.createElement('textarea');
+      area.value = text;
+      area.setAttribute('readonly','');
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      document.body.appendChild(area);
+      area.select();
+      const ok = document.execCommand('copy');
+      area.remove();
+      return ok;
+    } catch (_) { return false; }
+  }
+
+  function preparePrintReport() {
+    if (!lastResult) return;
+    buildPrintReport(lastResult);
+  }
+
   function bindEvents() {
     $('quickModeBtn').addEventListener('click', () => setMode('quick'));
     $('detailedModeBtn').addEventListener('click', () => setMode('detailed'));
@@ -794,6 +934,7 @@
         `Projected funding: ${funded}%`,
         `Total monthly investment required: ${formatINR(r.totalMonthlyNeeded)}`,
         `Additional monthly investment vs current plan: ${extraText}`,
+        `Modelled current-plan runway: ${r.projectedDepletionAge !== null && r.projectedDepletionAge < r.s.planningAge - 0.05 ? `around age ${Math.max(r.s.retirementAge, r.projectedDepletionAge).toFixed(0)}` : `through age ${Math.round(r.s.planningAge)}`}`,
         '',
         `Today's monthly spending: ${formatINR(r.currentTodayExpense)}/mo`,
         `Retirement lifestyle in today's ₹: ${formatINR(r.retirementLifestyleToday)}/mo`,
@@ -802,19 +943,35 @@
         'Educational planning estimate only. Results depend on the assumptions entered and actual outcomes may differ.',
         'carrowmont.com'
       ].join('\n');
-      try { await navigator.clipboard.writeText(text); $('copyStatus').textContent = 'Carrowmont summary copied.'; }
-      catch (_) { $('copyStatus').textContent = 'Copy is unavailable in this browser.'; }
+      const copied = await copyTextToClipboard(text);
+      $('copyStatus').textContent = copied ? 'Carrowmont summary copied.' : 'Copy is unavailable in this browser. Select the summary manually instead.';
     });
 
     $('printBtn').addEventListener('click', () => {
       if (!lastResult) return;
-      buildPrintReport(lastResult);
+      preparePrintReport();
       const originalTitle = document.title;
       document.title = `Carrowmont Retirement Planning Report - Age ${Math.round(lastResult.s.retirementAge)}`;
-      const restoreTitle = () => { document.title = originalTitle; window.removeEventListener('afterprint', restoreTitle); };
+      const status = $('reportStatus');
+      if (status) status.textContent = 'Preparing the print-ready report…';
+      let finished = false;
+      const restoreTitle = () => {
+        finished = true;
+        document.title = originalTitle;
+        if (status) status.textContent = '';
+        window.removeEventListener('afterprint', restoreTitle);
+      };
       window.addEventListener('afterprint', restoreTitle);
-      window.print();
-      setTimeout(() => { if (document.title !== originalTitle) document.title = originalTitle; }, 2000);
+      // Edge can ignore window.print() if it is called immediately after a large DOM update.
+      // Two animation frames give the browser time to lay out the print-only report first.
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        window.focus();
+        try { window.print(); } catch (_) { /* browser fallback message below */ }
+        setTimeout(() => {
+          if (!finished && status) status.textContent = 'If the print dialog did not open, press Ctrl+P (or Cmd+P) — the Carrowmont report is already prepared.';
+          if (document.title !== originalTitle) document.title = originalTitle;
+        }, 1200);
+      }));
     });
     $('savePlanBtn').addEventListener('click', () => {
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(serializePlan())); $('saveStatus').textContent = 'Plan saved in this browser.'; }
@@ -837,6 +994,7 @@
     bindEvents();
     setMode(DEFAULTS.mode, false);
     const legacyYear = $('year'); if (legacyYear) legacyYear.textContent = new Date().getFullYear();
+    window.addEventListener('beforeprint', preparePrintReport);
     calculateAndRender();
   }
 

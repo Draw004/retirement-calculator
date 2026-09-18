@@ -13,7 +13,7 @@
   <meta property="og:url" content="https://draw004.github.io/retirement-calculator/planner.html" />
   <link rel="canonical" href="https://draw004.github.io/retirement-calculator/planner.html" />
   <!-- SEARCH CONSOLE: paste Google's verification meta tag here after creating your Search Console property. -->
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=2.2.6" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -32,7 +32,7 @@
       <a class="brand" href="index.html" aria-label="RetireWise home">
         <span class="brand-mark">R</span>
         <span>RetireWise</span>
-        <span class="version-badge">V2.2.5</span>
+        <span class="version-badge">V2.2.6</span>
       </a>
       <nav class="top-nav" aria-label="Primary navigation">
         <a href="planner.html">Planner</a>
@@ -109,7 +109,7 @@
             <button type="button" id="detailedModeBtn" class="mode-button" data-mode="detailed">Detailed planner</button>
           </div>
           <p class="mode-help" id="modeHelp">Fast estimate: one retirement-spending percentage and one inflation rate are applied to your household total.</p>
-          <div class="mode-comparison-note"><strong>Why the numbers can differ:</strong> Quick Estimate is intentionally broad. Detailed Planner uses category-specific inflation, expenses that start/end/change, retirement income and lifestyle phases, so its corpus is not expected to match Quick Estimate.</div>
+          <div class="mode-comparison-note"><strong>Why the numbers can differ:</strong> Quick Estimate is intentionally simplified. It applies one retirement-spending percentage and one inflation rate to your household total. Detailed Planner models categories separately, including different inflation rates, expenses that start/end/change, retirement income and lifestyle phases, so the results may differ.</div>
 
           <section class="form-section">
             <div class="section-title-row">
@@ -299,7 +299,8 @@
             <button class="share-button primary-action" id="printBtn" type="button">Generate retirement report</button>
           </div>
           <div class="copy-status" id="copyStatus" aria-live="polite"></div>
-          <p class="report-action-hint no-print">The report opens in your browser print dialog. Choose <strong>Save as PDF</strong> to keep a PDF copy.</p>
+          <div class="copy-status" id="reportStatus" aria-live="polite"></div>
+          <p class="report-action-hint no-print">The report opens in your browser print dialog. Choose <strong>Save as PDF</strong>. For a cleaner PDF, open <strong>More settings</strong> and turn off <strong>Headers and footers</strong>.</p>
           <p class="disclaimer">Illustrative planning tool only. Results depend on your assumptions and do not predict actual inflation, investment returns, taxes, longevity, healthcare costs or market sequence. This is not investment, tax or legal advice.</p>
         </aside>
       </div>
@@ -342,9 +343,20 @@
             <div id="expenseChart" class="chart" role="img" aria-label="Household expense timeline chart"></div>
           </article>
           <article class="chart-card">
-            <div class="chart-title"><h3>Retirement portfolio path</h3><span>Includes your safety buffer; a remaining balance at the final age is possible</span></div>
-            <div id="portfolioChart" class="chart" role="img" aria-label="Retirement portfolio chart"></div>
+            <div class="chart-title"><h3>Retirement portfolio paths</h3><span>Compare the modelled target with your current savings plan</span></div>
+            <div id="portfolioChart" class="chart" role="img" aria-label="Retirement portfolio comparison chart"></div>
+            <p class="chart-footnote" id="portfolioChartCaption">Target path starts with the modelled required corpus. Current-plan path starts with your projected corpus at retirement.</p>
           </article>
+        </div>
+
+        <div class="insight-card">
+          <div class="scenario-heading"><div><span class="section-kicker">Plan insights</span><h2>What the numbers are telling you</h2></div><p>Illustrative observations from your current assumptions.</p></div>
+          <div class="insight-grid">
+            <article><span>Retirement lifestyle shift</span><strong id="insightLifestyle">—</strong><small id="insightLifestyleNote">Compared with today's listed spending.</small></article>
+            <article><span>Current-plan runway</span><strong id="insightRunway">—</strong><small id="insightRunwayNote">Based on your projected retirement corpus and modelled withdrawals.</small></article>
+            <article><span>Contribution adjustment</span><strong id="insightContribution">—</strong><small id="insightContributionNote">Additional monthly investment indicated under these assumptions.</small></article>
+            <article><span>Largest expense change</span><strong id="insightExpense">—</strong><small id="insightExpenseNote">The biggest category-level shift in today's purchasing power.</small></article>
+          </div>
         </div>
 
         <div class="scenario-card">
@@ -421,6 +433,14 @@
           <p class="report-explainer">Today's ₹ shows comparable purchasing power. Future ₹ shows the estimated nominal amount at the selected retirement age after applying the inflation assumptions entered in the planner.</p>
         </section>
 
+        <section class="report-block">
+          <h2>Retirement-age comparison</h2>
+          <table class="report-table report-scenario-table">
+            <thead><tr><th>Retirement age</th><th>Corpus needed</th><th>Monthly investment</th><th>Projected funding</th></tr></thead>
+            <tbody id="reportScenarios"></tbody>
+          </table>
+        </section>
+
         <section class="report-block report-page-break-before" id="reportExpenseChangesBlock">
           <div class="report-section-heading">
             <div><span class="report-eyebrow">Expense-by-expense</span><h2>Retirement expense breakdown</h2></div>
@@ -432,20 +452,12 @@
           </table>
         </section>
 
-        <section class="report-block">
-          <h2>Retirement-age comparison</h2>
-          <table class="report-table report-scenario-table">
-            <thead><tr><th>Retirement age</th><th>Corpus needed</th><th>Monthly investment</th><th>Projected funding</th></tr></thead>
-            <tbody id="reportScenarios"></tbody>
-          </table>
-        </section>
-
         <section class="report-block report-chart-block report-page-break-before">
           <h2>Retirement cash-flow visuals</h2>
-          <p class="report-chart-intro">These charts show how spending and the modelled retirement portfolio evolve under the assumptions entered.</p>
+          <p class="report-chart-intro">These charts show how spending evolves and compare the modelled target-funded portfolio path with the portfolio implied by your current savings plan.</p>
           <h3>Household expense timeline</h3>
           <div id="reportExpenseChart" class="report-chart"></div>
-          <h3 class="report-chart-second-title">Retirement portfolio path</h3>
+          <h3 class="report-chart-second-title">Retirement portfolio paths</h3>
           <div id="reportPortfolioChart" class="report-chart"></div>
         </section>
 
@@ -502,7 +514,7 @@
       <div class="footer-brand-block">
         <a class="brand footer-brand" href="index.html"><span class="brand-mark">R</span><span>RetireWise</span></a>
         <p>A transparent retirement-planning tool built around the expenses and income your future life may actually have.</p>
-        <span class="footer-small">Educational planning tool · Version 2.2.3</span>
+        <span class="footer-small">Educational planning tool · Version 2.2.6</span>
       </div>
       <div><strong>Product</strong><a href="planner.html">Retirement Planner</a><a href="how-it-works.html">How it works</a><a href="faq.html">FAQ</a></div>
       <div><strong>Trust</strong><a href="methodology.html">Methodology</a><a href="disclaimer.html">Financial disclaimer</a><a href="privacy.html">Privacy</a></div>
@@ -512,8 +524,8 @@
   </footer>
 
 
-  <script src="site-config.js"></script>
-  <script src="site.js"></script>
-  <script src="app.js"></script>
+  <script src="site-config.js?v=2.2.6"></script>
+  <script src="site.js?v=2.2.6"></script>
+  <script src="app.js?v=2.2.6"></script>
 </body>
 </html>
