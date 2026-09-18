@@ -2,7 +2,7 @@
   document.querySelectorAll('[data-current-year]').forEach(el => { el.textContent = String(new Date().getFullYear()); });
 
   // Optional Google Analytics loader. It does nothing while the ID is blank.
-  const id = window.RETIREWISE_CONFIG && window.RETIREWISE_CONFIG.GA_MEASUREMENT_ID;
+  const id = window.CARROWMONT_RETIREMENT_CONFIG && window.CARROWMONT_RETIREMENT_CONFIG.GA_MEASUREMENT_ID;
   if (id && /^G-[A-Z0-9]+$/i.test(id)) {
     const script = document.createElement('script');
     script.async = true;

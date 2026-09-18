@@ -3,7 +3,8 @@
 
   const $ = (id) => document.getElementById(id);
   const qsa = (selector, root = document) => Array.from(root.querySelectorAll(selector));
-  const STORAGE_KEY = 'retirewise-v2-plan';
+  const STORAGE_KEY = 'carrowmont-retirement-plan-v1';
+  const LEGACY_STORAGE_KEY = 'retirewise-v2-plan';
 
   const DEFAULTS = {
     mode: 'quick',
@@ -599,11 +600,15 @@
       retirementAge: s.retirementAge, valueFormatter: v => formatINR(v, true), yLabel: 'Monthly spending',
       primaryLabel: 'Monthly spending', interactive: true
     });
+    const depletionMarker = r.projectedDepletionAge !== null && r.projectedDepletionAge < s.planningAge - 0.05
+      ? [{ age: Math.max(s.retirementAge, r.projectedDepletionAge), label: `Current plan ₹0 ~${Math.max(s.retirementAge, r.projectedDepletionAge).toFixed(0)}`, color: '#b93838' }]
+      : [];
     renderLineChart($('portfolioChart'), r.portfolioPoints, {
       retirementAge: null, valueFormatter: v => formatINR(v, true), yLabel: 'Portfolio',
       primaryLabel: 'Target-funded path', compareLabel: 'Current-plan path', comparePoints: r.currentPortfolioPoints, interactive: true,
-      primaryColor: '#123f5f', compareColor: '#0e827a'
+      primaryColor: '#123f5f', compareColor: '#0e827a', verticalMarkers: depletionMarker
     });
+    $('portfolioChartCaption').textContent = `Target-funded path includes your ${s.bufferRate.toFixed(0)}% safety buffer (${formatINR(r.safetyBufferAmount, true)}). Any unused reserve remains invested and may continue to grow, so that path may finish above ₹0. Current-plan path starts with your projected corpus at retirement${depletionMarker.length ? `; the red marker shows the modelled depletion age around ${Math.round(depletionMarker[0].age)}.` : ' and does not reach ₹0 before the selected planning age.'}`;
     $('expenseChartCaption').textContent = s.mode === 'detailed' ? 'Shows the full expense path, including costs that continue, change, start or end' : 'Quick mode applies your chosen retirement spending percentage';
     renderScenarios(s);
     buildPrintReport(r);
@@ -628,6 +633,16 @@
     const compareColor = opts.compareColor || '#d8a83b';
     const retirementLine = opts.retirementAge && opts.retirementAge > minX && opts.retirementAge < maxX
       ? `<line x1="${x(opts.retirementAge)}" y1="${T}" x2="${x(opts.retirementAge)}" y2="${H-B}" stroke="#d8a83b" stroke-width="1.5" stroke-dasharray="5 5"/><text x="${x(opts.retirementAge)+5}" y="${T+13}" font-size="11" fill="#856112">Retire ${opts.retirementAge}</text>` : '';
+    const verticalMarkers = Array.isArray(opts.verticalMarkers) ? opts.verticalMarkers.filter(m => Number.isFinite(m.age) && m.age > minX && m.age < maxX) : [];
+    const markerLines = verticalMarkers.map((m, idx) => {
+      const mx = x(m.age);
+      const color = m.color || '#b93838';
+      const nearRight = mx > W - 185;
+      const tx = nearRight ? mx - 5 : mx + 5;
+      const anchor = nearRight ? 'end' : 'start';
+      const ty = T + 13 + idx * 14;
+      return `<line x1="${mx}" y1="${T}" x2="${mx}" y2="${H-B}" stroke="${color}" stroke-width="1.5" stroke-dasharray="4 4"/><text x="${tx}" y="${ty}" text-anchor="${anchor}" font-size="10" font-weight="700" fill="${color}">${escapeXml(m.label || `Age ${Math.round(m.age)}`)}</text>`;
+    }).join('');
     const tickValues = [0, maxY/2, maxY];
     const yGrid = tickValues.map(v => `<line x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}" stroke="#e7edf1"/><text x="${L-7}" y="${y(v)+4}" text-anchor="end" font-size="10" fill="#748292">${escapeXml(opts.valueFormatter ? opts.valueFormatter(v) : String(Math.round(v)))}</text>`).join('');
     const xTickValues = opts.retirementAge && opts.retirementAge > minX && opts.retirementAge < maxX
@@ -641,7 +656,7 @@
     const comparePolyline = comparePoints.length ? `<polyline fill="none" stroke="${compareColor}" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round" points="${polyline(comparePoints)}"/>` : '';
     const tooltip = opts.interactive === false ? '' : '<div class="chart-tooltip" aria-hidden="true"></div>';
     container.innerHTML = `${tooltip}<svg viewBox="0 0 ${W} ${H}" role="presentation" aria-hidden="true">
-      ${legend}${yGrid}${retirementLine}
+      ${legend}${yGrid}${retirementLine}${markerLines}
       <polyline fill="none" stroke="${primaryColor}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" points="${polyline(points)}"/>
       ${comparePolyline}
       <circle cx="${x(points[0].age)}" cy="${y(points[0].value)}" r="4" fill="${primaryColor}"/>
@@ -702,8 +717,9 @@
 
   function renderScenarios(s) {
     const grid = $('scenarioGrid');
+    const scenarios = scenarioResults(s);
     grid.innerHTML = '';
-    for (const { age, result: scenario } of scenarioResults(s)) {
+    for (const { age, result: scenario } of scenarios) {
       const current = age === Math.round(s.retirementAge);
       const card = document.createElement('article');
       card.className = `scenario-item ${current ? 'current' : ''}`;
@@ -717,6 +733,18 @@
         </dl>
         ${current ? '<span class="current-scenario-note">Your selected retirement age</span>' : `<button type="button" class="scenario-use-button no-print" data-retirement-age="${age}">Use age ${age}</button>`}`;
       grid.appendChild(card);
+    }
+    const takeaway = $('scenarioTakeaway');
+    if (takeaway) {
+      const current = scenarios.find(x => x.age === Math.round(s.retirementAge));
+      const later = scenarios.filter(x => x.age > Math.round(s.retirementAge)).sort((a,b) => a.age - b.age)[0];
+      if (current && later) {
+        const monthlyReduction = current.result.totalMonthlyNeeded - later.result.totalMonthlyNeeded;
+        const corpusChange = later.result.requiredCorpus - current.result.requiredCorpus;
+        takeaway.innerHTML = `<span>One lever to explore</span><strong>Model retirement at age ${later.age}</strong><p>Under the same assumptions, the modelled total monthly investment changes from <b>${escapeXml(formatINR(current.result.totalMonthlyNeeded))}/mo</b> to <b>${escapeXml(formatINR(later.result.totalMonthlyNeeded))}/mo</b>${monthlyReduction > 0 ? ` — about <b>${escapeXml(formatINR(monthlyReduction))}/mo lower</b>` : ''}. The nominal corpus at retirement ${corpusChange >= 0 ? 'rises' : 'falls'} by about ${escapeXml(formatINR(Math.abs(corpusChange), true))} because each corpus is shown in future rupees at its own retirement date. This is a scenario comparison, not a recommendation.</p>`;
+      } else {
+        takeaway.innerHTML = '<span>One lever to explore</span><strong>Change the retirement age</strong><p>Use the comparison cards above to see how a different retirement date changes the years available to save, required monthly investment and nominal corpus.</p>';
+      }
     }
   }
 
@@ -815,11 +843,16 @@
       retirementAge: s.retirementAge, valueFormatter: v => formatINR(v, true), yLabel: 'Monthly spending',
       primaryLabel: 'Monthly spending', interactive: false
     });
+    const reportDepletionMarkers = r.projectedDepletionAge !== null && r.projectedDepletionAge < s.planningAge - 0.05
+      ? [{ age: Math.max(s.retirementAge, r.projectedDepletionAge), label: `Current plan ₹0 ~${Math.max(s.retirementAge, r.projectedDepletionAge).toFixed(0)}`, color: '#b93838' }]
+      : [];
     renderLineChart($('reportPortfolioChart'), r.portfolioPoints, {
       retirementAge: null, valueFormatter: v => formatINR(v, true), yLabel: 'Portfolio',
       primaryLabel: 'Target-funded path', compareLabel: 'Current-plan path', comparePoints: r.currentPortfolioPoints, interactive: false,
-      primaryColor: '#123f5f', compareColor: '#0e827a'
+      primaryColor: '#123f5f', compareColor: '#0e827a', verticalMarkers: reportDepletionMarkers
     });
+    const reportPortfolioNote = $('reportPortfolioChartNote');
+    if (reportPortfolioNote) reportPortfolioNote.textContent = `The target-funded path includes the selected ${s.bufferRate.toFixed(0)}% safety buffer (${formatINR(r.safetyBufferAmount, true)}). Any unused reserve remains invested, so the path may finish above ₹0.${reportDepletionMarkers.length ? ` The red marker shows the current-plan path reaching ₹0 around age ${Math.round(reportDepletionMarkers[0].age)} under these assumptions.` : ''}`;
   }
 
   function bindDelegatedRows() {
@@ -979,9 +1012,11 @@
     });
     $('loadPlanBtn').addEventListener('click', () => {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
         if (!raw) { $('saveStatus').textContent = 'No saved plan found on this device.'; return; }
-        applyPlan(JSON.parse(raw)); $('saveStatus').textContent = 'Saved plan loaded.';
+        applyPlan(JSON.parse(raw));
+        try { if (!localStorage.getItem(STORAGE_KEY)) localStorage.setItem(STORAGE_KEY, raw); } catch (_) {}
+        $('saveStatus').textContent = 'Saved plan loaded.';
       } catch (_) { $('saveStatus').textContent = 'The saved plan could not be loaded.'; }
     });
   }

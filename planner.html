@@ -3,22 +3,22 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RetireWise Planner | Detailed Retirement Calculator India</title>
+  <title>Carrowmont Retirement Planner | Detailed Retirement Calculator India</title>
   <meta name="description" content="Calculate a retirement corpus using expenses that can end, rise or change, plus pension income, future goals, inflation and investment returns." />
   <meta name="robots" content="index,follow" />
   <meta name="theme-color" content="#0e827a" />
-  <meta property="og:title" content="RetireWise - Smart Retirement Planner" />
+  <meta property="og:title" content="Carrowmont Retirement Planner | Smart Retirement Planning" />
   <meta property="og:description" content="A retirement planner that understands your expenses change after retirement." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://draw004.github.io/retirement-calculator/planner.html" />
-  <link rel="canonical" href="https://draw004.github.io/retirement-calculator/planner.html" />
+  <meta property="og:url" content="https://carrowmont.com/retirement-calculator/planner.html" />
+  <link rel="canonical" href="https://carrowmont.com/retirement-calculator/planner.html" />
   <!-- SEARCH CONSOLE: paste Google's verification meta tag here after creating your Search Console property. -->
-  <link rel="stylesheet" href="styles.css?v=2.2.6" />
+  <link rel="stylesheet" href="styles.css?v=2.3.0" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "RetireWise Smart Retirement Planner",
+    "name": "Carrowmont Retirement Planner",
     "applicationCategory": "FinanceApplication",
     "operatingSystem": "Any",
     "description": "A retirement planning calculator that models changing expenses, retirement income, inflation, one-time goals and portfolio withdrawals."
@@ -29,27 +29,31 @@
 
   <header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="index.html" aria-label="RetireWise home">
-        <span class="brand-mark">R</span>
-        <span>RetireWise</span>
-        <span class="version-badge">V2.2.6</span>
-      </a>
+      <div class="brand-cluster">
+        <a class="brand carrowmont-brand" href="/" aria-label="Carrowmont home">
+          <span class="brand-wordmark">CARROWMONT</span>
+        </a>
+        <span class="brand-divider" aria-hidden="true"></span>
+        <a class="product-label" href="index.html">Retirement Planner</a>
+      </div>
       <nav class="top-nav" aria-label="Primary navigation">
         <a href="planner.html">Planner</a>
         <a href="how-it-works.html">How it works</a>
         <a href="methodology.html">Methodology</a>
-        <a href="about.html">About</a>
+        <a href="/#tools">All tools</a>
+        <a href="/">Home</a>
       </nav>
       <details class="mobile-nav">
         <summary aria-label="Open navigation">Menu</summary>
         <div class="mobile-nav-links">
-          <a href="index.html">Home</a>
-          <a href="planner.html">Planner</a>
+          <a href="/">Carrowmont home</a>
+          <a href="/#tools">All tools</a>
+          <a href="planner.html">Retirement Planner</a>
           <a href="how-it-works.html">How it works</a>
           <a href="methodology.html">Methodology</a>
           <a href="faq.html">FAQ</a>
-          <a href="about.html">About</a>
-          <a href="contact.html">Contact</a>
+          <a href="/about.html">About Carrowmont</a>
+          <a href="/contact.html">Contact</a>
         </div>
       </details>
     </div>
@@ -57,11 +61,12 @@
 
   <main id="top" class="planner-page">
     <section class="hero planner-hero">
+      <div class="container tool-breadcrumb"><a href="/#tools">← Back to all Carrowmont tools</a><span>Retirement Planner</span></div>
       <div class="container hero-grid">
         <div>
           <span class="eyebrow">Smart retirement planning</span>
           <h1>Your retirement plan should reflect how your expenses actually change.</h1>
-          <p class="hero-copy">School fees, EMIs and commuting may disappear. Healthcare, travel or domestic help may rise. RetireWise models those changes instead of blindly inflating today's total spending.</p>
+          <p class="hero-copy">School fees, EMIs and commuting may disappear. Healthcare, travel or domestic help may rise. The Carrowmont Retirement Planner models those changes instead of blindly inflating today's total spending.</p>
           <div class="hero-points">
             <span>Expense-by-expense planning</span>
             <span>Retirement income offsets</span>
@@ -69,7 +74,7 @@
           </div>
           <a class="hero-cta" href="#planner">Build my retirement plan</a>
         </div>
-        <aside class="hero-card" aria-label="How RetireWise differs">
+        <aside class="hero-card" aria-label="How this planner differs">
           <div class="hero-card-label">Why this is different</div>
           <div class="before-after">
             <div>
@@ -189,7 +194,7 @@
             <div class="section-title-row">
               <div>
                 <span class="form-step">3</span>
-                <div><h3>Expense-by-expense planner</h3><p>Tell RetireWise what really happens to each cost. Amounts are monthly and entered in today's rupees.</p></div>
+                <div><h3>Expense-by-expense planner</h3><p>Tell the planner what really happens to each cost. Amounts are monthly and entered in today's rupees.</p></div>
               </div>
               <button id="addExpenseBtn" class="secondary-button" type="button">+ Add expense</button>
             </div>
@@ -341,11 +346,12 @@
           <article class="chart-card">
             <div class="chart-title"><h3>Household expense timeline</h3><span id="expenseChartCaption">Today's spending through retirement</span></div>
             <div id="expenseChart" class="chart" role="img" aria-label="Household expense timeline chart"></div>
+            <p class="chart-footnote">Future ₹ values: this chart shows projected nominal rupee amounts at each future age. They should not be compared directly with today's ₹ without considering inflation.</p>
           </article>
           <article class="chart-card">
             <div class="chart-title"><h3>Retirement portfolio paths</h3><span>Compare the modelled target with your current savings plan</span></div>
             <div id="portfolioChart" class="chart" role="img" aria-label="Retirement portfolio comparison chart"></div>
-            <p class="chart-footnote" id="portfolioChartCaption">Target path starts with the modelled required corpus. Current-plan path starts with your projected corpus at retirement.</p>
+            <p class="chart-footnote" id="portfolioChartCaption">The target-funded path includes your selected safety buffer. Any unused reserve remains invested and may continue to grow. The current-plan path starts with your projected corpus at retirement.</p>
           </article>
         </div>
 
@@ -363,6 +369,7 @@
           <div class="scenario-heading"><div><span class="section-kicker">What if?</span><h2>Compare retirement ages</h2></div><p>Same assumptions, different retirement date.</p></div>
           <p class="scenario-explainer">Corpus figures are shown in future rupees at each retirement age. A later retirement can therefore show a higher nominal corpus because of inflation, while still requiring a lower monthly investment because you have more years to save.</p>
           <div id="scenarioGrid" class="scenario-grid"></div>
+          <div class="scenario-takeaway" id="scenarioTakeaway" aria-live="polite"></div>
         </div>
       </div>
     </section>
@@ -459,13 +466,14 @@
           <div id="reportExpenseChart" class="report-chart"></div>
           <h3 class="report-chart-second-title">Retirement portfolio paths</h3>
           <div id="reportPortfolioChart" class="report-chart"></div>
+          <p class="report-chart-intro" id="reportPortfolioChartNote">The target-funded path includes the selected safety buffer. Any unused reserve remains invested, so the path may finish above ₹0.</p>
         </section>
 
         <section class="report-notes">
           <h2>Methodology & important information</h2>
           <p>The model estimates the amount needed at retirement by discounting projected month-by-month retirement cash flows using the entered post-retirement return and then applying the selected safety buffer. Detailed mode can also apply category-specific inflation, expense rules, retirement income, one-time goals and lifestyle phases.</p>
           <p>This report is an educational planning illustration based entirely on the information and assumptions entered. It does not predict investment returns, inflation, taxes, healthcare costs, longevity or market conditions. It is not individualized investment, financial, tax, legal, accounting or insurance advice. Actual outcomes can differ materially.</p>
-          <p><strong>Methodology:</strong> carrowmont.com/methodology.html &nbsp; · &nbsp; <strong>Contact:</strong> contact@carrowmont.com</p>
+          <p><strong>Methodology:</strong> carrowmont.com/retirement-calculator/methodology.html &nbsp; · &nbsp; <strong>Contact:</strong> contact@carrowmont.com</p>
         </section>
 
         <div class="report-footer-brand">
@@ -490,7 +498,7 @@
 
     <section class="method-cta-section no-print">
       <div class="container method-cta-card">
-        <div><span class="section-kicker">Want to verify the method?</span><h2>See exactly how RetireWise builds the estimate.</h2><p>The methodology page explains expense rules, inflation, retirement income, one-time goals, present-value calculations and the limitations of constant-return assumptions.</p></div>
+        <div><span class="section-kicker">Want to verify the method?</span><h2>See exactly how the Carrowmont Retirement Planner builds the estimate.</h2><p>The methodology page explains expense rules, inflation, retirement income, one-time goals, present-value calculations and the limitations of constant-return assumptions.</p></div>
         <a class="secondary-link-button" href="methodology.html">Read methodology</a>
       </div>
     </section>
@@ -499,7 +507,7 @@
       <div class="container faq-wrap">
         <span class="section-kicker">FAQ</span><h2>Important questions</h2>
         <details><summary>Why not simply inflate today's household spending?</summary><p>Because many expenses change structurally. Education and loan payments may end, work-related transport can fall, while healthcare or travel can rise. Detailed mode lets you model those changes explicitly.</p></details>
-        <details><summary>What does “today's rupees” mean?</summary><p>For expense categories and one-time goals, enter what the item costs today. RetireWise applies the selected inflation assumption from your current age to the age when the cash flow occurs.</p></details>
+        <details><summary>What does “today's rupees” mean?</summary><p>For expense categories and one-time goals, enter what the item costs today. The planner applies the selected inflation assumption from your current age to the age when the cash flow occurs.</p></details>
         <details><summary>How should I enter a pension?</summary><p>Enter the monthly amount you expect when that income begins and the age it begins. You can also give it an annual increase rate. The calculator does not estimate pension entitlement for you.</p></details>
         <details><summary>What happens if a home loan continues after retirement?</summary><p>Set the expense rule to “Ends at age” and enter the actual expected payoff age. The model will include the payment during the early retirement years until that age.</p></details>
         <details><summary>Does this guarantee that the money will last?</summary><p>No. The model uses constant assumptions. Actual market returns, inflation, taxes, healthcare needs and longevity can differ materially. A future version can add variable-return or Monte Carlo analysis.</p></details>
@@ -512,20 +520,21 @@
   <footer class="site-footer">
     <div class="container footer-grid">
       <div class="footer-brand-block">
-        <a class="brand footer-brand" href="index.html"><span class="brand-mark">R</span><span>RetireWise</span></a>
+        <a class="brand footer-brand carrowmont-brand" href="/"><span class="brand-wordmark">CARROWMONT</span></a>
+        <strong class="footer-product-name">Retirement Planner</strong>
         <p>A transparent retirement-planning tool built around the expenses and income your future life may actually have.</p>
-        <span class="footer-small">Educational planning tool · Version 2.2.6</span>
+        <span class="footer-small">Educational planning tool · Carrowmont</span>
       </div>
-      <div><strong>Product</strong><a href="planner.html">Retirement Planner</a><a href="how-it-works.html">How it works</a><a href="faq.html">FAQ</a></div>
-      <div><strong>Trust</strong><a href="methodology.html">Methodology</a><a href="disclaimer.html">Financial disclaimer</a><a href="privacy.html">Privacy</a></div>
-      <div><strong>Company</strong><a href="about.html">About</a><a href="contact.html">Contact</a><a href="terms.html">Terms</a></div>
+      <div><strong>Planner</strong><a href="planner.html">Retirement Planner</a><a href="how-it-works.html">How it works</a><a href="methodology.html">Methodology</a><a href="faq.html">FAQ</a></div>
+      <div><strong>Carrowmont</strong><a href="/#tools">All tools</a><a href="/#learn">Learn</a><a href="/about.html">About</a><a href="/contact.html">Contact</a></div>
+      <div><strong>Legal</strong><a href="/disclaimer.html">Disclaimer</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a></div>
     </div>
-    <div class="container footer-bottom"><span>© <span data-current-year></span> RetireWise</span><span>Illustrative estimates, not financial advice.</span></div>
+    <div class="container footer-bottom"><span>© <span data-current-year></span> Carrowmont · Retirement Planner</span><span>Illustrative estimates, not financial advice.</span></div>
   </footer>
 
 
-  <script src="site-config.js?v=2.2.6"></script>
-  <script src="site.js?v=2.2.6"></script>
-  <script src="app.js?v=2.2.6"></script>
+  <script src="site-config.js?v=2.3.0"></script>
+  <script src="site.js?v=2.3.0"></script>
+  <script src="app.js?v=2.3.0"></script>
 </body>
 </html>

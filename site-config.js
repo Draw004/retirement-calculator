@@ -1,5 +1,5 @@
-// RetireWise public-site configuration.
+// Carrowmont Retirement Planner public-site configuration.
 // Leave GA_MEASUREMENT_ID blank until you intentionally enable Google Analytics.
-window.RETIREWISE_CONFIG = {
+window.CARROWMONT_RETIREMENT_CONFIG = {
   GA_MEASUREMENT_ID: ""
 };

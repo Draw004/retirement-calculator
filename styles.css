@@ -375,7 +375,7 @@ footer { background: #0e1f33; color: #fff; padding: 27px 0; }
 }
 
 
-/* RetireWise V2.2 — public-site readiness */
+/* Carrowmont Retirement Planner — public-site integration */
 .site-header .mobile-nav { display: none; position: relative; }
 .site-header .mobile-nav summary { list-style: none; cursor: pointer; border: 1px solid var(--line); border-radius: 9px; padding: 7px 10px; font-weight: 800; color: var(--navy); }
 .site-header .mobile-nav summary::-webkit-details-marker { display:none; }
@@ -561,7 +561,7 @@ footer { background: #0e1f33; color: #fff; padding: 27px 0; }
   .expense-breakdown-card .expense-change-row { grid-template-columns: 1fr; }
 }
 
-/* V2.2.6 interactive charts and insight cards */
+/* Interactive charts and insight cards */
 .chart { position: relative; }
 .chart-tooltip {
   position: absolute;
@@ -594,3 +594,23 @@ footer { background: #0e1f33; color: #fff; padding: 27px 0; }
 @media (max-width: 1020px) { .insight-grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 620px) { .insight-grid { grid-template-columns: 1fr; } }
 @media print { .chart-tooltip { display: none !important; } }
+
+
+/* Carrowmont integration */
+.brand-cluster { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
+.carrowmont-brand { color: var(--navy); }
+.brand-wordmark { font-size: 1.12rem; font-weight: 900; letter-spacing: .075em; white-space: nowrap; }
+.brand-divider { width: 1px; height: 27px; background: var(--line); flex: 0 0 auto; }
+.product-label { color: var(--muted); text-decoration: none; font-weight: 780; font-size: .92rem; white-space: nowrap; }
+.product-label:hover { color: var(--teal-dark); }
+.tool-breadcrumb { padding-top: 18px; padding-bottom: 2px; display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: .78rem; }
+.tool-breadcrumb a { color: var(--teal-dark); text-decoration: none; font-weight: 820; }
+.tool-breadcrumb a:hover { text-decoration: underline; }
+.tool-breadcrumb span::before { content: '·'; margin-right: 10px; color: #a3aeb8; }
+.footer-product-name { display: block; margin: 8px 0 2px; color: #fff; font-size: .94rem; }
+.scenario-takeaway { margin-top: 16px; padding: 16px 18px; border: 1px solid #c9e3df; border-left: 4px solid var(--teal); border-radius: 12px; background: #f4fbfa; }
+.scenario-takeaway span { display: block; color: var(--teal-dark); text-transform: uppercase; letter-spacing: .09em; font-size: .7rem; font-weight: 900; }
+.scenario-takeaway strong { display: block; margin: 4px 0 5px; font-size: 1rem; }
+.scenario-takeaway p { margin: 0; color: var(--muted); font-size: .79rem; line-height: 1.55; }
+@media (max-width: 1120px) { .top-nav { display: none; } .site-header .mobile-nav { display: block; } }
+@media (max-width: 560px) { .brand-divider { display: none; } .brand-cluster { gap: 7px; flex-direction: column; align-items: flex-start; } .product-label { font-size: .72rem; line-height: 1; } .tool-breadcrumb { padding-top: 12px; } }

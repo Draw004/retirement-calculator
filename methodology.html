@@ -3,45 +3,49 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Methodology | How RetireWise Calculates Retirement Corpus</title>
-  <meta name="description" content="Read the RetireWise methodology for changing expenses, inflation, retirement income, future goals, corpus present value and funding-gap calculations." />
+  <title>Methodology | How Carrowmont Retirement Planner Calculates Retirement Corpus</title>
+  <meta name="description" content="Read the Carrowmont Retirement Planner methodology for changing expenses, inflation, retirement income, future goals, corpus present value and funding-gap calculations." />
   <meta name="robots" content="index,follow" />
   <meta name="theme-color" content="#0e827a" />
-  <link rel="canonical" href="https://draw004.github.io/retirement-calculator/methodology.html" />
-  <meta property="og:title" content="Methodology | How RetireWise Calculates Retirement Corpus" />
-  <meta property="og:description" content="Read the RetireWise methodology for changing expenses, inflation, retirement income, future goals, corpus present value and funding-gap calculations." />
+  <link rel="canonical" href="https://carrowmont.com/retirement-calculator/methodology.html" />
+  <meta property="og:title" content="Methodology | How Carrowmont Retirement Planner Calculates Retirement Corpus" />
+  <meta property="og:description" content="Read the Carrowmont Retirement Planner methodology for changing expenses, inflation, retirement income, future goals, corpus present value and funding-gap calculations." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://draw004.github.io/retirement-calculator/methodology.html" />
+  <meta property="og:url" content="https://carrowmont.com/retirement-calculator/methodology.html" />
   <meta name="twitter:card" content="summary" />
   <!-- SEARCH CONSOLE: paste Google's verification meta tag here after creating your Search Console property. -->
-  <link rel="stylesheet" href="styles.css?v=2.2.6" />
+  <link rel="stylesheet" href="styles.css?v=2.3.0" />
   
 </head>
 <body>
 
   <header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="index.html" aria-label="RetireWise home">
-        <span class="brand-mark">R</span>
-        <span>RetireWise</span>
-        <span class="version-badge">V2.2.6</span>
-      </a>
+      <div class="brand-cluster">
+        <a class="brand carrowmont-brand" href="/" aria-label="Carrowmont home">
+          <span class="brand-wordmark">CARROWMONT</span>
+        </a>
+        <span class="brand-divider" aria-hidden="true"></span>
+        <a class="product-label" href="index.html">Retirement Planner</a>
+      </div>
       <nav class="top-nav" aria-label="Primary navigation">
         <a href="planner.html">Planner</a>
         <a href="how-it-works.html">How it works</a>
         <a href="methodology.html">Methodology</a>
-        <a href="about.html">About</a>
+        <a href="/#tools">All tools</a>
+        <a href="/">Home</a>
       </nav>
       <details class="mobile-nav">
         <summary aria-label="Open navigation">Menu</summary>
         <div class="mobile-nav-links">
-          <a href="index.html">Home</a>
-          <a href="planner.html">Planner</a>
+          <a href="/">Carrowmont home</a>
+          <a href="/#tools">All tools</a>
+          <a href="planner.html">Retirement Planner</a>
           <a href="how-it-works.html">How it works</a>
           <a href="methodology.html">Methodology</a>
           <a href="faq.html">FAQ</a>
-          <a href="about.html">About</a>
-          <a href="contact.html">Contact</a>
+          <a href="/about.html">About Carrowmont</a>
+          <a href="/contact.html">Contact</a>
         </div>
       </details>
     </div>
@@ -51,7 +55,7 @@
     <div class="container narrow-page">
       <span class="eyebrow">Methodology</span>
       <h1>Understand the calculation before you trust the number.</h1>
-      <p class="page-lead">RetireWise is intentionally transparent about how the retirement estimate is constructed and where the model can be wrong.</p>
+      <p class="page-lead">The Carrowmont Retirement Planner is intentionally transparent about how the retirement estimate is constructed and where the model can be wrong.</p>
     </div>
   </section>
   <section class="page-content">
@@ -66,7 +70,7 @@
 <section class="content-block"><h2>6. Required retirement corpus</h2><p>The planner builds the net monthly cash flow after retirement:</p><div class="formula-box"><span>Net portfolio withdrawal</span><strong>Retirement expenses − retirement income</strong></div><p>Each future monthly withdrawal and one-time goal is discounted back to the retirement date using the post-retirement return assumption. The present values are added together, then the selected safety buffer is applied.</p><div class="formula-box"><span>Required corpus</span><strong>PV of recurring net withdrawals + PV of goals + safety buffer</strong></div></section>
 <section class="content-block"><h2>7. Projected assets at retirement</h2><p>Existing retirement savings are compounded using the pre-retirement return assumption. Current monthly retirement contributions are projected as a monthly recurring investment until retirement. The model compares those projected assets with the required corpus.</p></section>
 <section class="content-block"><h2>8. Funding gap and monthly investment</h2><p>If projected assets are below the required corpus, the difference is the funding gap. The planner also estimates the total monthly investment that would be required from today, under the selected constant return assumption, to reach the modelled target. “Additional monthly investment” subtracts the monthly contribution you already entered.</p></section>
-<section class="content-block"><h2>9. Portfolio path</h2><p>The retirement portfolio chart begins with the calculated corpus, subtracts each month's net withdrawal and goals, and applies the entered post-retirement return. It is a deterministic path. It does not simulate market volatility or sequence-of-returns risk.</p></section>
+<section class="content-block"><h2>9. Portfolio paths</h2><p>The planner shows two deterministic retirement portfolio paths. The <strong>target-funded path</strong> starts with the full modelled corpus, including the selected safety buffer. If some of that reserve is not needed for spending, it remains invested and may continue to grow, so the path does not necessarily finish at ₹0 at the planning age.</p><p>The <strong>current-plan path</strong> starts with the retirement corpus projected from the savings and monthly contributions you entered. If that path reaches ₹0 before the selected planning age, the chart marks the modelled depletion age. Both paths subtract monthly net withdrawals and goals and apply the entered post-retirement return. They are deterministic illustrations and do not simulate market volatility or sequence-of-returns risk.</p></section>
 <section class="content-block"><h2>10. Important limitations</h2><ul><li>Returns and inflation are assumed rather than predicted.</li><li>The model does not automatically calculate taxes, investment fees or product-specific rules.</li><li>Healthcare and longevity can differ materially from assumptions.</li><li>Market returns do not occur smoothly each month in real life.</li><li>Results can change substantially when assumptions change.</li></ul><p>For consequential financial decisions, consider reviewing the assumptions with an appropriately qualified financial, tax or legal professional.</p></section>
 
       <div class="page-cta"><div><span class="section-kicker">Try your numbers</span><h2>Build a plan around your own assumptions.</h2><p>Use Quick Estimate for speed or Detailed Planner to model expenses that end, rise or change after retirement.</p></div><a class="hero-cta" href="planner.html">Open retirement planner</a></div>
@@ -77,19 +81,20 @@
   <footer class="site-footer">
     <div class="container footer-grid">
       <div class="footer-brand-block">
-        <a class="brand footer-brand" href="index.html"><span class="brand-mark">R</span><span>RetireWise</span></a>
+        <a class="brand footer-brand carrowmont-brand" href="/"><span class="brand-wordmark">CARROWMONT</span></a>
+        <strong class="footer-product-name">Retirement Planner</strong>
         <p>A transparent retirement-planning tool built around the expenses and income your future life may actually have.</p>
-        <span class="footer-small">Educational planning tool · Version 2.2.6</span>
+        <span class="footer-small">Educational planning tool · Carrowmont</span>
       </div>
-      <div><strong>Product</strong><a href="planner.html">Retirement Planner</a><a href="how-it-works.html">How it works</a><a href="faq.html">FAQ</a></div>
-      <div><strong>Trust</strong><a href="methodology.html">Methodology</a><a href="disclaimer.html">Financial disclaimer</a><a href="privacy.html">Privacy</a></div>
-      <div><strong>Company</strong><a href="about.html">About</a><a href="contact.html">Contact</a><a href="terms.html">Terms</a></div>
+      <div><strong>Planner</strong><a href="planner.html">Retirement Planner</a><a href="how-it-works.html">How it works</a><a href="methodology.html">Methodology</a><a href="faq.html">FAQ</a></div>
+      <div><strong>Carrowmont</strong><a href="/#tools">All tools</a><a href="/#learn">Learn</a><a href="/about.html">About</a><a href="/contact.html">Contact</a></div>
+      <div><strong>Legal</strong><a href="/disclaimer.html">Disclaimer</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a></div>
     </div>
-    <div class="container footer-bottom"><span>© <span data-current-year></span> RetireWise</span><span>Illustrative estimates, not financial advice.</span></div>
+    <div class="container footer-bottom"><span>© <span data-current-year></span> Carrowmont · Retirement Planner</span><span>Illustrative estimates, not financial advice.</span></div>
   </footer>
 
-  <script src="site-config.js?v=2.2.6"></script>
-  <script src="site.js?v=2.2.6"></script>
+  <script src="site-config.js?v=2.3.0"></script>
+  <script src="site.js?v=2.3.0"></script>
 
 </body>
 </html>

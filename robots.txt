@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://draw004.github.io/retirement-calculator/sitemap.xml
+Sitemap: https://carrowmont.com/retirement-calculator/sitemap.xml
