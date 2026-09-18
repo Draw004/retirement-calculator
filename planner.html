@@ -32,7 +32,7 @@
       <a class="brand" href="index.html" aria-label="RetireWise home">
         <span class="brand-mark">R</span>
         <span>RetireWise</span>
-        <span class="version-badge">V2.2.2</span>
+        <span class="version-badge">V2.2.3</span>
       </a>
       <nav class="top-nav" aria-label="Primary navigation">
         <a href="planner.html">Planner</a>
@@ -108,7 +108,8 @@
             <button type="button" id="quickModeBtn" class="mode-button active" data-mode="quick">Quick estimate</button>
             <button type="button" id="detailedModeBtn" class="mode-button" data-mode="detailed">Detailed planner</button>
           </div>
-          <p class="mode-help" id="modeHelp">Fast estimate: choose what percentage of today's spending is likely to remain after retirement.</p>
+          <p class="mode-help" id="modeHelp">Fast estimate: one retirement-spending percentage and one inflation rate are applied to your household total.</p>
+          <div class="mode-comparison-note"><strong>Why the numbers can differ:</strong> Quick Estimate is intentionally broad. Detailed Planner uses category-specific inflation, expenses that start/end/change, retirement income and lifestyle phases, so its corpus is not expected to match Quick Estimate.</div>
 
           <section class="form-section">
             <div class="section-title-row">
@@ -216,7 +217,7 @@
 
             <details class="sub-panel" open>
               <summary>Retirement lifestyle phases</summary>
-              <p>These multipliers apply only to expenses tagged <strong>Lifestyle</strong>, allowing travel and leisure to change over time.</p>
+              <p>These multipliers apply only to expenses tagged <strong>Lifestyle</strong>, allowing travel and leisure to change over time.</p><p class="phase-note"><strong>Important:</strong> the expense retirement percentage and the lifestyle-phase percentage are multiplied together. The default Travel &amp; leisure setting is therefore 100%, so the phase percentages drive its default retirement change without double-counting an increase.</p>
               <div class="three-col form-grid compact-grid">
                 <label class="field-card">First 10 years <div class="number-wrap suffix"><input id="phase1Pct" type="number" min="0" max="300" value="110" /><span>%</span></div></label>
                 <label class="field-card">Next 10 years <div class="number-wrap suffix"><input id="phase2Pct" type="number" min="0" max="300" value="90" /><span>%</span></div></label>
@@ -329,7 +330,7 @@
             </div>
           </article>
           <article class="analysis-card">
-            <div class="analysis-heading"><div><span class="section-kicker">What changed?</span><h3>Expense changes at retirement</h3></div><span>Retirement lifestyle in today's ₹ vs <strong id="expenseChangeRetirementAge">future ₹</strong></span></div>
+            <div class="analysis-heading"><div><span class="section-kicker">Expense-by-expense</span><h3>Retirement expense breakdown</h3></div><span id="expenseChangeRetirementAge">Every listed expense</span></div>
             <div id="expenseChangeList" class="expense-change-list"></div>
           </article>
         </div>
@@ -390,9 +391,9 @@
         </section>
 
         <section class="report-block" id="reportExpenseChangesBlock">
-          <h2>Expense changes at retirement</h2>
+          <h2>Retirement expense breakdown</h2>
           <table class="report-table report-change-table">
-            <thead><tr><th>Expense</th><th>Today → retirement (today's ₹)</th><th id="reportExpenseChangeFutureHead">Projected at retirement (future ₹)</th><th>Change in today's ₹</th></tr></thead>
+            <thead><tr><th>Expense</th><th>Today → retirement (today's ₹)</th><th id="reportExpenseChangeFutureHead">Projected at retirement (future ₹)</th><th>Retirement rule / change</th></tr></thead>
             <tbody id="reportExpenseChanges"></tbody>
           </table>
         </section>
@@ -461,7 +462,7 @@
       <div class="footer-brand-block">
         <a class="brand footer-brand" href="index.html"><span class="brand-mark">R</span><span>RetireWise</span></a>
         <p>A transparent retirement-planning tool built around the expenses and income your future life may actually have.</p>
-        <span class="footer-small">Educational planning tool · Version 2.2.2</span>
+        <span class="footer-small">Educational planning tool · Version 2.2.3</span>
       </div>
       <div><strong>Product</strong><a href="planner.html">Retirement Planner</a><a href="how-it-works.html">How it works</a><a href="faq.html">FAQ</a></div>
       <div><strong>Trust</strong><a href="methodology.html">Methodology</a><a href="disclaimer.html">Financial disclaimer</a><a href="privacy.html">Privacy</a></div>

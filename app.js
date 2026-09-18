@@ -33,7 +33,7 @@
     { name: 'Home loan / rent', amount: 20000, inflationType: 'general', rule: 'end', setting: 55 },
     { name: 'School / tuition', amount: 18000, inflationType: 'education', rule: 'end', setting: 50 },
     { name: 'Transport / commuting', amount: 8000, inflationType: 'general', rule: 'adjust', setting: 50 },
-    { name: 'Travel & leisure', amount: 7000, inflationType: 'lifestyle', rule: 'adjust', setting: 130 },
+    { name: 'Travel & leisure', amount: 7000, inflationType: 'lifestyle', rule: 'adjust', setting: 100 },
     { name: 'Healthcare', amount: 5000, inflationType: 'health', rule: 'adjust', setting: 160 },
     { name: 'Domestic help', amount: 3000, inflationType: 'general', rule: 'adjust', setting: 150 },
     { name: 'Other essentials', amount: 5000, inflationType: 'general', rule: 'adjust', setting: 100 },
@@ -327,12 +327,17 @@
     // Same retirement lifestyle expressed in nominal future rupees at the selected retirement age.
     const retirementLifestyleFuture = expenseAtAge(s.retirementAge, s, true);
 
+    // Keep every entered expense with a positive amount, in the same order as the planner.
+    // This makes the retirement breakdown a complete audit trail rather than a filtered "changes only" list.
     const expenseChanges = s.mode === 'detailed' ? s.expenses.map(exp => {
       const today = detailedExpenseAtAge(exp, s.currentAge, s, false);
       const retirement = detailedExpenseAtAge(exp, s.retirementAge, s, false);
       const retirementFuture = detailedExpenseAtAge(exp, s.retirementAge, s, true);
-      return { name: exp.name, today, retirement, retirementFuture, change: retirement - today, rule: exp.rule, inflationType: exp.inflationType };
-    }).filter(x => x.today > 0 || x.retirement > 0).sort((a,b) => Math.abs(b.change) - Math.abs(a.change)) : [];
+      return {
+        name: exp.name, amount: exp.amount, today, retirement, retirementFuture,
+        change: retirement - today, rule: exp.rule, setting: exp.setting, inflationType: exp.inflationType
+      };
+    }).filter(x => x.amount > 0) : [];
     const monthlyReduced = s.mode === 'quick'
       ? Math.max(0, currentTodayExpense - retirementLifestyleToday)
       : expenseChanges.reduce((sum, x) => sum + Math.max(0, x.today - x.retirement), 0);
@@ -376,8 +381,8 @@
     $('quickModeBtn').classList.toggle('active', mode === 'quick');
     $('detailedModeBtn').classList.toggle('active', mode === 'detailed');
     $('modeHelp').textContent = mode === 'quick'
-      ? "Fast estimate: choose what percentage of today's spending is likely to remain after retirement."
-      : 'Detailed planning: model each expense, income source and retirement goal separately.';
+      ? "Fast estimate: one retirement-spending percentage and one inflation rate are applied to your household total."
+      : 'Detailed planning: each expense can use its own inflation category, retirement rule and lifestyle phase, so the corpus may differ from Quick estimate.';
     if (recalc) calculateAndRender();
   }
 
@@ -400,11 +405,37 @@
     return ['Funding gap to address', 'Your projected retirement assets cover less than half of the modelled target under these assumptions.'];
   }
 
+  function expenseRuleSummary(exp, s) {
+    const retirementAge = Math.round(s.retirementAge);
+    const setting = num(exp.setting, 100);
+    let summary;
+
+    if (exp.rule === 'end') {
+      const endAge = Math.round(setting);
+      summary = endAge <= retirementAge
+        ? `Ends at age ${endAge} · not included at retirement`
+        : `Continues at retirement · ends at age ${endAge}`;
+    } else if (exp.rule === 'start') {
+      summary = `Starts at retirement at ${setting.toFixed(0)}% of today's amount`;
+    } else if (Math.abs(setting - 100) < 0.5) {
+      summary = `Continues at 100% of today's amount`;
+    } else if (setting < 100) {
+      summary = `Reduced to ${setting.toFixed(0)}% at retirement`;
+    } else {
+      summary = `Increases to ${setting.toFixed(0)}% at retirement`;
+    }
+
+    if (exp.inflationType === 'lifestyle' && !(exp.rule === 'end' && setting <= retirementAge)) {
+      summary += ` · lifestyle phase ${s.phase1Pct.toFixed(0)}% in the first 10 years`;
+    }
+    return summary;
+  }
+
   function renderExpenseChanges(r) {
     const list = $('expenseChangeList');
     const retirementAge = Math.round(r.s.retirementAge);
     const headingAge = $('expenseChangeRetirementAge');
-    if (headingAge) headingAge.textContent = `age ${retirementAge} future ₹`;
+    if (headingAge) headingAge.textContent = `all listed expenses · age ${retirementAge} future ₹`;
 
     if (r.s.mode !== 'detailed') {
       const pct = r.currentTodayExpense > 0 ? (r.retirementLifestyleToday / r.currentTodayExpense) * 100 : 0;
@@ -415,22 +446,25 @@
           <div><span>Retirement lifestyle<br>in today's ₹</span><b>${formatINR(r.retirementLifestyleToday, true)}/mo</b></div>
           <div><span>Projected at age ${retirementAge}<br>in future ₹</span><b>${formatINR(r.retirementLifestyleFuture, true)}/mo</b></div>
         </div>
-        <small>Switch to Detailed planner to see category-by-category changes.</small>
+        <small>Quick mode uses one spending percentage and one inflation rate. Switch to Detailed planner for the full expense-by-expense breakdown.</small>
       </div>`;
       return;
     }
-    const changed = r.expenseChanges.filter(x => Math.abs(x.change) >= 1 || Math.abs(x.retirementFuture - x.retirement) >= 1);
-    if (!changed.length) {
-      list.innerHTML = '<div class="change-summary-only"><strong>No material changes</strong><span>Your detailed expenses are currently set to stay broadly the same in today\'s purchasing power.</span></div>';
+
+    if (!r.expenseChanges.length) {
+      list.innerHTML = '<div class="change-summary-only"><strong>No expenses entered</strong><span>Add an expense with a positive monthly amount to build the detailed retirement breakdown.</span></div>';
       return;
     }
-    list.innerHTML = changed.slice(0, 7).map(x => {
+
+    list.innerHTML = r.expenseChanges.map(x => {
       const cls = x.change > 0 ? 'up' : x.change < 0 ? 'down' : '';
       const label = Math.abs(x.change) < 1 ? 'No lifestyle change' : x.change > 0 ? `+${formatINR(x.change)}` : `−${formatINR(Math.abs(x.change))}`;
+      const ruleSummary = expenseRuleSummary(x, r.s);
       return `<div class="expense-change-row">
         <div class="expense-change-context">
           <strong>${escapeXml(x.name)}</strong>
           <span>Current today: ${formatINR(x.today)}/mo <em class="${cls}">${label}</em></span>
+          <small class="expense-change-rule">${escapeXml(ruleSummary)}</small>
         </div>
         <div class="expense-change-values">
           <div><span>Retirement lifestyle<br>in today's ₹</span><b>${formatINR(x.retirement)}/mo</b></div>
@@ -507,7 +541,7 @@
     renderLineChart($('portfolioChart'), r.portfolioPoints, {
       retirementAge: null, valueFormatter: v => formatINR(v, true), yLabel: 'Portfolio'
     });
-    $('expenseChartCaption').textContent = s.mode === 'detailed' ? 'Shows expenses ending or changing at retirement' : 'Quick mode applies your chosen retirement spending percentage';
+    $('expenseChartCaption').textContent = s.mode === 'detailed' ? 'Shows the full expense path, including costs that continue, change, start or end' : 'Quick mode applies your chosen retirement spending percentage';
     renderScenarios(s);
     buildPrintReport(r);
   }
@@ -637,9 +671,10 @@
       changesBlock.style.display = '';
       $('reportExpenseChangeFutureHead').textContent = `Projected at age ${Math.round(s.retirementAge)} (future ₹)`;
       $('reportExpenseChanges').innerHTML = r.expenseChanges.map(x => {
-        const change = Math.abs(x.change) < 1 ? 'No change' : x.change > 0 ? `+${formatINR(x.change)}` : `−${formatINR(Math.abs(x.change))}`;
+        const change = Math.abs(x.change) < 1 ? 'No lifestyle change' : x.change > 0 ? `+${formatINR(x.change)}` : `−${formatINR(Math.abs(x.change))}`;
         const todayToRetirement = `${formatINR(x.today)} → ${formatINR(x.retirement)}`;
-        return `<tr><td>${escapeXml(x.name)}</td><td>${escapeXml(todayToRetirement)}</td><td>${escapeXml(formatINR(x.retirementFuture))}</td><td>${escapeXml(change)}</td></tr>`;
+        const ruleAndChange = `${expenseRuleSummary(x, s)} · ${change}`;
+        return `<tr><td>${escapeXml(x.name)}</td><td>${escapeXml(todayToRetirement)}</td><td>${escapeXml(formatINR(x.retirementFuture))}</td><td>${escapeXml(ruleAndChange)}</td></tr>`;
       }).join('');
     } else {
       changesBlock.style.display = 'none';
