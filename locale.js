@@ -121,6 +121,15 @@
     emitChange();
   }
 
+  function setLocale(region, currency) {
+    if (!regions[region]) return;
+    regionCode = region;
+    currencyCode = currencies[currency] ? currency : regions[region].currency;
+    safeSet(STORAGE_REGION, regionCode);
+    safeSet(STORAGE_CURRENCY, currencyCode);
+    emitChange();
+  }
+
   function emitChange() {
     window.dispatchEvent(new CustomEvent("carrowmont:localechange", {
       detail: { region: regionCode, currency: currencyCode }
@@ -181,6 +190,7 @@
     getLocale,
     setRegion,
     setCurrency,
+    setLocale,
     formatMoney,
     formatCompactMoney,
     formatNumber,

@@ -229,7 +229,7 @@ footer { background: #0e1f33; color: #fff; padding: 27px 0; }
   .site-header, .hero, .ad-slot, .planner-section, .dashboard-section, .content-section, .monetize-section, .faq-section, footer, .no-print { display: none !important; }
   #printReport { display: block !important; }
   .report-shell { max-width: none; margin: 0; }
-  .report-header h1 { font-size: 25px; }
+  .report-header h1, .report-header h2 { font-size: 25px; }
   .report-hero strong { font-size: 24px; }
   .report-chart { min-height: 180px; }
   .report-chart svg { max-height: 215px; }
@@ -312,7 +312,7 @@ footer { background: #0e1f33; color: #fff; padding: 27px 0; }
 .report-shell { max-width: 980px; margin: 0 auto; }
 .report-header { display: flex; justify-content: space-between; gap: 30px; align-items: flex-start; padding-bottom: 18px; border-bottom: 2px solid #153c5a; }
 .report-brand { color: #0e827a; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; font-size: 13px; }
-.report-header h1 { font-size: 30px; margin: 4px 0 2px; letter-spacing: -.035em; color: #17263d; }
+.report-header h1, .report-header h2 { font-size: 30px; margin: 4px 0 2px; letter-spacing: -.035em; color: #17263d; }
 .report-header p { margin: 0; color: #66768a; font-size: 11.5px; }
 .report-meta { text-align: right; font-size: 10.5px; line-height: 1.45; }
 .report-meta strong, .report-meta span { display: block; }
@@ -647,3 +647,11 @@ footer { background: #0e1f33; color: #fff; padding: 27px 0; }
   .locale-popover { right: -48px; }
 }
 .validation.start-hint { color: var(--muted); font-weight: 600; background: #f7fafb; border: 1px solid var(--line); border-radius: 9px; padding: 9px 11px; }
+
+
+/* V2.4.2 final QA cleanup */
+@media (max-width: 620px) {
+  html, body { max-width: 100%; overflow-x: clip; }
+  .planner-grid, .planner-grid > *, .panel, .inputs-panel, .result-panel,
+  .chart-grid, .chart-card, .scenario-card, .insight-card { min-width: 0; max-width: 100%; }
+}
