@@ -1,8 +1,8 @@
-# Carrowmont Retirement Planner V2.4.0
+# Carrowmont Retirement Planner V2.4.1
 
 Global-ready retirement planning web app for Carrowmont.
 
-## V2.4.0
+## V2.4.1
 - Shared Carrowmont country/currency selector, using the same persistent region and currency preferences as the Inflation Calculator.
 - Supports INR, USD, CAD, GBP, AUD, NZD, EUR, CNY, JPY, KRW, SGD, AED, SAR, CHF, BRL, MXN, ZAR, IDR, MYR, THB, PHP, VND, HKD, TWD, RUB and TRY.
 - Money is formatted using the selected locale; Indian users retain lakh/crore compact formatting while other locales use their familiar compact notation.
@@ -12,3 +12,11 @@ Global-ready retirement planning web app for Carrowmont.
 - Core retirement calculation engine is unchanged from V2.3.1.
 
 Deploy all files in this folder to the root of the existing `retirement-calculator` GitHub Pages repository.
+
+
+## V2.4.1
+
+- Changing country now clears monetary amounts to prevent accidental reinterpretation in a different currency.
+- Changing currency within the same country keeps entered amounts and only changes formatting.
+- Reset Plan now clears monetary inputs and restores standard planning assumptions for the selected currency.
+- Empty plans no longer leave stale results, charts or reports visible.

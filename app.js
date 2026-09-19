@@ -50,6 +50,7 @@
   let mode = DEFAULTS.mode;
   let lastResult = null;
   let suppressCalculate = false;
+  let activeLocaleRegion = L ? L.getRegion() : 'IN';
 
   function num(value, fallback = 0) {
     const n = Number(value);
@@ -449,12 +450,13 @@
     const s = buildState();
     const result = calculatePlan(s);
     const msg = $('validationMsg');
-    const emptyMoneyStart = Boolean(L && L.getRegion() !== 'IN' && s.currentSavings <= 0 && s.currentMonthlyInvestment <= 0 && ((s.mode === 'quick' && s.quickMonthlyExpense <= 0) || (s.mode === 'detailed' && s.expenses.every(e => e.amount <= 0))));
+    const emptyMoneyStart = Boolean(s.currentSavings <= 0 && s.currentMonthlyInvestment <= 0 && ((s.mode === 'quick' && s.quickMonthlyExpense <= 0) || (s.mode === 'detailed' && s.expenses.every(e => e.amount <= 0))));
     if (result.errors?.length) {
       msg.classList.toggle('start-hint', emptyMoneyStart);
       msg.textContent = emptyMoneyStart
-        ? `Enter your own monetary amounts in ${currencyCode()} to begin. The rates shown are editable assumptions, not country-specific forecasts.`
+        ? `Enter your monetary amounts in ${currencyCode()} to begin. The rates shown are editable assumptions, not country-specific forecasts.`
         : result.errors.join(' ');
+      if (emptyMoneyStart) setEmptyResultState('Enter monetary amounts to calculate your retirement plan.');
       return;
     }
     msg.classList.remove('start-hint');
@@ -588,6 +590,8 @@
 
   function renderResult(r) {
     const s = r.s;
+    if ($('copyBtn')) $('copyBtn').disabled = false;
+    if ($('printBtn')) $('printBtn').disabled = false;
     $('yearsToRetire').textContent = (s.retirementAge - s.currentAge).toFixed(0);
     $('resultPlanningAge').textContent = s.planningAge.toFixed(0);
     $('requiredCorpus').textContent = formatINR(r.requiredCorpus, true);
@@ -1021,10 +1025,70 @@
     }
   }
 
-  function resetPlan() {
-    applyPlan({ ...DEFAULTS, expenses: DEFAULT_EXPENSES, incomes: DEFAULT_INCOMES, goals: DEFAULT_GOALS });
+  function setEmptyResultState(message = '') {
+    lastResult = null;
+    const dashIds = [
+      'requiredCorpus','firstYearExpense','firstYearIncome','firstYearNet','projectedCorpus','corpusGap','totalMonthlyNeeded','extraMonthlyNeeded',
+      'todayVsRetirement','todayVsFutureRetirement','monthlyReduced','monthlyIncreased','glanceTodaySpend','glanceRetirementSpend','glanceFutureSpend',
+      'glanceReduced','glanceIncreased','breakdownExpensePV','breakdownIncomePV','breakdownGoalsPV','breakdownBuffer','breakdownTotal',
+      'insightLifestyle','insightRunway','insightContribution','insightExpense'
+    ];
+    dashIds.forEach(id => { if ($(id)) $(id).textContent = '—'; });
+    if ($('yearsToRetire')) $('yearsToRetire').textContent = Math.max(0, value('retirementAge') - value('currentAge')).toFixed(0);
+    if ($('resultPlanningAge')) $('resultPlanningAge').textContent = value('planningAge', 90).toFixed(0);
+    if ($('fundedPercent')) $('fundedPercent').textContent = '—';
+    if ($('progressFill')) $('progressFill').style.width = '0%';
+    if ($('fundingMessage')) $('fundingMessage').textContent = message || 'Enter monetary amounts to calculate your retirement plan.';
+    if ($('fundingStatus')) $('fundingStatus').textContent = 'Waiting for amounts';
+    if ($('fundingStatusNote')) $('fundingStatusNote').textContent = 'Enter your savings, contributions and retirement spending assumptions to build the estimate.';
+    if ($('budgetNarrative')) $('budgetNarrative').textContent = '';
+    if ($('quickTodayRetirementBudget')) $('quickTodayRetirementBudget').textContent = `${zeroMoney()}/mo`;
+    if ($('detailedExpenseTotal')) $('detailedExpenseTotal').textContent = zeroMoney();
+    if ($('expenseChangeList')) $('expenseChangeList').innerHTML = '<div class="chart-empty">Enter your monetary amounts to see the retirement expense breakdown.</div>';
+    if ($('expenseChart')) $('expenseChart').innerHTML = '<div class="chart-empty">Enter your monetary amounts to draw the household expense timeline.</div>';
+    if ($('portfolioChart')) $('portfolioChart').innerHTML = '<div class="chart-empty">Enter your monetary amounts to draw the retirement portfolio paths.</div>';
+    if ($('scenarioGrid')) $('scenarioGrid').innerHTML = '<div class="chart-empty">Enter your monetary amounts to compare retirement ages.</div>';
+    if ($('scenarioTakeaway')) $('scenarioTakeaway').innerHTML = '';
+    ['insightLifestyleNote','insightRunwayNote','insightContributionNote','insightExpenseNote'].forEach(id => {
+      if ($(id)) $(id).textContent = 'Available after you enter monetary amounts.';
+    });
+    if ($('copyBtn')) $('copyBtn').disabled = true;
+    if ($('printBtn')) $('printBtn').disabled = true;
+  }
+
+  function clearMonetaryAmounts() {
+    suppressCalculate = true;
+    try {
+      ['currentSavings','currentMonthlyInvestment','quickMonthlyExpense'].forEach(id => { if ($(id)) $(id).value = '0'; });
+      qsa('.exp-amount', $('expenseRows')).forEach(el => { el.value = '0'; });
+      qsa('.inc-amount', $('incomeRows')).forEach(el => { el.value = '0'; });
+      qsa('.goal-amount', $('goalRows')).forEach(el => { el.value = '0'; });
+    } finally {
+      suppressCalculate = false;
+    }
+  }
+
+  function clearMoneyForCountryChange() {
+    clearMonetaryAmounts();
     $('copyStatus').textContent = '';
-    $('saveStatus').textContent = '';
+    $('saveStatus').textContent = `Country changed to ${regionLabel()}. Monetary amounts were cleared so values from the previous country are not reinterpreted as ${currencyCode()}.`;
+    calculateAndRender();
+  }
+
+  function resetPlan() {
+    const currentMode = mode;
+    const zeroDefaults = {
+      ...DEFAULTS,
+      mode: currentMode,
+      currentSavings: 0,
+      currentMonthlyInvestment: 0,
+      quickMonthlyExpense: 0
+    };
+    const zeroExpenses = DEFAULT_EXPENSES.map(x => ({ ...x, amount: 0 }));
+    const zeroIncomes = DEFAULT_INCOMES.map(x => ({ ...x, amount: 0 }));
+    applyPlan({ ...zeroDefaults, expenses: zeroExpenses, incomes: zeroIncomes, goals: [] });
+    $('copyStatus').textContent = '';
+    $('saveStatus').textContent = `Plan reset. Monetary amounts are cleared; enter amounts in ${currencyCode()} to begin.`;
   }
 
   async function copyTextToClipboard(text) {
@@ -1159,8 +1223,12 @@
     const legacyYear = $('year'); if (legacyYear) legacyYear.textContent = new Date().getFullYear();
     window.addEventListener('beforeprint', preparePrintReport);
     window.addEventListener('carrowmont:localechange', () => {
+      const nextRegion = L ? L.getRegion() : 'IN';
+      const countryChanged = nextRegion !== activeLocaleRegion;
+      activeLocaleRegion = nextRegion;
       syncLocaleLabels();
-      calculateAndRender();
+      if (countryChanged) clearMoneyForCountryChange();
+      else calculateAndRender();
     });
     calculateAndRender();
   }
