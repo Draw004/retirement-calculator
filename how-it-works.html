@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en-IN">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -14,20 +14,19 @@
   <meta property="og:url" content="https://carrowmont.com/retirement-calculator/how-it-works.html" />
   <meta name="twitter:card" content="summary" />
   <!-- SEARCH CONSOLE: paste Google's verification meta tag here after creating your Search Console property. -->
-  <link rel="stylesheet" href="styles.css?v=2.3.1" />
+  <link rel="stylesheet" href="styles.css?v=2.4.0" />
   
 </head>
 <body>
 
   <header class="site-header">
-    <div class="container header-inner">
-      <div class="brand-cluster">
-        <a class="brand carrowmont-brand" href="/" aria-label="Carrowmont home">
-          <span class="brand-wordmark">CARROWMONT</span>
-        </a>
-        <span class="brand-divider" aria-hidden="true"></span>
-        <a class="product-label" href="index.html">Retirement Planner</a>
-      </div>
+  <div class="container header-inner">
+    <div class="brand-cluster">
+      <a class="brand carrowmont-brand" href="/" aria-label="Carrowmont home"><span class="brand-wordmark">CARROWMONT</span></a>
+      <span class="brand-divider" aria-hidden="true"></span>
+      <a class="product-label" href="index.html">Retirement Planner</a>
+    </div>
+    <div class="header-actions">
       <nav class="top-nav" aria-label="Primary navigation">
         <a href="planner.html">Planner</a>
         <a href="how-it-works.html">How it works</a>
@@ -35,21 +34,26 @@
         <a href="/#tools">All tools</a>
         <a href="/">Home</a>
       </nav>
+      <details class="locale-menu" id="localeMenu">
+        <summary id="localeSummary">India · INR</summary>
+        <div class="locale-popover">
+          <h3>Country &amp; currency</h3>
+          <p>Choose the context that makes the numbers easiest to understand.</p>
+          <label>Country / region<select id="regionSelect"></select></label>
+          <label>Currency<select id="currencySelect"></select></label>
+          <div class="locale-note"><strong>Important:</strong> changing currency changes the unit and number format only. It does not convert existing plan amounts using an exchange rate, and it does not change inflation, returns, taxes, pension rules or account rules. Review your monetary inputs after switching.</div>
+          <button class="locale-done-button" id="localeDoneBtn" type="button">Done</button>
+        </div>
+      </details>
       <details class="mobile-nav">
         <summary aria-label="Open navigation">Menu</summary>
         <div class="mobile-nav-links">
-          <a href="/">Carrowmont home</a>
-          <a href="/#tools">All tools</a>
-          <a href="planner.html">Retirement Planner</a>
-          <a href="how-it-works.html">How it works</a>
-          <a href="methodology.html">Methodology</a>
-          <a href="faq.html">FAQ</a>
-          <a href="/about.html">About Carrowmont</a>
-          <a href="/contact.html">Contact</a>
+          <a href="/">Carrowmont home</a><a href="/#tools">All tools</a><a href="planner.html">Retirement Planner</a><a href="how-it-works.html">How it works</a><a href="methodology.html">Methodology</a><a href="faq.html">FAQ</a><a href="/about.html">About Carrowmont</a><a href="/contact.html">Contact</a>
         </div>
       </details>
     </div>
-  </header>
+  </div>
+</header>
 <main>
   <section class="page-hero">
     <div class="container narrow-page">
@@ -63,7 +67,7 @@
       
 <section class="content-block"><h2>Choose the level of detail you need</h2><div class="compare-grid"><article><span class="pill">Quick Estimate</span><h3>Fast answer</h3><p>Enter today's monthly spending and the percentage you expect to remain after retirement. This is useful for an initial range, but it does not explain which costs changed.</p></article><article><span class="pill">Detailed Planner</span><h3>Explain the result</h3><p>Enter individual expense categories, retirement income and future goals. Each expense can follow its own inflation rate and retirement rule.</p></article></div></section>
 <section class="content-block"><h2>The five-step planning flow</h2><div class="numbered-flow"><article><span>1</span><div><h3>Set the timeline</h3><p>Choose your current age, retirement age and the age through which you want the plan to run.</p></div></article><article><span>2</span><div><h3>Project existing savings</h3><p>Enter retirement assets, current monthly investing and assumed returns before and after retirement.</p></div></article><article><span>3</span><div><h3>Model retirement spending</h3><p>Decide which expenses continue, end, change at retirement or begin only after retirement.</p></div></article><article><span>4</span><div><h3>Offset with retirement income and goals</h3><p>Add pension, rent or annuity income and one-time cash needs such as a car, renovation or medical reserve.</p></div></article><article><span>5</span><div><h3>Compare target with projected assets</h3><p>The planner calculates the modelled corpus, projected corpus, funding gap and monthly investing indicated by the assumptions.</p></div></article></div></section>
-<section class="content-block callout"><h2>Why today's ₹90,000 may not become tomorrow's ₹90,000 lifestyle</h2><p>If ₹18,000 of school fees and ₹20,000 of home-loan payments end before retirement, those costs should not be carried forward forever. At the same time, healthcare or travel may increase. Detailed Planner makes those changes visible before inflation is applied.</p></section>
+<section class="content-block callout"><h2>Why today's spending may not become the same retirement lifestyle</h2><p>If education costs or home-loan payments end before retirement, those costs should not be carried forward forever. At the same time, healthcare or travel may increase. Detailed Planner makes those changes visible before inflation is applied.</p></section>
 
       <div class="page-cta"><div><span class="section-kicker">Try your numbers</span><h2>Build a plan around your own assumptions.</h2><p>Use Quick Estimate for speed or Detailed Planner to model expenses that end, rise or change after retirement.</p></div><a class="hero-cta" href="planner.html">Open retirement planner</a></div>
     </div>
@@ -85,8 +89,10 @@
     <div class="container footer-bottom"><span>© <span data-current-year></span> Carrowmont · Retirement Planner</span><span>Illustrative estimates, not financial advice.</span></div>
   </footer>
 
-  <script src="site-config.js?v=2.3.1"></script>
-  <script src="site.js?v=2.3.1"></script>
+  <script src="site-config.js?v=2.4.0"></script>
+  <script src="locale.js?v=2.4.0"></script>
+  <script src="locale-ui.js?v=2.4.0"></script>
+  <script src="site.js?v=2.4.0"></script>
 
 </body>
 </html>

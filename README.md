@@ -1,21 +1,14 @@
-# Carrowmont Retirement Planner — Integrated Build 2.3.1
+# Carrowmont Retirement Planner V2.4.0
 
-This package rebrands the former RetireWise planner as the **Carrowmont Retirement Planner** and integrates it with carrowmont.com.
+Global-ready retirement planning web app for Carrowmont.
 
-## Key changes
-- Portfolio chart uses rounded, human-friendly ₹ axis ticks and a clear "Portfolio balance (future ₹)" axis label.
-- Retirement starting points are labelled with the required corpus and projected current-plan corpus.
-- Current-plan depletion is shown at the exact modelled month (years + months), with the zero point included in the chart and tooltip.
-- Portfolio tooltip shows the funding gap at retirement.
-- Carrowmont branding throughout the planner pages.
-- CARROWMONT wordmark links back to the main website.
-- Explicit **All tools** and **Home** navigation plus a back-to-tools breadcrumb.
-- Current-plan depletion marker on the retirement portfolio chart.
-- Safety-buffer explanation for the target-funded portfolio path.
-- Scenario takeaway showing the modelled impact of a later retirement age.
-- Future-rupee explanation under the household expense chart.
-- Methodology explains both target-funded and current-plan portfolio paths.
-- Existing browser-saved plans are migrated from the legacy RetireWise storage key.
-- Canonical URLs, sitemap and metadata now use `carrowmont.com`.
+## V2.4.0
+- Shared Carrowmont country/currency selector, using the same persistent region and currency preferences as the Inflation Calculator.
+- Supports INR, USD, CAD, GBP, AUD, NZD, EUR, CNY, JPY, KRW, SGD, AED, SAR, CHF, BRL, MXN, ZAR, IDR, MYR, THB, PHP, VND, HKD, TWD, RUB and TRY.
+- Money is formatted using the selected locale; Indian users retain lakh/crore compact formatting while other locales use their familiar compact notation.
+- Country/currency selection changes formatting only: no FX conversion and no automatic country-specific inflation, return, tax, pension or retirement-account assumptions.
+- Non-India first-time sessions start monetary example inputs at zero to avoid presenting India-sized sample amounts as dollars, pounds or other currencies.
+- Existing saved retirement plans remain compatible.
+- Core retirement calculation engine is unchanged from V2.3.1.
 
-The core retirement calculation logic is unchanged from the reviewed 2.2.6 build.
+Deploy all files in this folder to the root of the existing `retirement-calculator` GitHub Pages repository.

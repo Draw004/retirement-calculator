@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en-IN">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -14,20 +14,19 @@
   <meta property="og:url" content="https://carrowmont.com/retirement-calculator/faq.html" />
   <meta name="twitter:card" content="summary" />
   <!-- SEARCH CONSOLE: paste Google's verification meta tag here after creating your Search Console property. -->
-  <link rel="stylesheet" href="styles.css?v=2.3.1" />
+  <link rel="stylesheet" href="styles.css?v=2.4.0" />
   
 </head>
 <body>
 
   <header class="site-header">
-    <div class="container header-inner">
-      <div class="brand-cluster">
-        <a class="brand carrowmont-brand" href="/" aria-label="Carrowmont home">
-          <span class="brand-wordmark">CARROWMONT</span>
-        </a>
-        <span class="brand-divider" aria-hidden="true"></span>
-        <a class="product-label" href="index.html">Retirement Planner</a>
-      </div>
+  <div class="container header-inner">
+    <div class="brand-cluster">
+      <a class="brand carrowmont-brand" href="/" aria-label="Carrowmont home"><span class="brand-wordmark">CARROWMONT</span></a>
+      <span class="brand-divider" aria-hidden="true"></span>
+      <a class="product-label" href="index.html">Retirement Planner</a>
+    </div>
+    <div class="header-actions">
       <nav class="top-nav" aria-label="Primary navigation">
         <a href="planner.html">Planner</a>
         <a href="how-it-works.html">How it works</a>
@@ -35,21 +34,26 @@
         <a href="/#tools">All tools</a>
         <a href="/">Home</a>
       </nav>
+      <details class="locale-menu" id="localeMenu">
+        <summary id="localeSummary">India · INR</summary>
+        <div class="locale-popover">
+          <h3>Country &amp; currency</h3>
+          <p>Choose the context that makes the numbers easiest to understand.</p>
+          <label>Country / region<select id="regionSelect"></select></label>
+          <label>Currency<select id="currencySelect"></select></label>
+          <div class="locale-note"><strong>Important:</strong> changing currency changes the unit and number format only. It does not convert existing plan amounts using an exchange rate, and it does not change inflation, returns, taxes, pension rules or account rules. Review your monetary inputs after switching.</div>
+          <button class="locale-done-button" id="localeDoneBtn" type="button">Done</button>
+        </div>
+      </details>
       <details class="mobile-nav">
         <summary aria-label="Open navigation">Menu</summary>
         <div class="mobile-nav-links">
-          <a href="/">Carrowmont home</a>
-          <a href="/#tools">All tools</a>
-          <a href="planner.html">Retirement Planner</a>
-          <a href="how-it-works.html">How it works</a>
-          <a href="methodology.html">Methodology</a>
-          <a href="faq.html">FAQ</a>
-          <a href="/about.html">About Carrowmont</a>
-          <a href="/contact.html">Contact</a>
+          <a href="/">Carrowmont home</a><a href="/#tools">All tools</a><a href="planner.html">Retirement Planner</a><a href="how-it-works.html">How it works</a><a href="methodology.html">Methodology</a><a href="faq.html">FAQ</a><a href="/about.html">About Carrowmont</a><a href="/contact.html">Contact</a>
         </div>
       </details>
     </div>
-  </header>
+  </div>
+</header>
 <main>
   <section class="page-hero">
     <div class="container narrow-page">
@@ -64,8 +68,8 @@
 <div class="faq-page-list">
 <details open><summary>Why not just inflate today's total household spending?</summary><p>Because costs can change structurally. Education, loans and work-related commuting may disappear, while healthcare, travel or domestic assistance may rise. Detailed Planner lets you model those changes separately.</p></details>
 <details><summary>Why can Quick Estimate and Detailed Planner show different corpus amounts?</summary><p>They are intentionally different models. Quick Estimate applies one retirement-spending percentage and one inflation rate to the household total. Detailed Planner models each expense separately, including category-specific inflation, costs that start or end, retirement lifestyle phases, retirement income and one-time goals. Even when today's total spending is the same, those different future cash flows can produce a different corpus.</p></details>
-<details><summary>What does “today's rupees” mean?</summary><p>It means the purchasing-power value today. In Detailed Planner, enter what an expense or future goal would cost today; the model then applies the inflation assumption to future cash flows.</p></details>
-<details><summary>Should I include my home-loan EMI?</summary><p>Yes if you currently pay it. In Detailed Planner, use “Ends at age” and enter the expected payoff age. If it ends before retirement it will not be carried into the retirement budget.</p></details>
+<details><summary>What does “today's money” mean?</summary><p>It means the purchasing-power value today. In Detailed Planner, enter what an expense or future goal would cost today; the model then applies the inflation assumption to future cash flows.</p></details>
+<details><summary>Should I include my home-loan or mortgage payment?</summary><p>Yes if you currently pay it. In Detailed Planner, use “Ends at age” and enter the expected payoff age. If it ends before retirement it will not be carried into the retirement budget.</p></details>
 <details><summary>How should I model school fees?</summary><p>Enter the current monthly amount, assign education inflation if appropriate, and use “Ends at age” for the age when you expect that cost to stop.</p></details>
 <details><summary>How do I enter healthcare?</summary><p>Enter today's monthly healthcare-related spending and select healthcare inflation. You can also use “Change at retirement” if you want the starting retirement healthcare budget to be higher or lower than today.</p></details>
 <details><summary>How should I enter a pension or rental income?</summary><p>Use Retirement Income in Detailed Planner. Enter the monthly amount expected when it starts, the starting age and any assumed annual increase.</p></details>
@@ -96,8 +100,10 @@
     <div class="container footer-bottom"><span>© <span data-current-year></span> Carrowmont · Retirement Planner</span><span>Illustrative estimates, not financial advice.</span></div>
   </footer>
 
-  <script src="site-config.js?v=2.3.1"></script>
-  <script src="site.js?v=2.3.1"></script>
+  <script src="site-config.js?v=2.4.0"></script>
+  <script src="locale.js?v=2.4.0"></script>
+  <script src="locale-ui.js?v=2.4.0"></script>
+  <script src="site.js?v=2.4.0"></script>
 
 </body>
 </html>

@@ -2,6 +2,7 @@
   'use strict';
 
   const $ = (id) => document.getElementById(id);
+  const L = window.CarrowmontLocale;
   const qsa = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const STORAGE_KEY = 'carrowmont-retirement-plan-v1';
   const LEGACY_STORAGE_KEY = 'retirewise-v2-plan';
@@ -62,22 +63,19 @@
   function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
 
   function formatINR(value, compact = false) {
-    if (!Number.isFinite(value)) return '₹0';
-    const sign = value < 0 ? '-' : '';
-    const safe = Math.abs(value);
-    if (compact) {
-      if (safe >= 10000000) {
-        const cr = safe / 10000000;
-        return `${sign}₹${cr.toFixed(cr >= 100 ? 0 : cr >= 10 ? 1 : 2)} Cr`;
-      }
-      if (safe >= 100000) {
-        const l = safe / 100000;
-        return `${sign}₹${l.toFixed(l >= 100 ? 0 : l >= 10 ? 1 : 2)} L`;
-      }
-      if (safe >= 1000) return `${sign}₹${(safe / 1000).toFixed(safe >= 100000 ? 0 : 1)}k`;
+    const n = Number(value);
+    const safe = Number.isFinite(n) ? n : 0;
+    if (L) {
+      return compact
+        ? L.formatCompactMoney(safe, { maximumFractionDigits: 2 })
+        : L.formatMoney(safe, { maximumFractionDigits: 0 });
     }
-    return sign + new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Math.round(safe));
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(safe);
   }
+
+  function currencyCode() { return L ? L.getCurrency() : 'INR'; }
+  function regionLabel() { return L ? L.getProfile().label : 'India'; }
+  function zeroMoney(compact = false) { return formatINR(0, compact); }
 
   function formatAgeYearsMonths(age, includePrefix = false) {
     if (!Number.isFinite(age)) return includePrefix ? 'age —' : '—';
@@ -94,6 +92,28 @@
     const years = Math.floor(totalMonths / 12);
     const months = totalMonths % 12;
     return months ? `${years}y ${months}m` : `${years}`;
+  }
+
+  function syncLocaleLabels() {
+    const currency = currencyCode();
+    const set = (id, text) => { const el = $(id); if (el) el.textContent = text; };
+    set('expenseAmountHead', `Today / mo (${currency})`);
+    set('incomeAmountHead', `Monthly amount when it starts (${currency})`);
+    set('goalAmountHead', `Today's amount (${currency})`);
+    set('firstYearExpenseLabel', `Average monthly expenses in first retirement year (future ${currency})`);
+    set('retirementLifestyleTodayLabel', `Retirement lifestyle in today's money`);
+    set('reportRetirementSpendLabel', `Retirement lifestyle in today's money`);
+    set('glanceFutureSpendNote', `Inflation-adjusted future ${currency} estimate`);
+    if (window.CarrowmontLocaleUI?.sync) window.CarrowmontLocaleUI.sync();
+  }
+
+  function applyFirstLoadMoneyDefaults() {
+    // India retains the original illustrative sample. For other regions, start money
+    // inputs at zero rather than presenting India-sized sample amounts as dollars,
+    // pounds, yen or another currency. Rates remain editable illustrative assumptions.
+    if (!L || L.getRegion() === 'IN') return;
+    ['currentSavings','currentMonthlyInvestment','quickMonthlyExpense'].forEach(id => { if ($(id)) $(id).value = '0'; });
+    qsa('.exp-amount', $('expenseRows')).forEach(el => { el.value = '0'; });
   }
 
   function effectiveMonthlyRate(annualPct) {
@@ -118,7 +138,7 @@
     const d = { name: 'New expense', amount: 0, inflationType: 'general', rule: 'adjust', setting: 100, ...data };
     tr.innerHTML = `
       <td><input class="table-input name exp-name" value="${escapeAttr(d.name)}" aria-label="Expense name"></td>
-      <td><input class="table-input amount exp-amount" type="number" min="0" step="500" value="${num(d.amount)}" aria-label="Monthly amount"></td>
+      <td><input class="table-input amount exp-amount" type="number" min="0" step="1" inputmode="decimal" value="${num(d.amount)}" aria-label="Monthly amount"></td>
       <td><select class="table-select exp-inflation" aria-label="Inflation type">${inflationOptions(d.inflationType)}</select></td>
       <td><select class="table-select exp-rule" aria-label="Retirement rule">${expenseRuleOptions(d.rule)}</select></td>
       <td class="table-setting-cell"></td>
@@ -144,7 +164,7 @@
     tr.className = 'income-row';
     tr.innerHTML = `
       <td><input class="table-input name inc-name" value="${escapeAttr(d.name)}" aria-label="Income source"></td>
-      <td><input class="table-input amount inc-amount" type="number" min="0" step="500" value="${num(d.amount)}" aria-label="Monthly income"></td>
+      <td><input class="table-input amount inc-amount" type="number" min="0" step="1" inputmode="decimal" value="${num(d.amount)}" aria-label="Monthly income"></td>
       <td><input class="table-input inc-start" type="number" min="18" max="110" value="${num(d.startAge, 60)}" aria-label="Income start age"></td>
       <td><div class="number-wrap suffix table-setting"><input class="inc-growth" type="number" min="-10" max="20" step="0.1" value="${num(d.growth)}" aria-label="Annual income increase"><span>%</span></div></td>
       <td><button class="remove-row" type="button" aria-label="Remove income">×</button></td>`;
@@ -157,7 +177,7 @@
     tr.className = 'goal-row';
     tr.innerHTML = `
       <td><input class="table-input name goal-name" value="${escapeAttr(d.name)}" aria-label="Goal name"></td>
-      <td><input class="table-input amount goal-amount" type="number" min="0" step="10000" value="${num(d.amount)}" aria-label="Goal amount"></td>
+      <td><input class="table-input amount goal-amount" type="number" min="0" step="1" inputmode="decimal" value="${num(d.amount)}" aria-label="Goal amount"></td>
       <td><input class="table-input goal-age" type="number" min="18" max="110" value="${num(d.age)}" aria-label="Goal age"></td>
       <td><select class="table-select goal-inflation" aria-label="Goal inflation">${inflationOptions(d.inflationType)}</select></td>
       <td><button class="remove-row" type="button" aria-label="Remove goal">×</button></td>`;
@@ -342,7 +362,7 @@
 
     const currentTodayExpense = expenseAtAge(s.currentAge, s, false);
     const retirementLifestyleToday = expenseAtAge(s.retirementAge, s, false);
-    // Same retirement lifestyle expressed in nominal future rupees at the selected retirement age.
+    // Same retirement lifestyle expressed in nominal future money at the selected retirement age.
     const retirementLifestyleFuture = expenseAtAge(s.retirementAge, s, true);
 
     // Keep every entered expense with a positive amount, in the same order as the planner.
@@ -429,8 +449,16 @@
     const s = buildState();
     const result = calculatePlan(s);
     const msg = $('validationMsg');
-    msg.textContent = result.errors?.join(' ') || '';
-    if (result.errors?.length) return;
+    const emptyMoneyStart = Boolean(L && L.getRegion() !== 'IN' && s.currentSavings <= 0 && s.currentMonthlyInvestment <= 0 && ((s.mode === 'quick' && s.quickMonthlyExpense <= 0) || (s.mode === 'detailed' && s.expenses.every(e => e.amount <= 0))));
+    if (result.errors?.length) {
+      msg.classList.toggle('start-hint', emptyMoneyStart);
+      msg.textContent = emptyMoneyStart
+        ? `Enter your own monetary amounts in ${currencyCode()} to begin. The rates shown are editable assumptions, not country-specific forecasts.`
+        : result.errors.join(' ');
+      return;
+    }
+    msg.classList.remove('start-hint');
+    msg.textContent = '';
     lastResult = result;
     renderResult(result);
   }
@@ -475,7 +503,7 @@
     const list = $('expenseChangeList');
     const retirementAge = Math.round(r.s.retirementAge);
     const headingAge = $('expenseChangeRetirementAge');
-    if (headingAge) headingAge.textContent = `all listed expenses · retirement age ${retirementAge} · future ₹`;
+    if (headingAge) headingAge.textContent = `all listed expenses · retirement age ${retirementAge} · future ${currencyCode()}`;
 
     if (r.s.mode !== 'detailed') {
       const pct = r.currentTodayExpense > 0 ? (r.retirementLifestyleToday / r.currentTodayExpense) * 100 : 0;
@@ -483,8 +511,8 @@
         <strong>${pct.toFixed(0)}%</strong>
         <span>of today's spending is set to remain at retirement in Quick mode.</span>
         <div class="change-quick-values">
-          <div><span>Retirement lifestyle<br>in today's ₹</span><b>${formatINR(r.retirementLifestyleToday, true)}/mo</b></div>
-          <div><span>Projected at retirement (age ${retirementAge})<br>in future ₹</span><b>${formatINR(r.retirementLifestyleFuture, true)}/mo</b></div>
+          <div><span>Retirement lifestyle<br>in today's money</span><b>${formatINR(r.retirementLifestyleToday, true)}/mo</b></div>
+          <div><span>Projected at retirement (age ${retirementAge})<br>in future ${currencyCode()}</span><b>${formatINR(r.retirementLifestyleFuture, true)}/mo</b></div>
         </div>
         <small>Quick mode uses one spending percentage and one inflation rate. Switch to Detailed planner for the full expense-by-expense breakdown.</small>
       </div>`;
@@ -507,8 +535,8 @@
           <small class="expense-change-rule">${escapeXml(ruleSummary)}</small>
         </div>
         <div class="expense-change-values">
-          <div><span>Retirement lifestyle<br>in today's ₹</span><b>${formatINR(x.retirement)}/mo</b></div>
-          <div><span>Projected at retirement (age ${retirementAge})<br>in future ₹</span><b>${formatINR(x.retirementFuture)}/mo</b></div>
+          <div><span>Retirement lifestyle<br>in today's money</span><b>${formatINR(x.retirement)}/mo</b></div>
+          <div><span>Projected at retirement (age ${retirementAge})<br>in future ${currencyCode()}</span><b>${formatINR(x.retirementFuture)}/mo</b></div>
         </div>
       </div>`;
     }).join('');
@@ -533,10 +561,10 @@
 
     if (r.projectedDepletionAge !== null && r.projectedDepletionAge < s.planningAge - 0.05) {
       runwayEl.textContent = `Around ${formatAgeYearsMonths(Math.max(s.retirementAge, r.projectedDepletionAge), true)}`;
-      runwayNote.textContent = 'Illustrative month at which the portfolio from your current savings plan may reach ₹0 under the entered assumptions.';
+      runwayNote.textContent = 'Illustrative month at which the portfolio from your current savings plan may reach zero under the entered assumptions.';
     } else {
       runwayEl.textContent = `Through age ${Math.round(s.planningAge)}`;
-      runwayNote.textContent = 'The projected current-plan portfolio does not reach ₹0 before the selected plan-through age under these assumptions.';
+      runwayNote.textContent = 'The projected current-plan portfolio does not reach zero before the selected plan-through age under these assumptions.';
     }
 
     if (r.extraMonthlyNeeded > 1) {
@@ -565,7 +593,7 @@
     $('requiredCorpus').textContent = formatINR(r.requiredCorpus, true);
     $('firstYearExpense').textContent = formatINR(r.firstYearExpense, true);
     const futureSpendLabel = $('futureSpendLabel');
-    if (futureSpendLabel) futureSpendLabel.textContent = `Projected monthly spending at retirement (age ${Math.round(s.retirementAge)}, future ₹)`;
+    if (futureSpendLabel) futureSpendLabel.textContent = `Projected monthly spending at retirement (age ${Math.round(s.retirementAge)}, future ${currencyCode()})`;
     const retirementProjectedSpend = $('retirementProjectedSpend');
     if (retirementProjectedSpend) retirementProjectedSpend.textContent = `${formatINR(r.retirementLifestyleFuture, true)}/mo`;
     $('firstYearIncome').textContent = r.firstYearIncome > 0 ? formatINR(r.firstYearIncome, true) : 'None entered';
@@ -573,7 +601,7 @@
     $('projectedCorpus').textContent = formatINR(r.projectedCorpus, true);
     $('corpusGap').textContent = r.gap > 0 ? formatINR(r.gap, true) : 'No gap*';
     $('totalMonthlyNeeded').textContent = formatINR(r.totalMonthlyNeeded);
-    $('extraMonthlyNeeded').textContent = r.extraMonthlyNeeded > 1 ? formatINR(r.extraMonthlyNeeded) : '₹0 under assumptions';
+    $('extraMonthlyNeeded').textContent = r.extraMonthlyNeeded > 1 ? formatINR(r.extraMonthlyNeeded) : `${zeroMoney()} under assumptions`;
 
     const fundedDisplay = Math.min(999, Math.max(0, r.fundedPct));
     $('fundedPercent').textContent = `${fundedDisplay.toFixed(0)}%`;
@@ -588,7 +616,7 @@
 
     $('todayVsRetirement').textContent = `${formatINR(r.currentTodayExpense, true)}/mo → ${formatINR(r.retirementLifestyleToday, true)}/mo`;
     $('todayVsFutureRetirement').textContent = `${formatINR(r.retirementLifestyleToday, true)}/mo → ${formatINR(r.retirementLifestyleFuture, true)}/mo`;
-    $('todayVsFutureLabel').textContent = `Same retirement lifestyle: today's ₹ → at retirement (age ${Math.round(s.retirementAge)}) in future ₹`;
+    $('todayVsFutureLabel').textContent = `Same retirement lifestyle: today's money → at retirement (age ${Math.round(s.retirementAge)}) in future ${currencyCode()}`;
     $('todayVsRetirementNote').textContent = s.mode === 'quick'
       ? "Today's spending versus your selected retirement-spending percentage, both shown in today's purchasing power."
       : "Today's listed spending versus the first retirement-year lifestyle, before future inflation is applied.";
@@ -628,18 +656,18 @@
       ? [{
           age: Math.max(s.retirementAge, r.projectedDepletionAge),
           value: 0,
-          label: `Current plan reaches ₹0 · ${formatAgeCompact(Math.max(s.retirementAge, r.projectedDepletionAge))}`,
+          label: `Current plan reaches zero · ${formatAgeCompact(Math.max(s.retirementAge, r.projectedDepletionAge))}`,
           color: '#b93838'
         }]
       : [];
     renderLineChart($('portfolioChart'), r.portfolioPoints, {
       retirementAge: null, valueFormatter: v => formatINR(v, true), yLabel: '',
-      axisTitle: 'Portfolio balance (future ₹)',
-      primaryLabel: 'Required-corpus path', compareLabel: 'Your current-plan path', comparePoints: r.currentPortfolioPoints, interactive: true,
+      axisTitle: `Portfolio balance (future ${currencyCode()})`,
+      primaryLabel: 'Required-retirement-target path', compareLabel: 'Your current-plan path', comparePoints: r.currentPortfolioPoints, interactive: true,
       primaryColor: '#123f5f', compareColor: '#0e827a', verticalMarkers: depletionMarker,
       startPointLabels: true, showGapAtStart: true
     });
-    $('portfolioChartCaption').textContent = `How to read this chart: the green line starts with the corpus projected from your current savings and contributions (${formatINR(r.projectedCorpus, true)}). The blue line starts with the modelled required corpus (${formatINR(r.requiredCorpus, true)}), including your ${s.bufferRate.toFixed(0)}% safety buffer (${formatINR(r.safetyBufferAmount, true)}). Any unused reserve remains invested and may continue to grow, so the blue path may finish above ₹0.${depletionMarker.length ? ` The red marker shows the current-plan portfolio reaching ₹0 around ${formatAgeYearsMonths(depletionMarker[0].age, true)}.` : ' The current-plan portfolio does not reach ₹0 before the selected planning age.'}`;
+    $('portfolioChartCaption').textContent = `How to read this chart: the green line starts with the retirement savings projected from your current savings and contributions (${formatINR(r.projectedCorpus, true)}). The blue line starts with the modelled retirement target (${formatINR(r.requiredCorpus, true)}), including your ${s.bufferRate.toFixed(0)}% safety buffer (${formatINR(r.safetyBufferAmount, true)}). Any unused reserve remains invested and may continue to grow, so the blue path may finish above zero.${depletionMarker.length ? ` The red marker shows the current-plan portfolio reaching zero around ${formatAgeYearsMonths(depletionMarker[0].age, true)}.` : ' The current-plan portfolio does not reach zero before the selected planning age.'}`;
     $('expenseChartCaption').textContent = s.mode === 'detailed' ? 'Shows the full expense path, including costs that continue, change, start or end' : 'Quick mode applies your chosen retirement spending percentage';
     renderScenarios(s);
     buildPrintReport(r);
@@ -659,8 +687,8 @@
     const minX = Math.min(...xs), maxX = Math.max(...xs);
     const maxYRaw = Math.max(...ys, 1);
 
-    // Human-friendly chart scale: prefer rounded ₹ values such as 2/4/6/8/10 Cr
-    // rather than mathematical half-way values such as 4.48 Cr and 8.96 Cr.
+    // Human-friendly chart scale: prefer rounded values rather than awkward mathematical intervals.
+    // The locale formatter then presents those values in the selected currency.
     const niceStep = (maxValue, targetIntervals = 5) => {
       const rough = Math.max(1e-9, maxValue / Math.max(1, targetIntervals));
       const magnitude = Math.pow(10, Math.floor(Math.log10(rough)));
@@ -710,8 +738,8 @@
     if (opts.startPointLabels && comparePoints.length) {
       const a = points[0], b = comparePoints[0];
       startLabels = `<g font-size="10.5" font-weight="700">
-        <text x="${x(a.age)+9}" y="${Math.max(T+36, y(a.value)-8)}" fill="${primaryColor}" paint-order="stroke" stroke="#fff" stroke-width="4" stroke-linejoin="round">Required corpus: ${escapeXml((opts.valueFormatter || String)(a.value))}</text>
-        <text x="${x(b.age)+9}" y="${Math.min(H-B-8, y(b.value)+17)}" fill="${compareColor}" paint-order="stroke" stroke="#fff" stroke-width="4" stroke-linejoin="round">Your projected corpus: ${escapeXml((opts.valueFormatter || String)(b.value))}</text>
+        <text x="${x(a.age)+9}" y="${Math.max(T+36, y(a.value)-8)}" fill="${primaryColor}" paint-order="stroke" stroke="#fff" stroke-width="4" stroke-linejoin="round">Retirement target: ${escapeXml((opts.valueFormatter || String)(a.value))}</text>
+        <text x="${x(b.age)+9}" y="${Math.min(H-B-8, y(b.value)+17)}" fill="${compareColor}" paint-order="stroke" stroke="#fff" stroke-width="4" stroke-linejoin="round">Your projected savings: ${escapeXml((opts.valueFormatter || String)(b.value))}</text>
       </g>`;
     }
 
@@ -768,7 +796,7 @@
       const rawAge = minX + (viewX - L) / Math.max(1e-9, W - L - R) * (maxX - minX);
 
       // Snap to a depletion marker when the pointer is close to it; otherwise use the
-      // nearest whole-year point from the primary path. This prevents a red ₹0 marker
+      // nearest whole-year point from the primary path. This prevents a zero-balance marker
       // from showing the previous annual balance in the tooltip.
       const closeMarker = verticalMarkers.find(m => Math.abs(x(m.age) - viewX) <= 11);
       let selectedAge;
@@ -817,7 +845,7 @@
       const card = document.createElement('article');
       card.className = `scenario-item ${current ? 'current' : ''}`;
       card.innerHTML = `<span class="scenario-age">Retire at ${age}${current ? ' · current choice' : ''}</span>
-        <span class="scenario-corpus-label">Corpus at age ${age} (future ₹)</span>
+        <span class="scenario-corpus-label">Retirement target at age ${age} (future ${currencyCode()})</span>
         <strong>${formatINR(scenario.requiredCorpus, true)}</strong>
         <dl>
           <div><dt>Years to save</dt><dd>${age - s.currentAge}</dd></div>
@@ -834,7 +862,7 @@
       if (current && later) {
         const monthlyReduction = current.result.totalMonthlyNeeded - later.result.totalMonthlyNeeded;
         const corpusChange = later.result.requiredCorpus - current.result.requiredCorpus;
-        takeaway.innerHTML = `<span>One lever to explore</span><strong>Model retirement at age ${later.age}</strong><p>Under the same assumptions, the modelled total monthly investment changes from <b>${escapeXml(formatINR(current.result.totalMonthlyNeeded))}/mo</b> to <b>${escapeXml(formatINR(later.result.totalMonthlyNeeded))}/mo</b>${monthlyReduction > 0 ? ` — about <b>${escapeXml(formatINR(monthlyReduction))}/mo lower</b>` : ''}. The nominal corpus at retirement ${corpusChange >= 0 ? 'rises' : 'falls'} by about ${escapeXml(formatINR(Math.abs(corpusChange), true))} because each corpus is shown in future rupees at its own retirement date. This is a scenario comparison, not a recommendation.</p>`;
+        takeaway.innerHTML = `<span>One lever to explore</span><strong>Model retirement at age ${later.age}</strong><p>Under the same assumptions, the modelled total monthly investment changes from <b>${escapeXml(formatINR(current.result.totalMonthlyNeeded))}/mo</b> to <b>${escapeXml(formatINR(later.result.totalMonthlyNeeded))}/mo</b>${monthlyReduction > 0 ? ` — about <b>${escapeXml(formatINR(monthlyReduction))}/mo lower</b>` : ''}. The nominal corpus at retirement ${corpusChange >= 0 ? 'rises' : 'falls'} by about ${escapeXml(formatINR(Math.abs(corpusChange), true))} because each retirement target is shown in future money at its own retirement date. This is a scenario comparison, not a recommendation.</p>`;
       } else {
         takeaway.innerHTML = '<span>One lever to explore</span><strong>Change the retirement age</strong><p>Use the comparison cards above to see how a different retirement date changes the years available to save, required monthly investment and nominal corpus.</p>';
       }
@@ -847,7 +875,7 @@
 
   function buildPrintReport(r) {
     const s = r.s;
-    const dateText = new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date());
+    const dateText = new Intl.DateTimeFormat(L ? L.getLocale() : 'en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date());
     $('reportGenerated').textContent = `Generated ${dateText}`;
     $('reportCorpus').textContent = formatINR(r.requiredCorpus, true);
     $('reportRetireLine').textContent = `Retire at age ${Math.round(s.retirementAge)} · plan through age ${Math.round(s.planningAge)}`;
@@ -868,12 +896,14 @@
     $('reportIncreased').textContent = `${formatINR(r.monthlyIncreased)}/mo`;
 
     const assumptions = [
+      ['Country / region', regionLabel()],
+      ['Currency', currencyCode()],
       ['Planner mode', s.mode === 'detailed' ? 'Detailed expense planner' : 'Quick estimate'],
       ['Current age', `${Math.round(s.currentAge)}`],
       ['Retirement age', `${Math.round(s.retirementAge)}`],
       ['Plan until age', `${Math.round(s.planningAge)}`],
       ['Current retirement savings', formatINR(s.currentSavings)],
-      ['Current monthly retirement investment', formatINR(s.currentMonthlyInvestment)],
+      ['Current monthly retirement contribution', formatINR(s.currentMonthlyInvestment)],
       ['Return before retirement', `${s.preReturn.toFixed(1)}% p.a.`],
       ['Return during retirement', `${s.postReturn.toFixed(1)}% p.a.`],
       ['Safety buffer', `${s.bufferRate.toFixed(0)}%`],
@@ -895,23 +925,23 @@
       ['Less retirement income', `−${formatINR(r.retirementIncomePV)}`],
       ['One-time retirement goals', formatINR(r.goalsPV)],
       ['Safety buffer', formatINR(r.safetyBufferAmount)],
-      ['Estimated corpus needed', formatINR(r.requiredCorpus)],
+      ['Estimated retirement target', formatINR(r.requiredCorpus)],
     ].map(([a,b], i, arr) => reportRow(a,b, i === arr.length - 1 ? 'report-total-value' : '')).join('');
 
     $('reportFunding').innerHTML = [
       ['Future value of existing savings', formatINR(r.futureExisting)],
       ['Future value of current contributions', formatINR(r.futureCurrentContrib)],
-      ['Projected corpus at retirement', formatINR(r.projectedCorpus)],
+      ['Projected retirement savings', formatINR(r.projectedCorpus)],
       ['Funding gap', r.gap > 0 ? formatINR(r.gap) : 'No gap under assumptions'],
       ['Total monthly investment indicated', formatINR(r.totalMonthlyNeeded)],
-      ['Additional monthly investment indicated', r.extraMonthlyNeeded > 1 ? formatINR(r.extraMonthlyNeeded) : '₹0 under assumptions'],
+      ['Additional monthly investment indicated', r.extraMonthlyNeeded > 1 ? formatINR(r.extraMonthlyNeeded) : `${zeroMoney()} under assumptions`],
       ['Modelled current-plan runway', r.projectedDepletionAge !== null && r.projectedDepletionAge < s.planningAge - 0.05 ? `Around ${formatAgeYearsMonths(Math.max(s.retirementAge, r.projectedDepletionAge), true)}` : `Through age ${Math.round(s.planningAge)}`],
     ].map(([a,b]) => reportRow(a,b)).join('');
 
     const changesBlock = $('reportExpenseChangesBlock');
     if (s.mode === 'detailed' && r.expenseChanges.length) {
       changesBlock.style.display = '';
-      $('reportExpenseChangeFutureHead').textContent = `Projected at retirement (age ${Math.round(s.retirementAge)}, future ₹)`;
+      $('reportExpenseChangeFutureHead').textContent = `Projected at retirement (age ${Math.round(s.retirementAge)}, future ${currencyCode()})`;
       $('reportExpenseContext').textContent = `All listed expenses · retirement age ${Math.round(s.retirementAge)}`;
       $('reportExpenseChanges').innerHTML = r.expenseChanges.map(x => {
         const change = Math.abs(x.change) < 1 ? 'No lifestyle change' : x.change > 0 ? `+${formatINR(x.change)}` : `−${formatINR(Math.abs(x.change))}`;
@@ -937,16 +967,16 @@
       primaryLabel: 'Monthly spending', interactive: false
     });
     const reportDepletionMarkers = r.projectedDepletionAge !== null && r.projectedDepletionAge < s.planningAge - 0.05
-      ? [{ age: Math.max(s.retirementAge, r.projectedDepletionAge), value: 0, label: `Current plan reaches ₹0 · ${formatAgeCompact(Math.max(s.retirementAge, r.projectedDepletionAge))}`, color: '#b93838' }]
+      ? [{ age: Math.max(s.retirementAge, r.projectedDepletionAge), value: 0, label: `Current plan reaches zero · ${formatAgeCompact(Math.max(s.retirementAge, r.projectedDepletionAge))}`, color: '#b93838' }]
       : [];
     renderLineChart($('reportPortfolioChart'), r.portfolioPoints, {
       retirementAge: null, valueFormatter: v => formatINR(v, true), yLabel: '',
-      axisTitle: 'Portfolio balance (future ₹)',
-      primaryLabel: 'Required-corpus path', compareLabel: 'Your current-plan path', comparePoints: r.currentPortfolioPoints, interactive: false,
+      axisTitle: `Portfolio balance (future ${currencyCode()})`,
+      primaryLabel: 'Required-retirement-target path', compareLabel: 'Your current-plan path', comparePoints: r.currentPortfolioPoints, interactive: false,
       primaryColor: '#123f5f', compareColor: '#0e827a', verticalMarkers: reportDepletionMarkers, startPointLabels: true
     });
     const reportPortfolioNote = $('reportPortfolioChartNote');
-    if (reportPortfolioNote) reportPortfolioNote.textContent = `How to read this chart: the current-plan path starts with the corpus projected from your savings and contributions (${formatINR(r.projectedCorpus, true)}). The required-corpus path starts with the modelled corpus needed (${formatINR(r.requiredCorpus, true)}), including the selected ${s.bufferRate.toFixed(0)}% safety buffer (${formatINR(r.safetyBufferAmount, true)}). Any unused reserve remains invested, so the required-corpus path may finish above ₹0.${reportDepletionMarkers.length ? ` The red marker shows the current-plan path reaching ₹0 around ${formatAgeYearsMonths(reportDepletionMarkers[0].age, true)} under these assumptions.` : ''}`;
+    if (reportPortfolioNote) reportPortfolioNote.textContent = `How to read this chart: the current-plan path starts with the corpus projected from your savings and contributions (${formatINR(r.projectedCorpus, true)}). The required-retirement-target path starts with the modelled corpus needed (${formatINR(r.requiredCorpus, true)}), including the selected ${s.bufferRate.toFixed(0)}% safety buffer (${formatINR(r.safetyBufferAmount, true)}). Any unused reserve remains invested, so the required-retirement-target path may finish above zero.${reportDepletionMarkers.length ? ` The red marker shows the current-plan path reaching zero around ${formatAgeYearsMonths(reportDepletionMarkers[0].age, true)} under these assumptions.` : ''}`;
   }
 
   function bindDelegatedRows() {
@@ -1047,16 +1077,18 @@
       const r = lastResult;
       const funded = Math.max(0, r.fundedPct).toFixed(0);
       const gapText = r.gap > 0 ? formatINR(r.gap) : 'No gap under assumptions';
-      const extraText = r.extraMonthlyNeeded > 1 ? formatINR(r.extraMonthlyNeeded) : '₹0 under assumptions';
+      const extraText = r.extraMonthlyNeeded > 1 ? formatINR(r.extraMonthlyNeeded) : `${zeroMoney()} under assumptions`;
       const text = [
         'CARROWMONT RETIREMENT PLAN SUMMARY',
         '',
+        `Country / region: ${regionLabel()}`,
+        `Currency: ${currencyCode()}`,
         `Planner mode: ${r.s.mode === 'detailed' ? 'Detailed planner' : 'Quick estimate'}`,
         `Retirement age: ${Math.round(r.s.retirementAge)}`,
         `Plan through age: ${Math.round(r.s.planningAge)}`,
         '',
-        `Estimated corpus required: ${formatINR(r.requiredCorpus)}`,
-        `Projected corpus at retirement: ${formatINR(r.projectedCorpus)}`,
+        `Estimated retirement target: ${formatINR(r.requiredCorpus)}`,
+        `Projected retirement savings: ${formatINR(r.projectedCorpus)}`,
         `Funding gap: ${gapText}`,
         `Projected funding: ${funded}%`,
         `Total monthly investment required: ${formatINR(r.totalMonthlyNeeded)}`,
@@ -1064,7 +1096,7 @@
         `Modelled current-plan runway: ${r.projectedDepletionAge !== null && r.projectedDepletionAge < r.s.planningAge - 0.05 ? `around ${formatAgeYearsMonths(Math.max(r.s.retirementAge, r.projectedDepletionAge), true)}` : `through age ${Math.round(r.s.planningAge)}`}`,
         '',
         `Today's monthly spending: ${formatINR(r.currentTodayExpense)}/mo`,
-        `Retirement lifestyle in today's ₹: ${formatINR(r.retirementLifestyleToday)}/mo`,
+        `Retirement lifestyle in today's money: ${formatINR(r.retirementLifestyleToday)}/mo`,
         `Projected monthly spending at retirement (age ${Math.round(r.s.retirementAge)}): ${formatINR(r.retirementLifestyleFuture)}/mo`,
         '',
         'Educational planning estimate only. Results depend on the assumptions entered and actual outcomes may differ.',
@@ -1119,11 +1151,17 @@
     DEFAULT_EXPENSES.forEach(addExpenseRow);
     DEFAULT_INCOMES.forEach(addIncomeRow);
     DEFAULT_GOALS.forEach(addGoalRow);
+    applyFirstLoadMoneyDefaults();
     bindDelegatedRows();
     bindEvents();
     setMode(DEFAULTS.mode, false);
+    syncLocaleLabels();
     const legacyYear = $('year'); if (legacyYear) legacyYear.textContent = new Date().getFullYear();
     window.addEventListener('beforeprint', preparePrintReport);
+    window.addEventListener('carrowmont:localechange', () => {
+      syncLocaleLabels();
+      calculateAndRender();
+    });
     calculateAndRender();
   }
 

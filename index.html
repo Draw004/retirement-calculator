@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en-IN">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -14,7 +14,7 @@
   <meta property="og:url" content="https://carrowmont.com/retirement-calculator/" />
   <meta name="twitter:card" content="summary" />
   <!-- SEARCH CONSOLE: paste Google's verification meta tag here after creating your Search Console property. -->
-  <link rel="stylesheet" href="styles.css?v=2.3.1" />
+  <link rel="stylesheet" href="styles.css?v=2.4.0" />
   <script type="application/ld+json">{
   "@context":"https://schema.org",
   "@type":"WebSite",
@@ -26,14 +26,13 @@
 <body>
 
   <header class="site-header">
-    <div class="container header-inner">
-      <div class="brand-cluster">
-        <a class="brand carrowmont-brand" href="/" aria-label="Carrowmont home">
-          <span class="brand-wordmark">CARROWMONT</span>
-        </a>
-        <span class="brand-divider" aria-hidden="true"></span>
-        <a class="product-label" href="index.html">Retirement Planner</a>
-      </div>
+  <div class="container header-inner">
+    <div class="brand-cluster">
+      <a class="brand carrowmont-brand" href="/" aria-label="Carrowmont home"><span class="brand-wordmark">CARROWMONT</span></a>
+      <span class="brand-divider" aria-hidden="true"></span>
+      <a class="product-label" href="index.html">Retirement Planner</a>
+    </div>
+    <div class="header-actions">
       <nav class="top-nav" aria-label="Primary navigation">
         <a href="planner.html">Planner</a>
         <a href="how-it-works.html">How it works</a>
@@ -41,21 +40,26 @@
         <a href="/#tools">All tools</a>
         <a href="/">Home</a>
       </nav>
+      <details class="locale-menu" id="localeMenu">
+        <summary id="localeSummary">India · INR</summary>
+        <div class="locale-popover">
+          <h3>Country &amp; currency</h3>
+          <p>Choose the context that makes the numbers easiest to understand.</p>
+          <label>Country / region<select id="regionSelect"></select></label>
+          <label>Currency<select id="currencySelect"></select></label>
+          <div class="locale-note"><strong>Important:</strong> changing currency changes the unit and number format only. It does not convert existing plan amounts using an exchange rate, and it does not change inflation, returns, taxes, pension rules or account rules. Review your monetary inputs after switching.</div>
+          <button class="locale-done-button" id="localeDoneBtn" type="button">Done</button>
+        </div>
+      </details>
       <details class="mobile-nav">
         <summary aria-label="Open navigation">Menu</summary>
         <div class="mobile-nav-links">
-          <a href="/">Carrowmont home</a>
-          <a href="/#tools">All tools</a>
-          <a href="planner.html">Retirement Planner</a>
-          <a href="how-it-works.html">How it works</a>
-          <a href="methodology.html">Methodology</a>
-          <a href="faq.html">FAQ</a>
-          <a href="/about.html">About Carrowmont</a>
-          <a href="/contact.html">Contact</a>
+          <a href="/">Carrowmont home</a><a href="/#tools">All tools</a><a href="planner.html">Retirement Planner</a><a href="how-it-works.html">How it works</a><a href="methodology.html">Methodology</a><a href="faq.html">FAQ</a><a href="/about.html">About Carrowmont</a><a href="/contact.html">Contact</a>
         </div>
       </details>
     </div>
-  </header>
+  </div>
+</header>
 <main>
   <section class="home-hero">
     <div class="container tool-breadcrumb"><a href="/#tools">← Back to all Carrowmont tools</a><span>Retirement Planner</span></div>
@@ -63,16 +67,16 @@
       <div>
         <span class="eyebrow">Smart retirement planning</span>
         <h1>Plan retirement around the life you'll actually live.</h1>
-        <p class="hero-copy">School fees and EMIs may disappear. Healthcare or travel may rise. The Carrowmont Retirement Planner lets you model those changes instead of assuming today's household spending continues forever.</p>
+        <p class="hero-copy">Education costs, loan payments or commuting may disappear. Healthcare or travel may rise. The Carrowmont Retirement Planner lets you model those changes instead of assuming today's household spending continues forever.</p>
         <div class="hero-actions"><a class="hero-cta" href="planner.html">Build my retirement plan</a><a class="secondary-link-button" href="methodology.html">See how the math works</a></div>
-        <div class="trust-points"><span>Calculations run in your browser</span><span>No sign-up required</span><span>India-friendly ₹ formatting</span></div>
+        <div class="trust-points"><span>Calculations run in your browser</span><span>No sign-up required</span><span>Country-aware currency formatting</span></div>
       </div>
       <aside class="hero-card home-example-card" aria-label="Illustrative example">
         <div class="hero-card-label">Illustrative example</div>
         <div class="example-flow">
-          <div><span>Household spending today</span><strong>₹90,000/mo</strong></div>
+          <div><span>Household spending today</span><strong>Enter your current spending</strong></div>
           <span class="arrow">→</span>
-          <div><span>Retirement lifestyle in today's money</span><strong>₹54,900/mo</strong></div>
+          <div><span>Retirement lifestyle</span><strong>Model only the costs that remain</strong></div>
         </div>
         <p>Why can it fall? A detailed plan can remove school fees and loan payments while increasing healthcare, travel or domestic help.</p>
         <small>Example only. Your result depends entirely on the assumptions you enter.</small>
@@ -84,7 +88,7 @@
     <div class="container">
       <div class="section-heading-centered"><span class="section-kicker">Different by design</span><h2>More than “today's expenses × inflation”</h2><p>The Carrowmont Retirement Planner separates the pieces that actually drive a retirement plan.</p></div>
       <div class="feature-grid three-feature-grid">
-        <article class="feature-card"><span class="feature-number">01</span><h3>Expenses can change</h3><p>Mark school fees or EMIs as ending, reduce commuting, or increase healthcare and lifestyle costs after retirement.</p></article>
+        <article class="feature-card"><span class="feature-number">01</span><h3>Expenses can change</h3><p>Mark education costs or loan payments as ending, reduce commuting, or increase healthcare and lifestyle costs after retirement.</p></article>
         <article class="feature-card"><span class="feature-number">02</span><h3>Income offsets withdrawals</h3><p>Add pension, rent or annuity income so the portfolio only needs to fund the remaining retirement cash flow.</p></article>
         <article class="feature-card"><span class="feature-number">03</span><h3>Cash flows are modelled over time</h3><p>The planner evaluates retirement expenses, income and one-time goals across the years rather than relying on one static multiple.</p></article>
       </div>
@@ -130,8 +134,10 @@
     <div class="container footer-bottom"><span>© <span data-current-year></span> Carrowmont · Retirement Planner</span><span>Illustrative estimates, not financial advice.</span></div>
   </footer>
 
-  <script src="site-config.js?v=2.3.1"></script>
-  <script src="site.js?v=2.3.1"></script>
+  <script src="site-config.js?v=2.4.0"></script>
+  <script src="locale.js?v=2.4.0"></script>
+  <script src="locale-ui.js?v=2.4.0"></script>
+  <script src="site.js?v=2.4.0"></script>
 
 </body>
 </html>
