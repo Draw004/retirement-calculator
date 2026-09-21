@@ -3,6 +3,8 @@
 
   const $ = (id) => document.getElementById(id);
   const L = window.CarrowmontLocale;
+  const REPORT_ENGINE = window.CarrowmontReportEngine;
+  const APP_CONFIG = window.CARROWMONT_RETIREMENT_CONFIG || {};
   const qsa = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const STORAGE_KEY = 'carrowmont-retirement-plan-v1';
   const LEGACY_STORAGE_KEY = 'retirewise-v2-plan';
@@ -660,14 +662,15 @@
       ? [{
           age: Math.max(s.retirementAge, r.projectedDepletionAge),
           value: 0,
-          label: `Current plan reaches zero · ${formatAgeCompact(Math.max(s.retirementAge, r.projectedDepletionAge))}`,
+          title: `Current plan reaches ${formatINR(0)}`,
+          subtitle: `Around ${formatAgeCompact(Math.max(s.retirementAge, r.projectedDepletionAge))}`,
           color: '#b93838'
         }]
       : [];
     renderLineChart($('portfolioChart'), r.portfolioPoints, {
       retirementAge: null, valueFormatter: v => formatINR(v, true), yLabel: '',
-      axisTitle: `Portfolio balance (future ${currencyCode()})`,
-      primaryLabel: 'Required-retirement-target path', compareLabel: 'Your current-plan path', comparePoints: r.currentPortfolioPoints, interactive: true,
+      axisTitle: `Portfolio balance (nominal ${currencyCode()})`,
+      primaryLabel: 'Fully funded target path', compareLabel: 'Your current-plan path', comparePoints: r.currentPortfolioPoints, interactive: true,
       primaryColor: '#123f5f', compareColor: '#0e827a', verticalMarkers: depletionMarker,
       startPointLabels: true, showGapAtStart: true
     });
@@ -686,7 +689,8 @@
     }
 
     const hasAxisTitle = Boolean(opts.axisTitle);
-    const W = 720, H = 300, L = hasAxisTitle ? 86 : 64, R = 18, T = comparePoints.length ? 42 : 20, B = 52;
+    const hasPointLabels = Array.isArray(opts.labelPoints) && opts.labelPoints.length > 0;
+    const W = 720, H = 300, L = hasAxisTitle ? 86 : 64, R = 18, T = comparePoints.length ? 42 : (hasPointLabels ? 48 : 20), B = 52;
     const xs = allPoints.map(p => p.age), ys = allPoints.map(p => Math.max(0, p.value));
     const minX = Math.min(...xs), maxX = Math.max(...xs);
     const maxYRaw = Math.max(...ys, 1);
@@ -712,15 +716,25 @@
       ? `<line x1="${x(opts.retirementAge)}" y1="${T}" x2="${x(opts.retirementAge)}" y2="${H-B}" stroke="#d8a83b" stroke-width="1.5" stroke-dasharray="5 5"/><text x="${x(opts.retirementAge)+5}" y="${T+13}" font-size="11" fill="#856112">Retire ${opts.retirementAge}</text>` : '';
 
     const verticalMarkers = Array.isArray(opts.verticalMarkers) ? opts.verticalMarkers.filter(m => Number.isFinite(m.age) && m.age > minX && m.age < maxX) : [];
+    const depletionShade = opts.shadeAfterMarker && verticalMarkers.length ? (() => {
+      const first = [...verticalMarkers].sort((a,b) => a.age - b.age)[0];
+      const sx = x(first.age);
+      return `<rect x="${sx}" y="${T}" width="${Math.max(0, W-R-sx)}" height="${H-T-B}" fill="#fff3f1" opacity="0.72"/>`;
+    })() : '';
     const markerLines = verticalMarkers.map((m, idx) => {
       const mx = x(m.age);
       const color = m.color || '#b93838';
-      const nearRight = mx > W - 215;
-      const tx = nearRight ? mx - 5 : mx + 5;
-      const anchor = nearRight ? 'end' : 'start';
-      const ty = T + 13 + idx * 14;
-      const markerDot = Number.isFinite(m.value) ? `<circle cx="${mx}" cy="${y(m.value)}" r="4.5" fill="${color}" stroke="#fff" stroke-width="2"/>` : '';
-      return `<line x1="${mx}" y1="${T}" x2="${mx}" y2="${H-B}" stroke="${color}" stroke-width="1.5" stroke-dasharray="4 4"/><text x="${tx}" y="${ty}" text-anchor="${anchor}" font-size="10" font-weight="700" fill="${color}">${escapeXml(m.label || `Age ${Math.round(m.age)}`)}</text>${markerDot}`;
+      const title = escapeXml(m.title || m.label || `Age ${Math.round(m.age)}`);
+      const subtitle = escapeXml(m.subtitle || '');
+      const labelWidth = 148;
+      const labelHeight = subtitle ? 28 : 19;
+      const bx = Math.max(L + 4, Math.min(W - R - labelWidth, mx - labelWidth / 2));
+      const by = T + 4 + idx * (labelHeight + 4);
+      const markerDot = Number.isFinite(m.value) ? `<circle cx="${mx}" cy="${y(m.value)}" r="5" fill="${color}" stroke="${color}" stroke-width="1"/>` : '';
+      const subLine = subtitle ? `<text x="${bx+8}" y="${by+22}" font-size="8.0" font-weight="700" fill="${color}">${subtitle}</text>` : '';
+      return `<line x1="${mx}" y1="${T}" x2="${mx}" y2="${H-B}" stroke="${color}" stroke-width="1.6" stroke-dasharray="5 4"/>` +
+        `<rect x="${bx}" y="${by}" width="${labelWidth}" height="${labelHeight}" rx="7" fill="#fff0ee" stroke="#e5b6b0"/>` +
+        `<text x="${bx+8}" y="${by+12}" font-size="8.2" font-weight="850" fill="${color}">${title}</text>${subLine}${markerDot}`;
     }).join('');
 
     const tickValues = [];
@@ -741,21 +755,101 @@
     let startLabels = '';
     if (opts.startPointLabels && comparePoints.length) {
       const a = points[0], b = comparePoints[0];
-      startLabels = `<g font-size="10.5" font-weight="700">
-        <text x="${x(a.age)+9}" y="${Math.max(T+36, y(a.value)-8)}" fill="${primaryColor}" paint-order="stroke" stroke="#fff" stroke-width="4" stroke-linejoin="round">Retirement target: ${escapeXml((opts.valueFormatter || String)(a.value))}</text>
-        <text x="${x(b.age)+9}" y="${Math.min(H-B-8, y(b.value)+17)}" fill="${compareColor}" paint-order="stroke" stroke="#fff" stroke-width="4" stroke-linejoin="round">Your projected savings: ${escapeXml((opts.valueFormatter || String)(b.value))}</text>
-      </g>`;
+      const fmt = opts.valueFormatter || String;
+      const ax = x(a.age) + 10, ay = Math.max(T + 29, y(a.value) - 24);
+      const bx = x(b.age) + 10, by = Math.min(H - B - 22, y(b.value) + 7);
+      startLabels = `<g font-size="9.2" font-weight="800">` +
+        `<rect x="${ax}" y="${ay}" width="164" height="19" rx="7" fill="#f3f7fa" stroke="#cbd9e2"/><text x="${ax+8}" y="${ay+13}" fill="${primaryColor}">Target: ${escapeXml(fmt(a.value))}</text>` +
+        `<rect x="${bx}" y="${by}" width="164" height="19" rx="7" fill="#eef8f6" stroke="#b9ddd7"/><text x="${bx+8}" y="${by+13}" fill="${compareColor}">Current plan: ${escapeXml(fmt(b.value))}</text></g>`;
     }
 
+    const requestedLabels = Array.isArray(opts.labelPoints) ? opts.labelPoints.filter(p => Number.isFinite(p?.age) && Number.isFinite(p?.value)) : [];
+    const placedLabelBoxes = [];
+    const labelGap = 8;
+    const overlapsLabel = (a, b) => !(a.x + a.w + labelGap <= b.x || b.x + b.w + labelGap <= a.x || a.y + a.h + labelGap <= b.y || b.y + b.h + labelGap <= a.y);
+    const pointLabels = requestedLabels.map((p, idx) => {
+      const px = x(p.age), py = y(p.value);
+      const rawValue = p.labelValue || (opts.valueFormatter || String)(p.value);
+      const titleRaw = p.labelTitle || `Age ${Math.round(p.age)}`;
+      const titleText = escapeXml(titleRaw);
+      const valueText = escapeXml(rawValue);
+      const longest = Math.max(titleRaw.length, String(rawValue).length);
+      const boxW = Math.max(72, Math.min(122, longest * 4.7 + 16));
+      const boxH = 28;
+      const nearRight = px > W - 135;
+      let preferLeft = p.labelSide === 'left' || (p.labelSide !== 'right' && nearRight);
+      if (nearRight) preferLeft = true;
+      let bx = preferLeft ? px - boxW - 10 : px + 10;
+      let by = py - boxH - 10;
+      by = Math.max(4, Math.min(H - B - boxH - 2, by));
+
+      // PDF labels cannot be hovered or moved, so reserve a real visual gap between
+      // adjacent milestone boxes. If two boxes would touch, stack the newer one
+      // further above the line while keeping it on the same side where possible.
+      let box = { x: bx, y: by, w: boxW, h: boxH };
+      let attempts = 0;
+      while (placedLabelBoxes.some(prev => overlapsLabel(box, prev)) && attempts < 5) {
+        const candidateY = by - (boxH + labelGap);
+        if (candidateY >= 4) {
+          by = candidateY;
+        } else {
+          preferLeft = !preferLeft;
+          bx = preferLeft ? px - boxW - 10 : px + 10;
+          by = Math.max(4, py - boxH - 10);
+        }
+        box = { x: bx, y: by, w: boxW, h: boxH };
+        attempts += 1;
+      }
+      placedLabelBoxes.push(box);
+      return `<g><circle cx="${px}" cy="${py}" r="4.2" fill="${primaryColor}" stroke="#ffffff" stroke-width="1.4"/>` +
+        `<rect x="${bx}" y="${by}" width="${boxW}" height="${boxH}" rx="6" fill="#f3f9f8" stroke="#b8ddd7"/>` +
+        `<text x="${bx+7}" y="${by+11}" font-size="7.8" font-weight="750" fill="#40566e">${titleText}</text>` +
+        `<text x="${bx+7}" y="${by+22}" font-size="8.6" font-weight="850" fill="${primaryColor}">${valueText}</text></g>`;
+    }).join('');
+
+    const primaryArea = opts.areaFill ? (() => {
+      const coords = points.map(p => `${x(p.age).toFixed(1)},${y(p.value).toFixed(1)}`).join(' ');
+      return `<polygon points="${x(points[0].age).toFixed(1)},${(H-B).toFixed(1)} ${coords} ${x(points[points.length-1].age).toFixed(1)},${(H-B).toFixed(1)}" fill="${primaryColor}" opacity="0.08"/>`;
+    })() : '';
+    const gapAnnotation = opts.showGapAtStart && comparePoints.length ? (() => {
+      const p = points[0], c = comparePoints[0];
+      const gap = Math.max(0, p.value - c.value);
+      if (gap <= 0) return '';
+      const gx = Math.min(W-R-95, x(p.age) + 68);
+      const y1 = y(p.value), y2 = y(c.value);
+      const mid = (y1+y2)/2;
+      const fmt = opts.valueFormatter || (v => String(Math.round(v)));
+      return `<g><line x1="${gx}" y1="${y1}" x2="${gx}" y2="${y2}" stroke="#c18a22" stroke-width="1.7"/>` +
+        `<line x1="${gx-5}" y1="${y1}" x2="${gx+5}" y2="${y1}" stroke="#c18a22" stroke-width="1.7"/>` +
+        `<line x1="${gx-5}" y1="${y2}" x2="${gx+5}" y2="${y2}" stroke="#c18a22" stroke-width="1.7"/>` +
+        `<rect x="${gx+7}" y="${mid-9}" width="98" height="18" rx="6" fill="#fff7e7" stroke="#ead6a7"/>` +
+        `<text x="${gx+13}" y="${mid+3}" font-size="8.6" font-weight="800" fill="#7a5716">Gap ${escapeXml(fmt(gap))}</text></g>`;
+    })() : '';
+    const endPointLabels = opts.endPointLabels && comparePoints.length ? (() => {
+      const fmt = opts.valueFormatter || (v => String(Math.round(v)));
+      const p = points[points.length-1], c = comparePoints[comparePoints.length-1];
+      const px = x(p.age), py = y(p.value), cx = x(c.age), cy = y(c.value);
+      const boxW = 158, boxH = 29;
+      const pBx = Math.max(L+6, px-boxW-8), pBy = Math.max(T+35, py-boxH-7);
+      const current = c.value > 0 ? (() => {
+        const cBx = Math.max(L+6, cx-boxW-8), cBy = Math.max(T+35, cy-boxH-7);
+        return `<rect x="${cBx}" y="${cBy}" width="${boxW}" height="${boxH}" rx="6" fill="#eef8f6" stroke="#b9ddd7"/>` +
+          `<text x="${cBx+7}" y="${cBy+11}" font-size="7.6" font-weight="750" fill="#40566e">Current-plan balance at age ${Math.round(c.age)}</text>` +
+          `<text x="${cBx+7}" y="${cBy+23}" font-size="8.6" font-weight="850" fill="${compareColor}">${escapeXml(fmt(c.value))}</text>`;
+      })() : '';
+      return `<g><rect x="${pBx}" y="${pBy}" width="${boxW}" height="${boxH}" rx="6" fill="#f3f7fa" stroke="#cbd9e2"/>` +
+        `<text x="${pBx+7}" y="${pBy+11}" font-size="7.6" font-weight="750" fill="#40566e">Target-funded balance at age ${Math.round(p.age)}</text>` +
+        `<text x="${pBx+7}" y="${pBy+23}" font-size="8.6" font-weight="850" fill="${primaryColor}">${escapeXml(fmt(p.value))} remaining</text>${current}</g>`;
+    })() : '';
     const tooltip = opts.interactive === false ? '' : '<div class="chart-tooltip" aria-hidden="true"></div>';
     container.innerHTML = `${tooltip}<svg viewBox="0 0 ${W} ${H}" role="presentation" aria-hidden="true">
-      ${legend}${axisTitle}${yGrid}${retirementLine}${markerLines}
+      ${legend}${axisTitle}${yGrid}${depletionShade}${retirementLine}${markerLines}${primaryArea}
       <polyline fill="none" stroke="${primaryColor}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" points="${polyline(points)}"/>
       ${comparePolyline}
-      <circle cx="${x(points[0].age)}" cy="${y(points[0].value)}" r="4" fill="${primaryColor}"/>
-      <circle cx="${x(points[points.length-1].age)}" cy="${y(points[points.length-1].value)}" r="4" fill="${primaryColor}"/>
-      ${comparePoints.length ? `<circle cx="${x(comparePoints[0].age)}" cy="${y(comparePoints[0].value)}" r="4" fill="${compareColor}"/>` : ''}
-      ${startLabels}${xTicks}
+      <circle cx="${x(points[0].age)}" cy="${y(points[0].value)}" r="4.2" fill="${primaryColor}" stroke="${primaryColor}" stroke-width="1"/>
+      <circle cx="${x(points[points.length-1].age)}" cy="${y(points[points.length-1].value)}" r="4.2" fill="${primaryColor}" stroke="${primaryColor}" stroke-width="1"/>
+      ${comparePoints.length ? `<circle cx="${x(comparePoints[0].age)}" cy="${y(comparePoints[0].value)}" r="4.2" fill="${compareColor}" stroke="${compareColor}" stroke-width="1"/>` : ''}
+      ${gapAnnotation}${startLabels}${pointLabels}${endPointLabels}${xTicks}
       ${opts.yLabel ? `<text x="${L}" y="${H-4}" font-size="10" fill="#8995a2">${escapeXml(opts.yLabel)}</text>` : ''}
       <line class="chart-hover-line" x1="0" y1="${T}" x2="0" y2="${H-B}" stroke="#9aa7b4" stroke-width="1" stroke-dasharray="3 3" visibility="hidden"/>
       <circle class="chart-hover-dot chart-hover-primary" cx="0" cy="0" r="5" fill="${primaryColor}" stroke="#fff" stroke-width="2" visibility="hidden"/>
@@ -873,32 +967,7 @@
     }
   }
 
-  function reportRow(label, value, valueClass = '') {
-    return `<tr><th>${escapeXml(label)}</th><td class="${valueClass}">${escapeXml(value)}</td></tr>`;
-  }
-
-  function buildPrintReport(r) {
-    const s = r.s;
-    const dateText = new Intl.DateTimeFormat(L ? L.getLocale() : 'en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date());
-    $('reportGenerated').textContent = `Generated ${dateText}`;
-    $('reportCorpus').textContent = formatINR(r.requiredCorpus, true);
-    $('reportRetireLine').textContent = `Retire at age ${Math.round(s.retirementAge)} · plan through age ${Math.round(s.planningAge)}`;
-    $('reportMonthlyNeeded').textContent = formatINR(r.totalMonthlyNeeded);
-    $('reportTodaySpend').textContent = `${formatINR(r.currentTodayExpense)}/mo`;
-    $('reportRetirementSpend').textContent = `${formatINR(r.retirementLifestyleToday)}/mo`;
-    $('reportFutureSpend').textContent = `${formatINR(r.retirementLifestyleFuture)}/mo`;
-    $('reportFutureSpendLabel').textContent = `Projected monthly spending at retirement (age ${Math.round(s.retirementAge)})`;
-    $('reportProjectedCorpus').textContent = formatINR(r.projectedCorpus, true);
-    $('reportFundingGap').textContent = r.gap > 0 ? formatINR(r.gap, true) : 'No gap*';
-    $('reportFundedPct').textContent = `${Math.max(0, r.fundedPct).toFixed(0)}%`;
-    const [reportStatus, reportStatusNote] = fundingStatusText(r.fundedPct);
-    $('reportFundingStatus').textContent = reportStatus;
-    $('reportExecutiveNote').textContent = reportStatusNote;
-    $('reportFirstYearExpense').textContent = `${formatINR(r.firstYearExpense)}/mo`;
-    $('reportFirstYearIncome').textContent = r.firstYearIncome > 0 ? `${formatINR(r.firstYearIncome)}/mo` : 'None entered';
-    $('reportReduced').textContent = `${formatINR(r.monthlyReduced)}/mo`;
-    $('reportIncreased').textContent = `${formatINR(r.monthlyIncreased)}/mo`;
-
+  function reportAssumptions(s) {
     const assumptions = [
       ['Country / region', regionLabel()],
       ['Currency', currencyCode()],
@@ -907,7 +976,7 @@
       ['Retirement age', `${Math.round(s.retirementAge)}`],
       ['Plan until age', `${Math.round(s.planningAge)}`],
       ['Current retirement savings', formatINR(s.currentSavings)],
-      ['Current monthly retirement contribution', formatINR(s.currentMonthlyInvestment)],
+      ['Current monthly retirement investment', formatINR(s.currentMonthlyInvestment)],
       ['Return before retirement', `${s.preReturn.toFixed(1)}% p.a.`],
       ['Return during retirement', `${s.postReturn.toFixed(1)}% p.a.`],
       ['Safety buffer', `${s.bufferRate.toFixed(0)}%`],
@@ -922,23 +991,166 @@
       assumptions.push(['Lifestyle inflation', `${s.lifestyleInflation.toFixed(1)}% p.a.`]);
       assumptions.push(['Education inflation', `${s.educationInflation.toFixed(1)}% p.a.`]);
     }
+    return assumptions;
+  }
+
+  function buildRetirementReportModel(r) {
+    const s = r.s;
+    const generatedAt = new Date();
+    const monthsToRetire = Math.max(0, Math.round((s.retirementAge - s.currentAge) * 12));
+    const contributionPrincipal = s.currentMonthlyInvestment * monthsToRetire;
+    const modelledInvestmentGrowth = r.projectedCorpus - s.currentSavings - contributionPrincipal;
+    const inflationMultiple = r.retirementLifestyleToday > 0 ? r.retirementLifestyleFuture / r.retirementLifestyleToday : 1;
+    const [fundingStatus, fundingStatusNote] = fundingStatusText(r.fundedPct);
+    const assumptions = reportAssumptions(s);
+    const methodology = {
+      id: APP_CONFIG.METHODOLOGY_ID || 'retirement-methodology-current',
+      label: APP_CONFIG.METHODOLOGY_LABEL || 'Current retirement methodology',
+      url: APP_CONFIG.METHODOLOGY_URL || 'https://carrowmont.com/retirement-calculator/methodology.html'
+    };
+    const spec = {
+      schemaVersion: APP_CONFIG.REPORT_SCHEMA_VERSION || '1.0',
+      toolId: 'retirement',
+      toolName: 'Carrowmont Retirement Planner',
+      generatedAt,
+      locale: L ? L.getLocale() : 'en-IN',
+      country: regionLabel(),
+      currency: currencyCode(),
+      methodology,
+      inputs: {
+        mode: s.mode,
+        currentAge: s.currentAge,
+        retirementAge: s.retirementAge,
+        planningAge: s.planningAge,
+        currentSavings: s.currentSavings,
+        currentMonthlyInvestment: s.currentMonthlyInvestment,
+        preReturn: s.preReturn,
+        postReturn: s.postReturn,
+        bufferRate: s.bufferRate
+      },
+      calculatedResults: {
+        requiredCorpus: r.requiredCorpus,
+        projectedCorpus: r.projectedCorpus,
+        gap: r.gap,
+        fundedPct: r.fundedPct,
+        totalMonthlyNeeded: r.totalMonthlyNeeded,
+        extraMonthlyNeeded: r.extraMonthlyNeeded,
+        currentTodayExpense: r.currentTodayExpense,
+        retirementLifestyleToday: r.retirementLifestyleToday,
+        retirementLifestyleFuture: r.retirementLifestyleFuture,
+        firstYearExpense: r.firstYearExpense,
+        firstYearIncome: r.firstYearIncome,
+        recurringExpensePV: r.recurringExpensePV,
+        retirementIncomePV: r.retirementIncomePV,
+        goalsPV: r.goalsPV,
+        safetyBufferAmount: r.safetyBufferAmount,
+        futureExisting: r.futureExisting,
+        futureCurrentContrib: r.futureCurrentContrib,
+        projectedDepletionAge: r.projectedDepletionAge
+      },
+      assumptions: assumptions.map(([label, value]) => ({ label, value })),
+      extras: {
+        fundingStatus,
+        fundingStatusNote,
+        monthsToRetire,
+        contributionPrincipal,
+        modelledInvestmentGrowth,
+        inflationMultiple,
+        expenseChanges: r.expenseChanges,
+        expensePoints: r.expensePoints,
+        portfolioPoints: r.portfolioPoints,
+        currentPortfolioPoints: r.currentPortfolioPoints
+      }
+    };
+    const model = REPORT_ENGINE ? REPORT_ENGINE.createReportModel(spec) : spec;
+    window.__CARROWMONT_LAST_REPORT_MODEL = model;
+    return model;
+  }
+
+  function reportRow(label, value, valueClass = '') {
+    return `<tr><th>${escapeXml(label)}</th><td class="${valueClass}">${escapeXml(value)}</td></tr>`;
+  }
+
+  function buildPrintReport(r) {
+    const s = r.s;
+    const model = buildRetirementReportModel(r);
+    $('reportGenerated').textContent = `Generated ${model.generatedDisplay || model.generatedDate || ''}`;
+    $('reportPlannerMode').textContent = s.mode === 'detailed' ? 'Based on: Detailed estimate' : 'Based on: Quick estimate';
+    const quickModeNote = $('reportQuickModeNote');
+    if (quickModeNote) quickModeNote.style.display = s.mode === 'quick' ? '' : 'none';
+    $('reportCorpusLabel').textContent = `Estimated retirement requirement (future ${currencyCode()} at retirement)`;
+    $('reportTodaySpendLabel').textContent = `Current monthly spending`;
+    $('reportRetirementSpendLabel').textContent = `Retirement lifestyle (today's ${currencyCode()})`;
+    $('reportProjectedCorpusLabel').textContent = `Projected savings at retirement (future ${currencyCode()})`;
+    $('reportFundingGapLabel').textContent = `Funding gap at retirement (future ${currencyCode()})`;
+    $('reportMonthlyNeededLabel').textContent = `Monthly investment required from now`;
+    $('reportTargetBasis').textContent = `Future ${currencyCode()} at retirement unless noted`;
+    $('reportFundingBasis').textContent = `Future ${currencyCode()} at retirement unless noted`;
+    $('reportCorpus').textContent = formatINR(r.requiredCorpus, true);
+    $('reportRetireLine').textContent = `Retire at age ${Math.round(s.retirementAge)} · plan through age ${Math.round(s.planningAge)}`;
+    $('reportMonthlyNeeded').textContent = formatINR(r.totalMonthlyNeeded);
+    $('reportTodaySpend').textContent = `${formatINR(r.currentTodayExpense)}/mo`;
+    $('reportRetirementSpend').textContent = `${formatINR(r.retirementLifestyleToday)}/mo`;
+    $('reportFutureSpend').textContent = `${formatINR(r.retirementLifestyleFuture)}/mo`;
+    $('reportFutureSpendLabel').textContent = `Projected monthly spending at retirement (age ${Math.round(s.retirementAge)}, future ${currencyCode()})`;
+    $('reportProjectedCorpus').textContent = formatINR(r.projectedCorpus, true);
+    $('reportFundingGap').textContent = r.gap > 0 ? formatINR(r.gap, true) : 'No gap*';
+    $('reportFundedPct').textContent = `${Math.max(0, r.fundedPct).toFixed(0)}%`;
+    const [reportStatus, reportStatusNote] = fundingStatusText(r.fundedPct);
+    $('reportFundingStatus').textContent = reportStatus;
+    $('reportExecutiveNote').textContent = reportStatusNote;
+    $('reportFirstYearExpense').textContent = `${formatINR(r.firstYearExpense)}/mo`;
+    $('reportFirstYearIncome').textContent = r.firstYearIncome > 0 ? `${formatINR(r.firstYearIncome)}/mo` : 'None entered';
+    $('reportReduced').textContent = `${formatINR(r.monthlyReduced)}/mo`;
+    $('reportIncreased').textContent = `${formatINR(r.monthlyIncreased)}/mo`;
+
+    $('reportCurrentMonthlyInvestment').textContent = formatINR(s.currentMonthlyInvestment);
+    $('reportNeededMonthlyInvestment').textContent = formatINR(r.totalMonthlyNeeded);
+    $('reportAdditionalMonthlyInvestment').textContent = r.extraMonthlyNeeded > 1 ? formatINR(r.extraMonthlyNeeded) : `${zeroMoney()} under assumptions`;
+    const additionalRibbon = $('reportAdditionalRibbon');
+    if (additionalRibbon) {
+      additionalRibbon.classList.toggle('report-action-ribbon-gap', r.extraMonthlyNeeded > 1);
+      additionalRibbon.classList.toggle('report-action-ribbon-ok', !(r.extraMonthlyNeeded > 1));
+    }
+    $('reportActionNarrative').textContent = r.extraMonthlyNeeded > 1
+      ? `Under the entered assumptions, increasing the monthly retirement investment from ${formatINR(s.currentMonthlyInvestment)} to about ${formatINR(r.totalMonthlyNeeded)} may close the modelled gap by age ${Math.round(s.retirementAge)}. This is an illustration, not a recommendation or guarantee.`
+      : `Under the entered assumptions, the current monthly retirement investment is at or above the amount required by the model for the selected retirement age. This is an illustration, not a recommendation or guarantee.`;
+
+    $('reportSavingsSources').innerHTML = [
+      [`Current retirement savings`, formatINR(s.currentSavings)],
+      [`Contributions added before retirement (nominal contributions)`, formatINR(model.extras.contributionPrincipal)],
+      [`Modelled investment growth / (decline) by retirement`, formatINR(model.extras.modelledInvestmentGrowth)],
+      [`Projected savings at retirement (future ${currencyCode()})`, formatINR(r.projectedCorpus)],
+    ].map(([a,b], i, arr) => reportRow(a,b, i === arr.length - 1 ? 'report-total-value' : '')).join('');
+
+    $('reportInflationImpact').innerHTML = [
+      [`Retirement lifestyle in today's ${currencyCode()}`, `${formatINR(r.retirementLifestyleToday)}/mo`],
+      [`Same lifestyle at age ${Math.round(s.retirementAge)} in future ${currencyCode()}`, `${formatINR(r.retirementLifestyleFuture)}/mo`],
+      ['Nominal amount multiple', `${model.extras.inflationMultiple.toFixed(2)}×`],
+    ].map(([a,b]) => reportRow(a,b)).join('');
+    $('reportInflationNarrative').textContent = `Today's money shows comparable purchasing power. Future ${currencyCode()} shows the modelled nominal amount at age ${Math.round(s.retirementAge)} after applying the entered inflation assumptions.`;
+
+    $('reportMethodologyLabel').textContent = `Methodology: ${model.methodology.label || 'Current methodology'}`;
+    $('reportMethodologyUrl').textContent = (model.methodology.url || '').replace(/^https?:\/\//, '');
+
+    const assumptions = model.assumptions.map(x => [x.label, x.value]);
     $('reportAssumptions').innerHTML = assumptions.map(([a,b]) => reportRow(a,b)).join('');
 
     $('reportBreakdown').innerHTML = [
-      ['Recurring retirement expenses', formatINR(r.recurringExpensePV)],
-      ['Less retirement income', `−${formatINR(r.retirementIncomePV)}`],
-      ['One-time retirement goals', formatINR(r.goalsPV)],
-      ['Safety buffer', formatINR(r.safetyBufferAmount)],
-      ['Estimated retirement target', formatINR(r.requiredCorpus)],
+      [`Recurring retirement expenses (value required at retirement)`, formatINR(r.recurringExpensePV)],
+      [`Less retirement income (value at retirement)`, `−${formatINR(r.retirementIncomePV)}`],
+      [`One-time retirement goals (value at retirement)`, formatINR(r.goalsPV)],
+      [`Safety buffer (future ${currencyCode()} at retirement)`, formatINR(r.safetyBufferAmount)],
+      [`Estimated retirement requirement (future ${currencyCode()} at retirement)`, formatINR(r.requiredCorpus)],
     ].map(([a,b], i, arr) => reportRow(a,b, i === arr.length - 1 ? 'report-total-value' : '')).join('');
 
     $('reportFunding').innerHTML = [
-      ['Future value of existing savings', formatINR(r.futureExisting)],
-      ['Future value of current contributions', formatINR(r.futureCurrentContrib)],
-      ['Projected retirement savings', formatINR(r.projectedCorpus)],
-      ['Funding gap', r.gap > 0 ? formatINR(r.gap) : 'No gap under assumptions'],
-      ['Total monthly investment indicated', formatINR(r.totalMonthlyNeeded)],
-      ['Additional monthly investment indicated', r.extraMonthlyNeeded > 1 ? formatINR(r.extraMonthlyNeeded) : `${zeroMoney()} under assumptions`],
+      [`Future value of existing savings at retirement (future ${currencyCode()})`, formatINR(r.futureExisting)],
+      [`Future value of current contributions at retirement (future ${currencyCode()})`, formatINR(r.futureCurrentContrib)],
+      [`Projected savings at retirement (future ${currencyCode()})`, formatINR(r.projectedCorpus)],
+      [`Funding gap at retirement (future ${currencyCode()})`, r.gap > 0 ? formatINR(r.gap) : 'No gap under assumptions'],
+      [`Total monthly investment required from now`, formatINR(r.totalMonthlyNeeded)],
+      [`Additional monthly investment required`, r.extraMonthlyNeeded > 1 ? formatINR(r.extraMonthlyNeeded) : `${zeroMoney()} under assumptions`],
       ['Modelled current-plan runway', r.projectedDepletionAge !== null && r.projectedDepletionAge < s.planningAge - 0.05 ? `Around ${formatAgeYearsMonths(Math.max(s.retirementAge, r.projectedDepletionAge), true)}` : `Through age ${Math.round(s.planningAge)}`],
     ].map(([a,b]) => reportRow(a,b)).join('');
 
@@ -959,28 +1171,71 @@
       $('reportExpenseContext').textContent = 'Detailed planner required for expense-by-expense reporting';
     }
 
-    $('reportScenarios').innerHTML = scenarioResults(s).map(({age, result}) => `<tr>
-      <td>${age}${age === Math.round(s.retirementAge) ? ' (selected)' : ''}</td>
-      <td>${escapeXml(formatINR(result.requiredCorpus))}</td>
-      <td>${escapeXml(formatINR(result.totalMonthlyNeeded))}</td>
-      <td>${Math.max(0, result.fundedPct).toFixed(0)}%</td>
-    </tr>`).join('');
+    $('reportScenarios').innerHTML = scenarioResults(s).map(({age, result}) => {
+      const selected = age === Math.round(s.retirementAge);
+      return `<tr class="${selected ? 'report-scenario-selected' : ''}">
+        <td>${age}${selected ? ' (selected)' : ''}</td>
+        <td>${escapeXml(formatINR(result.requiredCorpus))}</td>
+        <td>${escapeXml(formatINR(result.totalMonthlyNeeded))}</td>
+        <td>${Math.max(0, result.fundedPct).toFixed(0)}%</td>
+      </tr>`;
+    }).join('');
+    const scenarioFundingNote = $('reportScenarioFundingNote');
+    if (scenarioFundingNote) scenarioFundingNote.textContent = `Projected funding uses your current plan - ${formatINR(s.currentSavings)} already saved plus ${formatINR(s.currentMonthlyInvestment)}/mo ongoing investment, together with the entered return assumptions. It does not assume the "monthly investment required" shown in the previous column.`;
 
-    renderLineChart($('reportExpenseChart'), r.expensePoints, {
+    const expenseStartPoint = r.expensePoints[0] || { age: s.currentAge, value: r.currentTodayExpense };
+    const expenseEndPoint = r.expensePoints[r.expensePoints.length - 1] || { age: s.planningAge, value: r.retirementLifestyleFuture };
+    const expenseRetirementPoint = r.expensePoints.find(p => Math.abs(p.age - s.retirementAge) < 0.01) || { age: s.retirementAge, value: r.retirementLifestyleFuture };
+    const nearestExpensePoint = (age) => r.expensePoints.reduce((best, p) => Math.abs(p.age-age) < Math.abs(best.age-age) ? p : best, r.expensePoints[0]);
+    const preMidAge = Math.max(s.currentAge, Math.min(s.retirementAge, Math.round(((s.currentAge + s.retirementAge) / 2) / 5) * 5));
+    const postMidAge = Math.max(s.retirementAge, Math.min(s.planningAge, Math.round(((s.retirementAge + s.planningAge) / 2) / 5) * 5));
+    const milestoneBase = [expenseStartPoint, nearestExpensePoint(preMidAge), expenseRetirementPoint, nearestExpensePoint(postMidAge), expenseEndPoint]
+      .filter((p, i, arr) => arr.findIndex(q => Math.abs(q.age-p.age) < 0.01) === i);
+    const expenseMilestones = milestoneBase.map((p, idx) => ({
+      ...p,
+      labelTitle: Math.abs(p.age-s.currentAge) < 0.01 ? `Age ${Math.round(p.age)} · today` : Math.abs(p.age-s.retirementAge) < 0.01 ? `Age ${Math.round(p.age)} · retirement` : Math.abs(p.age-s.planningAge) < 0.01 ? `Age ${Math.round(p.age)} · plan end` : `Age ${Math.round(p.age)}`,
+      labelValue: `${formatINR(p.value, true)}/mo`,
+      labelPlacement: 'above',
+      // Keep neighbouring milestone callouts on the same natural side of the line.
+      // The chart renderer flips the final/right-edge label automatically and enforces
+      // a minimum gap between boxes so adjacent ages never visually merge.
+      labelSide: idx === milestoneBase.length - 1 ? 'left' : 'right'
+    }));
+    const reportExpensePath = expenseMilestones.map(({age,value}) => ({age,value}));
+    renderLineChart($('reportExpenseChart'), reportExpensePath, {
       retirementAge: s.retirementAge, valueFormatter: v => formatINR(v, true), yLabel: 'Monthly spending',
-      primaryLabel: 'Monthly spending', interactive: false
+      axisTitle: `Monthly household spending`,
+      primaryLabel: 'Monthly spending', interactive: false,
+      labelPoints: expenseMilestones, areaFill: true
     });
+    const expenseStats = $('reportExpenseChartStats');
+    if (expenseStats) expenseStats.innerHTML = [
+      [`Today · age ${formatAgeCompact(s.currentAge)}`, `${formatINR(expenseStartPoint.value, true)}/mo`],
+      [`At retirement · age ${formatAgeCompact(s.retirementAge)}`, `${formatINR(expenseRetirementPoint.value, true)}/mo`],
+      [`Plan end · age ${formatAgeCompact(s.planningAge)}`, `${formatINR(expenseEndPoint.value, true)}/mo`]
+    ].map(([label, value]) => `<div class="report-chart-stat"><span>${escapeXml(label)}</span><strong>${escapeXml(value)}</strong></div>`).join('');
+    const expenseNote = $('reportExpenseChartNote');
+    if (expenseNote) expenseNote.textContent = `How to read this chart: age ${Math.round(s.currentAge)} is today, so ${formatINR(expenseStartPoint.value, true)}/mo is the current amount. Every later point is the modelled nominal future-${currencyCode()} amount at that age. At retirement age ${Math.round(s.retirementAge)}, the modelled monthly amount is about ${formatINR(expenseRetirementPoint.value, true)}/mo. Changes reflect the inflation, expense rules and lifestyle assumptions entered.`;
     const reportDepletionMarkers = r.projectedDepletionAge !== null && r.projectedDepletionAge < s.planningAge - 0.05
-      ? [{ age: Math.max(s.retirementAge, r.projectedDepletionAge), value: 0, label: `Current plan reaches zero · ${formatAgeCompact(Math.max(s.retirementAge, r.projectedDepletionAge))}`, color: '#b93838' }]
+      ? [{ age: Math.max(s.retirementAge, r.projectedDepletionAge), value: 0, title: `Current plan reaches ${formatINR(0)}`, subtitle: `Around ${formatAgeCompact(Math.max(s.retirementAge, r.projectedDepletionAge))}`, color: '#b93838' }]
       : [];
     renderLineChart($('reportPortfolioChart'), r.portfolioPoints, {
       retirementAge: null, valueFormatter: v => formatINR(v, true), yLabel: '',
-      axisTitle: `Portfolio balance (future ${currencyCode()})`,
-      primaryLabel: 'Required-retirement-target path', compareLabel: 'Your current-plan path', comparePoints: r.currentPortfolioPoints, interactive: false,
-      primaryColor: '#123f5f', compareColor: '#0e827a', verticalMarkers: reportDepletionMarkers, startPointLabels: true
+      axisTitle: `Portfolio balance (nominal ${currencyCode()})`,
+      primaryLabel: 'Fully funded target path', compareLabel: 'Your current-plan path', comparePoints: r.currentPortfolioPoints, interactive: false,
+      primaryColor: '#123f5f', compareColor: '#0e827a', verticalMarkers: reportDepletionMarkers, startPointLabels: true,
+      showGapAtStart: true, shadeAfterMarker: reportDepletionMarkers.length > 0, endPointLabels: true
     });
+    const portfolioStats = $('reportPortfolioChartStats');
+    if (portfolioStats) portfolioStats.innerHTML = [
+      ['Target at retirement', formatINR(r.requiredCorpus, true)],
+      ['Your projected savings', formatINR(r.projectedCorpus, true)],
+      [r.gap > 0 ? 'Funding gap' : 'Projected surplus', formatINR(Math.abs(r.gap), true)],
+      ['Current-plan runway', r.projectedDepletionAge !== null && r.projectedDepletionAge < s.planningAge - 0.05 ? `Around ${formatAgeYearsMonths(Math.max(s.retirementAge, r.projectedDepletionAge), true)}` : `Through age ${Math.round(s.planningAge)}`]
+    ].map(([label, value]) => `<div class="report-chart-stat"><span>${escapeXml(label)}</span><strong>${escapeXml(value)}</strong></div>`).join('');
     const reportPortfolioNote = $('reportPortfolioChartNote');
-    if (reportPortfolioNote) reportPortfolioNote.textContent = `How to read this chart: the current-plan path starts with the corpus projected from your savings and contributions (${formatINR(r.projectedCorpus, true)}). The required-retirement-target path starts with the modelled corpus needed (${formatINR(r.requiredCorpus, true)}), including the selected ${s.bufferRate.toFixed(0)}% safety buffer (${formatINR(r.safetyBufferAmount, true)}). Any unused reserve remains invested, so the required-retirement-target path may finish above zero.${reportDepletionMarkers.length ? ` The red marker shows the current-plan path reaching zero around ${formatAgeYearsMonths(reportDepletionMarkers[0].age, true)} under these assumptions.` : ''}`;
+    const targetEndBalance = r.portfolioPoints.length ? r.portfolioPoints[r.portfolioPoints.length - 1].value : 0;
+    if (reportPortfolioNote) reportPortfolioNote.textContent = `How to read this chart: the green current-plan path starts at retirement with projected savings of ${formatINR(r.projectedCorpus, true)}. The blue target-funded path assumes retirement starts with the full modelled requirement of ${formatINR(r.requiredCorpus, true)}, which includes the ${s.bufferRate.toFixed(0)}% safety buffer (${formatINR(r.safetyBufferAmount, true)}). The ${formatINR(Math.abs(r.gap), true)} difference at retirement is the modelled ${r.gap > 0 ? 'funding gap' : 'surplus'}.${reportDepletionMarkers.length ? ` The current-plan path reaches zero around ${formatAgeYearsMonths(reportDepletionMarkers[0].age, true)}.` : ` The current-plan path remains above zero through age ${Math.round(s.planningAge)}.`} Under the fully funded target path, ${formatINR(targetEndBalance, true)} remains at age ${Math.round(s.planningAge)} in this model because any unused reserve stays invested at the entered retirement return. This remaining balance is not an extra amount you must fund on top of the retirement requirement.`;
   }
 
   function bindDelegatedRows() {
@@ -1139,6 +1394,7 @@
     $('copyBtn').addEventListener('click', async () => {
       if (!lastResult) return;
       const r = lastResult;
+      const model = buildRetirementReportModel(r);
       const funded = Math.max(0, r.fundedPct).toFixed(0);
       const gapText = r.gap > 0 ? formatINR(r.gap) : 'No gap under assumptions';
       const extraText = r.extraMonthlyNeeded > 1 ? formatINR(r.extraMonthlyNeeded) : `${zeroMoney()} under assumptions`;
@@ -1151,17 +1407,20 @@
         `Retirement age: ${Math.round(r.s.retirementAge)}`,
         `Plan through age: ${Math.round(r.s.planningAge)}`,
         '',
-        `Estimated retirement target: ${formatINR(r.requiredCorpus)}`,
-        `Projected retirement savings: ${formatINR(r.projectedCorpus)}`,
-        `Funding gap: ${gapText}`,
+        `Estimated retirement requirement (future ${currencyCode()} at retirement): ${formatINR(r.requiredCorpus)}`,
+        `Projected retirement savings (future ${currencyCode()} at retirement): ${formatINR(r.projectedCorpus)}`,
+        `Funding gap at retirement (future ${currencyCode()}): ${gapText}`,
         `Projected funding: ${funded}%`,
-        `Total monthly investment required: ${formatINR(r.totalMonthlyNeeded)}`,
-        `Additional monthly investment vs current plan: ${extraText}`,
+        `Total monthly investment required from now (current monthly ${currencyCode()}): ${formatINR(r.totalMonthlyNeeded)}`,
+        `Additional monthly investment required vs current plan (current monthly ${currencyCode()}): ${extraText}`,
         `Modelled current-plan runway: ${r.projectedDepletionAge !== null && r.projectedDepletionAge < r.s.planningAge - 0.05 ? `around ${formatAgeYearsMonths(Math.max(r.s.retirementAge, r.projectedDepletionAge), true)}` : `through age ${Math.round(r.s.planningAge)}`}`,
         '',
-        `Today's monthly spending: ${formatINR(r.currentTodayExpense)}/mo`,
-        `Retirement lifestyle in today's money: ${formatINR(r.retirementLifestyleToday)}/mo`,
-        `Projected monthly spending at retirement (age ${Math.round(r.s.retirementAge)}): ${formatINR(r.retirementLifestyleFuture)}/mo`,
+        `Today's monthly spending (current ${currencyCode()}): ${formatINR(r.currentTodayExpense)}/mo`,
+        `Retirement lifestyle (today's ${currencyCode()}): ${formatINR(r.retirementLifestyleToday)}/mo`,
+        `Projected monthly spending at retirement (age ${Math.round(r.s.retirementAge)}, future ${currencyCode()}): ${formatINR(r.retirementLifestyleFuture)}/mo`,
+        '',
+        `Methodology: ${model.methodology.label || 'Current methodology'}`,
+        `Generated: ${model.generatedDisplay || model.generatedDate || ''}`,
         '',
         'Educational planning estimate only. Results depend on the assumptions entered and actual outcomes may differ.',
         'carrowmont.com'
@@ -1174,7 +1433,10 @@
       if (!lastResult) return;
       preparePrintReport();
       const originalTitle = document.title;
-      document.title = `Carrowmont Retirement Planning Report - Age ${Math.round(lastResult.s.retirementAge)}`;
+      const reportModel = window.__CARROWMONT_LAST_REPORT_MODEL || buildRetirementReportModel(lastResult);
+      document.title = REPORT_ENGINE
+        ? REPORT_ENGINE.filename('carrowmont-retirement-report', reportModel.generatedAt || new Date())
+        : `carrowmont-retirement-report-${reportModel.generatedDate || ''}`;
       const status = $('reportStatus');
       if (status) status.textContent = 'Preparing the print-ready report…';
       let finished = false;

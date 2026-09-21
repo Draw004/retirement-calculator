@@ -266,7 +266,7 @@
           <div class="years-chip"><strong id="yearsToRetire">25</strong>&nbsp;years to retirement · plan through age <strong id="resultPlanningAge" class="planning-age-value">90</strong></div>
 
           <div class="primary-result">
-            <span>Estimated retirement target</span>
+            <span>Estimated retirement requirement at retirement</span>
             <strong id="requiredCorpus">—</strong>
             <small>Month-by-month retirement cash flows + selected safety buffer</small>
           </div>
@@ -306,11 +306,11 @@
 
           <div class="result-actions no-print">
             <button class="share-button" id="copyBtn" type="button">Copy summary</button>
-            <button class="share-button primary-action" id="printBtn" type="button">Generate retirement report</button>
+            <button class="share-button primary-action" id="printBtn" type="button">Create retirement report</button>
           </div>
           <div class="copy-status" id="copyStatus" aria-live="polite"></div>
           <div class="copy-status" id="reportStatus" aria-live="polite"></div>
-          <p class="report-action-hint no-print">The report opens in your browser print dialog. Choose <strong>Save as PDF</strong>. For a cleaner PDF, open <strong>More settings</strong> and turn off <strong>Headers and footers</strong>.</p>
+          <p class="report-action-hint no-print">Creates a print-ready retirement report from the exact calculation shown on screen. In the browser print dialog, choose <strong>Save as PDF</strong>. For a cleaner PDF, open <strong>More settings</strong> and turn off <strong>Headers and footers</strong>.</p>
           <p class="disclaimer">Illustrative planning tool only. Results depend on your assumptions and do not predict actual inflation, investment returns, taxes, longevity, healthcare costs or market sequence. This is not investment, tax or legal advice.</p>
         </aside>
       </div>
@@ -338,7 +338,7 @@
               <div class="offset"><span>Less retirement income</span><strong id="breakdownIncomePV">—</strong></div>
               <div><span>One-time retirement goals</span><strong id="breakdownGoalsPV">—</strong></div>
               <div><span>Safety buffer</span><strong id="breakdownBuffer">—</strong></div>
-              <div class="total"><span>Estimated retirement target</span><strong id="breakdownTotal">—</strong></div>
+              <div class="total"><span>Estimated retirement requirement at retirement</span><strong id="breakdownTotal">—</strong></div>
             </div>
           </article>
           <article class="analysis-card expense-breakdown-card">
@@ -384,8 +384,9 @@
         <header class="report-header">
           <div>
             <span class="report-brand">CARROWMONT</span>
-            <h2>Retirement Planning Report</h2>
+            <h1>Retirement Planning Report</h1>
             <p>Prepared from the Carrowmont Retirement Planner</p>
+            <div class="report-mode-badge" id="reportPlannerMode">Based on: Quick estimate</div>
           </div>
           <div class="report-meta">
             <strong id="reportGenerated">Generated</strong>
@@ -396,7 +397,7 @@
 
         <div class="report-hero">
           <div>
-            <span>Estimated retirement target</span>
+            <span id="reportCorpusLabel">Estimated retirement requirement (future money at retirement)</span>
             <strong id="reportCorpus">—</strong>
             <small id="reportRetireLine">Retire at age 60 · plan through age 90</small>
           </div>
@@ -408,39 +409,77 @@
         </div>
 
         <div class="report-executive-note" id="reportExecutiveNote">This summary is based on the assumptions entered in the planner.</div>
+        <div class="report-quick-mode-note" id="reportQuickModeNote">
+          <strong>Quick estimate coverage:</strong> This report uses a high-level spending percentage and a single inflation assumption. <span class="report-coverage-highlight">For broader coverage</span>, consider reviewing the <span class="report-detailed-planner-highlight">Detailed planner</span>, which can model expense categories, retirement income, one-time goals and lifestyle phases.
+        </div>
 
         <div class="report-summary-grid report-summary-grid-six">
-          <div><span>Today's monthly spending</span><strong id="reportTodaySpend">—</strong></div>
-          <div><span id="reportRetirementSpendLabel">Retirement lifestyle in today's money</span><strong id="reportRetirementSpend">—</strong></div>
+          <div><span id="reportTodaySpendLabel">Current monthly spending</span><strong id="reportTodaySpend">—</strong></div>
+          <div><span id="reportRetirementSpendLabel">Retirement lifestyle (today's money)</span><strong id="reportRetirementSpend">—</strong></div>
           <div><span id="reportFutureSpendLabel">Projected monthly spending at retirement</span><strong id="reportFutureSpend">—</strong></div>
-          <div><span>Projected retirement savings</span><strong id="reportProjectedCorpus">—</strong></div>
-          <div><span>Funding gap</span><strong id="reportFundingGap">—</strong></div>
-          <div><span>Monthly investment required</span><strong id="reportMonthlyNeeded">—</strong></div>
+          <div><span id="reportProjectedCorpusLabel">Projected savings at retirement (future money)</span><strong id="reportProjectedCorpus">—</strong></div>
+          <div><span id="reportFundingGapLabel">Funding gap at retirement (future money)</span><strong id="reportFundingGap">—</strong></div>
+          <div><span id="reportMonthlyNeededLabel">Monthly investment required from now</span><strong id="reportMonthlyNeeded">—</strong></div>
         </div>
 
         <section class="report-block report-two-col">
           <div>
-            <h2>How the corpus is built</h2>
+            <h2>How the retirement target is built</h2>
+            <p class="report-basis-note" id="reportTargetBasis">Future money at retirement unless noted</p>
             <table class="report-table"><tbody id="reportBreakdown"></tbody></table>
           </div>
           <div>
             <h2>Retirement funding</h2>
+            <p class="report-basis-note" id="reportFundingBasis">Future money at retirement unless noted</p>
             <table class="report-table"><tbody id="reportFunding"></tbody></table>
           </div>
         </section>
 
-        <section class="report-block">
-          <h2>Plan assumptions</h2>
+        <section class="report-block report-action-block">
+          <div class="report-section-heading">
+            <div><span class="report-eyebrow">What you can change</span><h2>Monthly investment required by the model</h2></div>
+            <span>Same assumptions · selected retirement age</span>
+          </div>
+          <div class="report-action-grid report-action-grid-primary">
+            <div><span>Current monthly retirement investment</span><strong id="reportCurrentMonthlyInvestment">—</strong></div>
+            <div><span>Total monthly investment required from now</span><strong id="reportNeededMonthlyInvestment">—</strong></div>
+          </div>
+          <div class="report-action-ribbon report-action-ribbon-gap" id="reportAdditionalRibbon">
+            <div>
+              <span>Additional monthly investment required</span>
+              <small>Key action under the selected assumptions</small>
+            </div>
+            <strong id="reportAdditionalMonthlyInvestment">—</strong>
+          </div>
+          <p class="report-explainer" id="reportActionNarrative">This is an illustrative monthly contribution under the assumptions entered, not a recommendation or guarantee.</p>
+        </section>
+
+        <section class="report-block report-two-col report-source-inflation">
+          <div>
+            <h2>Where projected retirement savings come from</h2>
+            <p class="report-basis-note">Money basis is stated in each row</p>
+            <table class="report-table"><tbody id="reportSavingsSources"></tbody></table>
+          </div>
+          <div>
+            <h2>Impact of inflation</h2>
+            <p class="report-basis-note">Compares today's purchasing power with future money at retirement</p>
+            <table class="report-table"><tbody id="reportInflationImpact"></tbody></table>
+            <p class="report-explainer" id="reportInflationNarrative">Future money is the nominal amount at retirement; today&apos;s money is comparable purchasing power.</p>
+          </div>
+        </section>
+
+        <section class="report-block report-assumptions-block">
+          <h2 class="report-section-ribbon">Plan assumptions</h2>
           <table class="report-table report-assumption-table"><tbody id="reportAssumptions"></tbody></table>
         </section>
 
         <section class="report-block report-lifestyle-block">
           <h2>Retirement lifestyle summary</h2>
           <div class="report-lifestyle-grid">
-            <div><span>Monthly costs removed / reduced</span><strong id="reportReduced">—</strong></div>
-            <div><span>Monthly costs added / increased</span><strong id="reportIncreased">—</strong></div>
-            <div><span>Average first-year expenses</span><strong id="reportFirstYearExpense">—</strong></div>
-            <div><span>Average first-year retirement income</span><strong id="reportFirstYearIncome">—</strong></div>
+            <div><span>Monthly costs removed / reduced (today's money)</span><strong id="reportReduced">—</strong></div>
+            <div><span>Monthly costs added / increased (today's money)</span><strong id="reportIncreased">—</strong></div>
+            <div><span>Average first-year expenses (future money after retirement)</span><strong id="reportFirstYearExpense">—</strong></div>
+            <div><span>Average first-year retirement income (future money after retirement)</span><strong id="reportFirstYearIncome">—</strong></div>
           </div>
           <p class="report-explainer">Today's money shows comparable purchasing power. Future money shows the estimated nominal amount in your selected currency at the retirement age after applying the inflation assumptions entered in the planner.</p>
         </section>
@@ -448,9 +487,11 @@
         <section class="report-block">
           <h2>Retirement-age comparison</h2>
           <table class="report-table report-scenario-table">
-            <thead><tr><th>Retirement age</th><th>Corpus needed</th><th>Monthly investment</th><th>Projected funding</th></tr></thead>
+            <colgroup><col class="scenario-age-col"><col class="scenario-corpus-col"><col class="scenario-monthly-col"><col class="scenario-funded-col"></colgroup>
+            <thead><tr><th>Retirement age</th><th>Corpus required<br><span>(future money at that age)</span></th><th>Monthly investment required<br><span>(from now)</span></th><th>Projected funding<br><span>(from current plan before any increase)</span></th></tr></thead>
             <tbody id="reportScenarios"></tbody>
           </table>
+          <p class="report-scenario-note" id="reportScenarioFundingNote">Projected funding is based on the current savings plan, not the monthly investment required shown in the previous column.</p>
         </section>
 
         <section class="report-block report-page-break-before" id="reportExpenseChangesBlock">
@@ -469,22 +510,24 @@
           <p class="report-chart-intro">These charts show how spending evolves and compare the modelled required-corpus path with the portfolio implied by your current savings plan.</p>
           <h3>Household expense timeline</h3>
           <div id="reportExpenseChart" class="report-chart"></div>
+          <div id="reportExpenseChartStats" class="report-chart-stats" aria-label="Household expense chart key values"></div>
+          <p class="report-chart-note" id="reportExpenseChartNote">Age at the left edge is today; later points are nominal future-money amounts for those ages.</p>
           <h3 class="report-chart-second-title">Retirement portfolio paths</h3>
           <div id="reportPortfolioChart" class="report-chart"></div>
-          <p class="report-chart-intro" id="reportPortfolioChartNote">The required-corpus path includes the selected safety buffer. Any unused reserve remains invested, so that path may finish above zero.</p>
+          <div id="reportPortfolioChartStats" class="report-chart-stats report-chart-stats-four" aria-label="Portfolio chart key values"></div>
+          <p class="report-chart-note" id="reportPortfolioChartNote">The required-corpus path includes the selected safety buffer. Any unused reserve remains invested, so that path may finish above zero.</p>
         </section>
 
         <section class="report-notes">
           <h2>Methodology & important information</h2>
           <p>The model estimates the amount needed at retirement by discounting projected month-by-month retirement cash flows using the entered post-retirement return and then applying the selected safety buffer. Detailed mode can also apply category-specific inflation, expense rules, retirement income, one-time goals and lifestyle phases.</p>
           <p>This report is an educational planning illustration based entirely on the information and assumptions entered. It does not predict investment returns, inflation, taxes, healthcare costs, longevity or market conditions. It is not individualized investment, financial, tax, legal, accounting or insurance advice. Actual outcomes can differ materially.</p>
-          <p><strong>Methodology:</strong> carrowmont.com/retirement-calculator/methodology.html &nbsp; · &nbsp; <strong>Contact:</strong> contact@carrowmont.com</p>
+          <p><strong id="reportMethodologyLabel">Methodology:</strong> <span id="reportMethodologyUrl">carrowmont.com/retirement-calculator/methodology.html</span> &nbsp; · &nbsp; <strong>Contact:</strong> contact@carrowmont.com</p>
+          <div class="report-footer-brand">
+            <strong>CARROWMONT</strong>
+            <span>Financial Planning, Tools & Learning · carrowmont.com</span>
+          </div>
         </section>
-
-        <div class="report-footer-brand">
-          <strong>CARROWMONT</strong>
-          <span>Financial Planning, Tools & Learning · carrowmont.com</span>
-        </div>
       </div>
     </section>
 
@@ -515,7 +558,7 @@
         <details><summary>What does “today's money” mean?</summary><p>For expense categories and one-time goals, enter what the item costs today. The planner applies the selected inflation assumption from your current age to the age when the cash flow occurs.</p></details>
         <details><summary>How should I enter a pension?</summary><p>Enter the monthly amount you expect when that income begins and the age it begins. You can also give it an annual increase rate. The calculator does not estimate pension entitlement for you.</p></details>
         <details><summary>What happens if a home loan continues after retirement?</summary><p>Set the expense rule to “Ends at age” and enter the actual expected payoff age. The model will include the payment during the early retirement years until that age.</p></details>
-        <details><summary>Does this guarantee that the money will last?</summary><p>No. The model uses constant assumptions. Actual market returns, inflation, taxes, healthcare needs and longevity can differ materially. Treat the result as an educational estimate, not a guarantee.</p></details>
+        <details><summary>Does this guarantee that the money will last?</summary><p>No. The model uses constant assumptions. Actual market returns, inflation, taxes, healthcare needs and longevity can differ materially. A future version can add variable-return or Monte Carlo analysis.</p></details>
         <p class="faq-more"><a class="text-link" href="faq.html">Read the full FAQ →</a></p>
       </div>
     </section>
@@ -539,9 +582,10 @@
 
 
   <script src="site-config.js?v=2.4.2"></script>
-  <script src="locale.js?v=2.4.2"></script>
-  <script src="locale-ui.js?v=2.4.2"></script>
-  <script src="site.js?v=2.4.2"></script>
+  <script src="locale.js?v=2.4.1"></script>
+  <script src="locale-ui.js?v=2.4.1"></script>
+  <script src="site.js?v=2.4.1"></script>
+  <script src="report-engine.js?v=1.1"></script>
   <script src="app.js?v=2.4.2"></script>
 </body>
 </html>
