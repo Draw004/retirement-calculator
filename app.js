@@ -1332,18 +1332,17 @@
 
   function resetPlan() {
     const currentMode = mode;
-    const zeroDefaults = {
-      ...DEFAULTS,
-      mode: currentMode,
-      currentSavings: 0,
-      currentMonthlyInvestment: 0,
-      quickMonthlyExpense: 0
-    };
-    const zeroExpenses = DEFAULT_EXPENSES.map(x => ({ ...x, amount: 0 }));
-    const zeroIncomes = DEFAULT_INCOMES.map(x => ({ ...x, amount: 0 }));
-    applyPlan({ ...zeroDefaults, expenses: zeroExpenses, incomes: zeroIncomes, goals: [] });
+    const indiaDemo = (!L || (L.getRegion() === 'IN' && L.getCurrency() === 'INR'));
+    const defaults = indiaDemo
+      ? { ...DEFAULTS, mode: currentMode }
+      : { ...DEFAULTS, mode: currentMode, currentSavings: 0, currentMonthlyInvestment: 0, quickMonthlyExpense: 0 };
+    const expenses = indiaDemo ? DEFAULT_EXPENSES.map(x => ({ ...x })) : DEFAULT_EXPENSES.map(x => ({ ...x, amount: 0 }));
+    const incomes = indiaDemo ? DEFAULT_INCOMES.map(x => ({ ...x })) : DEFAULT_INCOMES.map(x => ({ ...x, amount: 0 }));
+    applyPlan({ ...defaults, expenses, incomes, goals: [] });
     $('copyStatus').textContent = '';
-    $('saveStatus').textContent = `Plan reset. Monetary amounts are cleared; enter amounts in ${currencyCode()} to begin.`;
+    $('saveStatus').textContent = indiaDemo
+      ? 'Plan reset to the default Carrowmont example values.'
+      : `Plan reset to the default assumptions. Monetary fields are zero for ${currencyCode()} so you can enter your own amounts.`;
   }
 
   async function copyTextToClipboard(text) {
@@ -1426,51 +1425,43 @@
         'carrowmont.com'
       ].join('\n');
       const copied = await copyTextToClipboard(text);
-      $('copyStatus').textContent = copied ? 'Carrowmont summary copied.' : 'Copy is unavailable in this browser. Select the summary manually instead.';
+      $('copyStatus').textContent = copied ? 'Carrowmont Summary copied.' : 'Copy is unavailable in this browser. Select the summary manually instead.';
     });
 
-    $('printBtn').addEventListener('click', () => {
+    $('printBtn').addEventListener('click', async () => {
       if (!lastResult) return;
+      if (!window.CarrowmontPdfExport || !window.CarrowmontRetirementPdfRenderer) {
+        $('reportStatus').textContent = 'The PDF download engine did not load. Please refresh the page and try again.';
+        return;
+      }
       preparePrintReport();
-      const originalTitle = document.title;
-      const reportModel = window.__CARROWMONT_LAST_REPORT_MODEL || buildRetirementReportModel(lastResult);
-      document.title = REPORT_ENGINE
-        ? REPORT_ENGINE.filename('carrowmont-retirement-report', reportModel.generatedAt || new Date())
-        : `carrowmont-retirement-report-${reportModel.generatedDate || ''}`;
+      const btn = $('printBtn');
+      const original = btn.textContent;
+      btn.disabled = true;
+      btn.setAttribute('aria-busy','true');
+      btn.textContent = 'Preparing PDF...';
       const status = $('reportStatus');
-      if (status) status.textContent = 'Preparing the print-ready report…';
-      let finished = false;
-      const restoreTitle = () => {
-        finished = true;
-        document.title = originalTitle;
-        if (status) status.textContent = '';
-        window.removeEventListener('afterprint', restoreTitle);
-      };
-      window.addEventListener('afterprint', restoreTitle);
-      // Edge can ignore window.print() if it is called immediately after a large DOM update.
-      // Two animation frames give the browser time to lay out the print-only report first.
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        window.focus();
-        try { window.print(); } catch (_) { /* browser fallback message below */ }
-        setTimeout(() => {
-          if (!finished && status) status.textContent = 'If the print dialog did not open, press Ctrl+P (or Cmd+P) — the Carrowmont report is already prepared.';
-          if (document.title !== originalTitle) document.title = originalTitle;
-        }, 1200);
-      }));
-    });
-    $('savePlanBtn').addEventListener('click', () => {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(serializePlan())); $('saveStatus').textContent = 'Plan saved in this browser.'; }
-      catch (_) { $('saveStatus').textContent = 'Browser storage is unavailable.'; }
-    });
-    $('loadPlanBtn').addEventListener('click', () => {
+      if (status) status.textContent = 'Preparing your Retirement Planning Report...';
       try {
-        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
-        if (!raw) { $('saveStatus').textContent = 'No saved plan found on this device.'; return; }
-        applyPlan(JSON.parse(raw));
-        try { if (!localStorage.getItem(STORAGE_KEY)) localStorage.setItem(STORAGE_KEY, raw); } catch (_) {}
-        $('saveStatus').textContent = 'Saved plan loaded.';
-      } catch (_) { $('saveStatus').textContent = 'The saved plan could not be loaded.'; }
+        const canvases = await window.CarrowmontRetirementPdfRenderer.render($('printReport'));
+        const reportModel = window.__CARROWMONT_LAST_REPORT_MODEL || buildRetirementReportModel(lastResult);
+        const base = REPORT_ENGINE
+          ? REPORT_ENGINE.filename('retirement-planning-report', reportModel.generatedAt || new Date())
+          : `retirement-planning-report-${reportModel.generatedDate || ''}`;
+        await window.CarrowmontPdfExport.downloadCanvases(canvases,{filename:`${base}.pdf`,quality:.95});
+        btn.textContent = 'Report Downloaded';
+        if (status) status.textContent = 'Your retirement report has been downloaded.';
+      } catch (err) {
+        console.error('Retirement report PDF generation failed', err);
+        btn.textContent = 'PDF Failed - Try Again';
+        if (status) status.textContent = 'The report could not be generated. Please refresh the page and try again.';
+      } finally {
+        btn.disabled = false;
+        btn.removeAttribute('aria-busy');
+        setTimeout(() => { if (btn.textContent !== 'Preparing PDF...') btn.textContent = original; }, 1800);
+      }
     });
+
   }
 
   function init() {

@@ -833,3 +833,14 @@ footer { background: #0e1f33; color: #fff; padding: 27px 0; }
   .report-notes p { margin: 4px 0; font-size: 8.7px; line-height: 1.4; }
   .report-footer-brand { margin-top: 8px; padding-top: 7px; }
 }
+
+/* Cross-browser planner hero and standardized locale control */
+.planner-hero{padding-top:48px}
+.planner-hero .tool-breadcrumb{padding-top:0}
+.locale-menu summary{appearance:none;-webkit-appearance:none;min-width:170px;display:flex;align-items:center;justify-content:center;gap:9px;line-height:1;padding:12px 18px}
+.locale-menu summary::marker{content:""}
+.locale-globe{width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 18px;line-height:0}
+.locale-globe svg{width:18px;height:18px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.locale-chevron{width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 14px}
+.locale-chevron svg{width:14px;height:14px;display:block;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+@media(max-width:560px){.planner-hero{padding-top:32px}.planner-hero .tool-breadcrumb{padding-top:0}.locale-menu summary{min-width:auto;padding:9px 11px}}

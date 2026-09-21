@@ -43,7 +43,7 @@
         <a href="/">Home</a>
       </nav>
       <details class="locale-menu" id="localeMenu">
-        <summary id="localeSummary">India · INR</summary>
+        <summary id="localeSummary" aria-label="Choose country and currency"><span class="locale-globe" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 4.5 6 4.5 9S15 18 12 21c-3-3-4.5-6-4.5-9S9 6 12 3z"/></svg></span><span id="localeCurrent">India · INR</span><span class="locale-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="locale-popover">
           <h3>Country &amp; currency</h3>
           <p>Choose the context that makes the numbers easiest to understand.</p>
@@ -65,7 +65,7 @@
 
   <main id="top" class="planner-page">
     <section class="hero planner-hero">
-      <div class="container tool-breadcrumb"><a href="/#tools">← Back to all Carrowmont tools</a><span>Retirement Planner</span></div>
+      <div class="container tool-breadcrumb"><a href="/#tools">← Back to all Carrowmont tools</a></div>
       <div class="container hero-grid">
         <div>
           <span class="eyebrow">Smart retirement planning</span>
@@ -110,7 +110,7 @@
               <span class="section-kicker">Your plan</span>
               <h2>Build the assumptions</h2>
             </div>
-            <button class="text-button" id="resetBtn" type="button">Reset plan</button>
+            <button class="text-button" id="resetBtn" type="button">Reset to Defaults</button>
           </div>
 
           <div class="mode-switch" role="tablist" aria-label="Calculator mode">
@@ -305,12 +305,12 @@
           </div>
 
           <div class="result-actions no-print">
-            <button class="share-button" id="copyBtn" type="button">Copy summary</button>
-            <button class="share-button primary-action" id="printBtn" type="button">Create retirement report</button>
+            <button class="share-button" id="copyBtn" type="button">Copy Summary</button>
+            <button class="share-button primary-action" id="printBtn" type="button">Generate Retirement Report</button>
           </div>
           <div class="copy-status" id="copyStatus" aria-live="polite"></div>
           <div class="copy-status" id="reportStatus" aria-live="polite"></div>
-          <p class="report-action-hint no-print">Creates a print-ready retirement report from the exact calculation shown on screen. In the browser print dialog, choose <strong>Save as PDF</strong>. For a cleaner PDF, open <strong>More settings</strong> and turn off <strong>Headers and footers</strong>.</p>
+          <p class="report-action-hint no-print">Downloads a professionally formatted PDF using the exact retirement calculation currently shown on screen.</p>
           <p class="disclaimer">Illustrative planning tool only. Results depend on your assumptions and do not predict actual inflation, investment returns, taxes, longevity, healthcare costs or market sequence. This is not investment, tax or legal advice.</p>
         </aside>
       </div>
@@ -586,6 +586,8 @@
   <script src="locale-ui.js?v=2.4.1"></script>
   <script src="site.js?v=2.4.1"></script>
   <script src="report-engine.js?v=1.1"></script>
-  <script src="app.js?v=2.4.2"></script>
+  <script src="pdf-export.js?v=1.1"></script>
+  <script src="retirement-pdf-renderer.js?v=1.1"></script>
+  <script src="app.js?v=2.4.3"></script>
 </body>
 </html>
