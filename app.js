@@ -1430,18 +1430,16 @@
 
     $('printBtn').addEventListener('click', async () => {
       if (!lastResult) return;
+      const status = $('reportStatus');
       if (!window.CarrowmontPdfExport || !window.CarrowmontRetirementPdfRenderer) {
-        $('reportStatus').textContent = 'The PDF download engine did not load. Please refresh the page and try again.';
+        if (status) status.textContent = 'The report could not be generated. Please refresh the page and try again.';
         return;
       }
       preparePrintReport();
       const btn = $('printBtn');
-      const original = btn.textContent;
       btn.disabled = true;
       btn.setAttribute('aria-busy','true');
-      btn.textContent = 'Preparing PDF...';
-      const status = $('reportStatus');
-      if (status) status.textContent = 'Preparing your Retirement Planning Report...';
+      if (status) status.textContent = 'Preparing your report...';
       try {
         const canvases = await window.CarrowmontRetirementPdfRenderer.render($('printReport'));
         const reportModel = window.__CARROWMONT_LAST_REPORT_MODEL || buildRetirementReportModel(lastResult);
@@ -1449,16 +1447,13 @@
           ? REPORT_ENGINE.filename('retirement-planning-report', reportModel.generatedAt || new Date())
           : `retirement-planning-report-${reportModel.generatedDate || ''}`;
         await window.CarrowmontPdfExport.downloadCanvases(canvases,{filename:`${base}.pdf`,quality:.95});
-        btn.textContent = 'Report Downloaded';
-        if (status) status.textContent = 'Your retirement report has been downloaded.';
+        if (status) status.textContent = 'Report has been downloaded.';
       } catch (err) {
         console.error('Retirement report PDF generation failed', err);
-        btn.textContent = 'PDF Failed - Try Again';
         if (status) status.textContent = 'The report could not be generated. Please refresh the page and try again.';
       } finally {
         btn.disabled = false;
         btn.removeAttribute('aria-busy');
-        setTimeout(() => { if (btn.textContent !== 'Preparing PDF...') btn.textContent = original; }, 1800);
       }
     });
 

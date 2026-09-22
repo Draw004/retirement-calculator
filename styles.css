@@ -844,3 +844,12 @@ footer { background: #0e1f33; color: #fff; padding: 27px 0; }
 .locale-chevron{width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 14px}
 .locale-chevron svg{width:14px;height:14px;display:block;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
 @media(max-width:560px){.planner-hero{padding-top:32px}.planner-hero .tool-breadcrumb{padding-top:0}.locale-menu summary{min-width:auto;padding:9px 11px}}
+
+.tool-breadcrumb > span{display:none!important;}
+
+/* Report action alignment + shared download feedback. */
+.result-actions{grid-template-columns:minmax(145px,.72fr) minmax(250px,1.28fr);gap:12px;align-items:stretch;}
+.result-actions .share-button{min-height:50px;display:flex;align-items:center;justify-content:center;padding:10px 14px;white-space:nowrap;text-align:center;}
+.report-download-status{min-height:1.35em;margin:9px 0 0;text-align:center;color:var(--teal-dark,#08756d);font-size:.82rem;font-weight:750;line-height:1.4;}
+.report-download-status:empty{margin-top:0;min-height:0;}
+@media(max-width:620px){.result-actions{grid-template-columns:1fr}.result-actions .share-button{white-space:normal;}}
