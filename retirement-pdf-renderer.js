@@ -26,6 +26,28 @@
   async function chartsPage(root){const pg=page(),ctx=pg.ctx;header(ctx,root);P().text(ctx,'Retirement cash-flow visuals',M,166,{size:20,weight:900,color:C.ink});P().wrappedText(ctx,'These charts show how spending evolves and compare the modelled fully funded target path with the portfolio implied by the current savings plan.',M,190,CW,{size:9.3,lineHeight:13,weight:500,color:C.muted,maxLines:3});P().text(ctx,'Household expense timeline',M,238,{size:13.5,weight:850,color:C.ink});card(ctx,M,252,CW,302,C.white,C.line,9);const exp=q(root,'#reportExpenseChart svg');await P().drawSvgElement(ctx,exp,M+7,259,CW-14,288);const stats1=cards(root,'#reportExpenseChartStats');let sy=566;const sw=(CW-8*(stats1.length-1))/Math.max(1,stats1.length);stats1.forEach((it,i)=>{const x=M+i*(sw+8);card(ctx,x,sy,sw,53,C.light,C.line,7);P().text(ctx,it.label,x+8,sy+18,{size:7.8,weight:600,color:C.muted});P().text(ctx,it.value,x+8,sy+41,{size:10.5,weight:850,color:C.ink});});P().wrappedText(ctx,txt(root,'#reportExpenseChartNote'),M,sy+73,CW,{size:8.5,lineHeight:11.5,weight:500,color:C.muted,maxLines:3});
     P().text(ctx,'Retirement portfolio paths',M,690,{size:13.5,weight:850,color:C.ink});card(ctx,M,704,CW,302,C.white,C.line,9);const port=q(root,'#reportPortfolioChart svg');await P().drawSvgElement(ctx,port,M+7,711,CW-14,288);const stats2=cards(root,'#reportPortfolioChartStats');sy=1018;const sw2=(CW-8*(stats2.length-1))/Math.max(1,stats2.length);stats2.forEach((it,i)=>{const x=M+i*(sw2+8);card(ctx,x,sy,sw2,50,C.light,C.line,7);P().text(ctx,it.label,x+7,sy+17,{size:7.2,weight:600,color:C.muted});P().text(ctx,it.value,x+7,sy+38,{size:9.8,weight:850,color:C.ink});});return pg.canvas;}
   function methodologyPage(root){const pg=page(),ctx=pg.ctx;header(ctx,root);P().text(ctx,'Methodology & important information',M,172,{size:21,weight:900,color:C.ink});card(ctx,M,202,CW,290,C.note,C.line,10);const paras=Array.from(q(root,'.report-notes')?.querySelectorAll('p')||[]).map(p=>(p.textContent||'').replace(/\s+/g,' ').trim());let y=238;paras.slice(0,3).forEach((p,i)=>{P().wrappedText(ctx,p,M+16,y,CW-32,{size:9.8,lineHeight:14,weight:i===1?550:500,color:i===1?C.ink:C.muted,maxLines:i===0?6:i===1?6:3});y+=i===0?90:i===1?90:55;});card(ctx,M,520,CW,126,C.pale,'#b9ddd8',10);P().text(ctx,'Report interpretation',M+16,550,{size:15,weight:900,color:C.tealDark});P().wrappedText(ctx,'This report uses the same calculation result displayed by the Retirement Planner. Future-money figures are nominal amounts at the stated future age; today\'s-money figures are expressed in comparable current purchasing power. Results depend on the assumptions entered and do not guarantee retirement outcomes.',M+16,579,CW-32,{size:9.6,lineHeight:13.5,weight:500,color:C.ink,maxLines:5});P().text(ctx,'CARROWMONT',M,H-42,{size:10,weight:900,color:C.teal});P().text(ctx,'Financial Planning, Tools & Learning - carrowmont.com',W-M,H-42,{size:9.2,weight:500,color:C.muted,align:'right'});return pg.canvas;}
-  async function render(root){if(!root)throw new Error('Retirement report content is unavailable.');const pages=[page1(root),page2(root),...expensePages(root),await chartsPage(root),methodologyPage(root)];return pages;}
+  function toolsPage(){
+    const pg=page(),ctx=pg.ctx;
+    P().text(ctx,'CARROWMONT',M,58,{size:15,weight:900,color:C.teal});
+    P().text(ctx,'Continue planning with Carrowmont',M,101,{size:27,weight:900,color:C.ink});
+    P().wrappedText(ctx,'Your retirement calculation is one part of a broader financial plan. Try these other Carrowmont tools to explore SIP investing, life goals, financial independence and the effect of inflation.',M,130,CW,{size:11,lineHeight:16,weight:500,color:C.muted,maxLines:3});
+    hline(ctx,M,W-M,178,C.navy,2);
+    const tools=[
+      {title:'SIP Calculator',desc:'Model SIP future value, calculate a SIP required for a goal, compare step-up SIP with fixed SIP, or estimate time to a target corpus.',url:'carrowmont.com/sip-calculator/'},
+      {title:'Goal Planner',desc:'Plan for education, a home, travel, emergency savings and other financial goals using future-cost and investment assumptions.',url:'carrowmont.com/goal-planner/'},
+      {title:'Financial Independence',desc:'Estimate a spending-based financial-independence target and compare it with your current investment path and target age.',url:'carrowmont.com/financial-independence/'},
+      {title:'Inflation Calculator',desc:'See how inflation may change future costs and purchasing power across different time horizons and currencies.',url:'carrowmont.com/inflation-calculator/'}
+    ];
+    const gap=16,cw=(CW-gap)/2,ch=162;
+    tools.forEach((t,i)=>{const col=i%2,row=Math.floor(i/2),x=M+col*(cw+gap),y=210+row*(ch+18);card(ctx,x,y,cw,ch,C.white,C.line,13);P().text(ctx,t.title,x+16,y+32,{size:15,weight:900,color:C.ink});P().wrappedText(ctx,t.desc,x+16,y+59,cw-32,{size:10,lineHeight:14,weight:500,color:C.muted,maxLines:4});P().text(ctx,t.url,x+16,y+139,{size:9.5,weight:800,color:C.tealDark});});
+    card(ctx,M,586,CW,78,C.pale,'#b8ddd8',12);
+    P().text(ctx,'Explore all Carrowmont tools',M+16,616,{size:14,weight:900,color:C.tealDark});
+    P().wrappedText(ctx,'Visit carrowmont.com to continue your planning. Carrowmont tools are educational illustrations and do not guarantee financial or investment outcomes.',M+16,641,CW-32,{size:9.7,lineHeight:13.5,weight:500,color:C.ink,maxLines:2});
+    P().text(ctx,'CARROWMONT',M,H-40,{size:10,weight:900,color:C.teal});
+    P().text(ctx,'Financial Planning, Tools & Learning - carrowmont.com',W-M,H-40,{size:9.3,weight:500,color:C.muted,align:'right'});
+    return pg.canvas;
+  }
+
+  async function render(root){if(!root)throw new Error('Retirement report content is unavailable.');const pages=[page1(root),page2(root),...expensePages(root),await chartsPage(root),methodologyPage(root),toolsPage()];return pages;}
   window.CarrowmontRetirementPdfRenderer={render};
 })();

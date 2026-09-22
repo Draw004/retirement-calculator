@@ -848,8 +848,9 @@ footer { background: #0e1f33; color: #fff; padding: 27px 0; }
 .tool-breadcrumb > span{display:none!important;}
 
 /* Report action alignment + shared download feedback. */
-.result-actions{grid-template-columns:minmax(145px,.72fr) minmax(250px,1.28fr);gap:12px;align-items:stretch;}
-.result-actions .share-button{min-height:50px;display:flex;align-items:center;justify-content:center;padding:10px 14px;white-space:nowrap;text-align:center;}
+.result-actions{grid-template-columns:minmax(0,.78fr) minmax(0,1.42fr);gap:12px;align-items:stretch;width:100%;}
+.result-actions .share-button{min-width:0;width:100%;min-height:50px;display:flex;align-items:center;justify-content:center;padding:10px 12px;white-space:normal;text-align:center;line-height:1.18;font-size:clamp(.86rem,1.05vw,.98rem);box-sizing:border-box;}
+.result-actions .primary-action{white-space:normal;}
 .report-download-status{min-height:1.35em;margin:9px 0 0;text-align:center;color:var(--teal-dark,#08756d);font-size:.82rem;font-weight:750;line-height:1.4;}
 .report-download-status:empty{margin-top:0;min-height:0;}
 @media(max-width:620px){.result-actions{grid-template-columns:1fr}.result-actions .share-button{white-space:normal;}}
