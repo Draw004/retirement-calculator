@@ -133,9 +133,11 @@
 
     let y=166;
     y=sectionTitle(ctx,'How to read this report',y);
-    card(ctx,M,y,CW,74,C.pale,'#b8ddd8',10);
-    P().wrappedText(ctx,config.howToRead||'Read the headline result first, then review the assumptions, supporting tables and charts. Values are modelled estimates based on the information entered and should be interpreted together rather than as guaranteed outcomes.',M+14,y+23,CW-28,{size:9.4,lineHeight:12.9,weight:500,color:C.ink,maxLines:4});
-    y+=94;
+    const howText=config.howToRead||'Read the headline result first, then review the assumptions, supporting tables and charts. Values are modelled estimates based on the information entered and should be interpreted together rather than as guaranteed outcomes.';
+    const howLines=lineCount(ctx,howText,CW-28,10.1,650), howH=Math.max(52,22+howLines*14);
+    card(ctx,M,y,CW,howH,C.pale,'#b8ddd8',10);
+    P().wrappedText(ctx,howText,M+14,y+18,CW-28,{size:10.1,lineHeight:14,weight:650,color:C.ink,maxLines:4});
+    y+=howH+20;
 
     const gap=16,colW=(CW-gap)/2,leftX=M,rightX=M+colW+gap;
     P().text(ctx,'Methodology',leftX,y,{size:15.2,weight:900,color:C.ink});
