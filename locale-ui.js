@@ -9,7 +9,12 @@
     const regionSelect = menuRoot.querySelector('#regionSelect');
     const currencySelect = menuRoot.querySelector('#currencySelect');
     if (regionSelect && !regionSelect.options.length) {
-      regionSelect.innerHTML = Object.entries(L.regions)
+      const regionEntries = Object.entries(L.regions).sort(([codeA, a], [codeB, b]) => {
+        if (codeA === 'OTHER') return 1;
+        if (codeB === 'OTHER') return -1;
+        return a.label.localeCompare(b.label, 'en', { sensitivity: 'base' });
+      });
+      regionSelect.innerHTML = regionEntries
         .map(([code, p]) => `<option value="${code}">${p.label}</option>`).join('');
     }
     if (currencySelect && !currencySelect.options.length) {
