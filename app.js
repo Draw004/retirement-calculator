@@ -53,6 +53,8 @@
   let lastResult = null;
   let suppressCalculate = false;
   let activeLocaleRegion = L ? L.getRegion() : 'IN';
+  let payFrequencyUserOverride = false;
+  let contributionFrequencyUserOverride = false;
 
   function num(value, fallback = 0) {
     const n = Number(value);
@@ -121,6 +123,52 @@
 
   function effectiveMonthlyRate(annualPct) {
     return Math.pow(1 + annualPct / 100, 1 / 12) - 1;
+  }
+
+  const FREQUENCY_PERIODS = { weekly: 52, biweekly: 26, semimonthly: 24, fourweekly: 13, monthly: 12 };
+  const FREQUENCY_ORDER = ['weekly','biweekly','semimonthly','fourweekly','monthly'];
+  const FREQUENCY_BASE_LABELS = { weekly: 'Weekly', semimonthly: 'Twice Monthly', fourweekly: 'Every 4 Weeks', monthly: 'Monthly' };
+  function frequencyProfile(regionCode = L?.getRegion?.() || 'OTHER') { return L?.regions?.[regionCode] || L?.regions?.OTHER || {}; }
+  function frequencyLabel(key, regionCode = L?.getRegion?.() || 'OTHER') {
+    if (key === 'biweekly') {
+      const style = frequencyProfile(regionCode).twoWeekLabel || 'neutral';
+      if (style === 'fortnightly') return 'Fortnightly (Every 2 Weeks)';
+      if (style === 'biweekly') return 'Biweekly (Every 2 Weeks)';
+      return 'Every 2 Weeks';
+    }
+    return FREQUENCY_BASE_LABELS[key] || 'Monthly';
+  }
+  function defaultFrequencyForRegion(code = L?.getRegion?.() || 'OTHER') { return frequencyProfile(code).contributionFrequency || 'monthly'; }
+  function cadenceText(key) { if (key === 'weekly') return 'per week'; if (key === 'biweekly') return 'every 2 weeks'; if (key === 'semimonthly') return 'twice monthly'; if (key === 'fourweekly') return 'every 4 weeks'; return 'per month'; }
+  function frequencyName(key) { return frequencyLabel(key).replace(/\s*\(Every 2 Weeks\)\s*/, '').trim(); }
+  function currentContributionLabelText(key) { if (key === 'biweekly' && frequencyName(key) === 'Every 2 Weeks') return 'Current retirement contribution every 2 weeks'; if (key === 'fourweekly') return 'Current retirement contribution every 4 weeks'; return `Current ${frequencyName(key).toLowerCase()} retirement contribution`; }
+  function requiredContributionLabelText(key, prefix = 'Total') { if (key === 'biweekly' && frequencyName(key) === 'Every 2 Weeks') return `${prefix} retirement contribution required every 2 weeks`; if (key === 'fourweekly') return `${prefix} retirement contribution required every 4 weeks`; return `${prefix} ${frequencyName(key).toLowerCase()} retirement contribution required`; }
+  function contributionText(amount, key) { return `${formatINR(amount)} ${cadenceText(key)}`; }
+  function populateFrequencySelect(select, desired) { if (!select) return; select.innerHTML = FREQUENCY_ORDER.map(key => `<option value="${key}">${frequencyLabel(key)}</option>`).join(''); select.value = FREQUENCY_ORDER.includes(desired) ? desired : 'monthly'; }
+  function updateFrequencyCopy() {
+    const key = $('contributionFrequency')?.value || 'monthly';
+    if ($('currentContributionLabel')) $('currentContributionLabel').textContent = currentContributionLabelText(key);
+    if ($('currentContributionHelp')) $('currentContributionHelp').textContent = `Enter how much you currently contribute ${cadenceText(key)} toward retirement.`;
+    if ($('totalContributionNeededLabel')) $('totalContributionNeededLabel').textContent = requiredContributionLabelText(key, 'Total') + ' from today';
+    if ($('extraContributionNeededLabel')) $('extraContributionNeededLabel').textContent = requiredContributionLabelText(key, 'Additional') + ' vs current plan';
+  }
+  function syncFrequencyOptions() {
+    const suggested = defaultFrequencyForRegion();
+    const pay = $('payFrequency'), contribution = $('contributionFrequency'), same = $('sameAsPayCycle');
+    const payDesired = payFrequencyUserOverride ? (pay?.value || suggested) : suggested;
+    populateFrequencySelect(pay, payDesired);
+    const contributionDesired = same?.checked ? pay.value : (contributionFrequencyUserOverride ? (contribution?.value || suggested) : suggested);
+    populateFrequencySelect(contribution, contributionDesired);
+    if (same?.checked) contribution.value = pay.value;
+    if (contribution) contribution.disabled = Boolean(same?.checked);
+    updateFrequencyCopy();
+  }
+  function contributionSchedule(annualPct, years, frequency) {
+    const ppy = FREQUENCY_PERIODS[frequency] || FREQUENCY_PERIODS.monthly;
+    const periods = Math.max(0, Math.round(Math.max(0, years) * ppy));
+    const rate = Math.pow(1 + annualPct / 100, 1 / ppy) - 1;
+    const factor = periods <= 0 ? 0 : (Math.abs(rate) > 1e-12 ? (Math.pow(1 + rate, periods) - 1) / rate : periods);
+    return { ppy, periods, rate, factor };
   }
 
   function inflationOptions(selected) {
@@ -224,6 +272,7 @@
       mode,
       currentAge: value('currentAge'), retirementAge: value('retirementAge'), planningAge: value('planningAge'),
       currentSavings: value('currentSavings'), currentMonthlyInvestment: value('currentMonthlyInvestment'),
+      payFrequency: $('payFrequency')?.value || 'monthly', contributionFrequency: $('contributionFrequency')?.value || 'monthly', sameAsPayCycle: Boolean($('sameAsPayCycle')?.checked),
       preReturn: value('preReturn'), postReturn: value('postReturn'), bufferRate: value('bufferRate'),
       quickMonthlyExpense: value('quickMonthlyExpense'), quickRetirementPct: value('quickRetirementPct'), quickInflation: value('quickInflation'),
       generalInflation: value('generalInflation'), healthInflation: value('healthInflation'), lifestyleInflation: value('lifestyleInflation'), educationInflation: value('educationInflation'),
@@ -311,7 +360,6 @@
     const monthsToRetire = Math.round((s.retirementAge - s.currentAge) * 12);
     const retirementMonths = Math.round((s.planningAge - s.retirementAge) * 12);
     const monthlyPost = effectiveMonthlyRate(s.postReturn);
-    const monthlyPre = effectiveMonthlyRate(s.preReturn);
 
     const goalByMonth = new Map();
     if (s.mode === 'detailed') {
@@ -348,14 +396,14 @@
     const requiredCorpus = baseCorpusPV + safetyBufferAmount;
 
     const futureExisting = s.currentSavings * Math.pow(1 + s.preReturn / 100, s.retirementAge - s.currentAge);
-    let fvFactor = monthsToRetire;
-    if (monthsToRetire > 0 && Math.abs(monthlyPre) > 1e-12) fvFactor = (Math.pow(1 + monthlyPre, monthsToRetire) - 1) / monthlyPre;
+    const recurring = contributionSchedule(s.preReturn, s.retirementAge - s.currentAge, s.contributionFrequency);
+    const fvFactor = recurring.factor;
     const futureCurrentContrib = s.currentMonthlyInvestment * Math.max(0, fvFactor);
     const projectedCorpus = futureExisting + futureCurrentContrib;
     const gap = Math.max(0, requiredCorpus - projectedCorpus);
 
     const gapBeforeContrib = Math.max(0, requiredCorpus - futureExisting);
-    const totalMonthlyNeeded = monthsToRetire > 0 && fvFactor > 0 ? gapBeforeContrib / fvFactor : 0;
+    const totalMonthlyNeeded = recurring.periods > 0 && fvFactor > 0 ? gapBeforeContrib / fvFactor : 0;
     const extraMonthlyNeeded = Math.max(0, totalMonthlyNeeded - s.currentMonthlyInvestment);
     const fundedPct = requiredCorpus > 0 ? (projectedCorpus / requiredCorpus) * 100 : 100;
 
@@ -430,6 +478,7 @@
     return {
       errors: [], s, requiredCorpus, baseCorpusPV, recurringExpensePV, retirementIncomePV, goalsPV, safetyBufferAmount,
       futureExisting, futureCurrentContrib, projectedCorpus, gap, totalMonthlyNeeded, extraMonthlyNeeded, fundedPct,
+      contributionPeriods: recurring.periods, contributionPeriodsPerYear: recurring.ppy,
       firstYearExpense, firstYearIncome, firstYearNet, currentTodayExpense, retirementLifestyleToday, retirementLifestyleFuture, monthlyReduced, monthlyIncreased,
       expenseChanges, portfolioPoints, currentPortfolioPoints, projectedDepletionAge, expensePoints, monthlyFlows,
     };
@@ -572,11 +621,11 @@
     }
 
     if (r.extraMonthlyNeeded > 1) {
-      contributionEl.textContent = `+${formatINR(r.extraMonthlyNeeded)}/mo`;
-      contributionNote.textContent = `On top of your current ${formatINR(s.currentMonthlyInvestment)}/mo retirement investment, under these assumptions.`;
+      contributionEl.textContent = `+${contributionText(r.extraMonthlyNeeded, s.contributionFrequency)}`;
+      contributionNote.textContent = `On top of your current retirement contribution of ${contributionText(s.currentMonthlyInvestment, s.contributionFrequency)}, under these assumptions.`;
     } else {
       contributionEl.textContent = 'No increase indicated';
-      contributionNote.textContent = 'Your current monthly retirement investment is sufficient for the modelled target under these assumptions.';
+      contributionNote.textContent = `Your current retirement contribution of ${contributionText(s.currentMonthlyInvestment, s.contributionFrequency)} is sufficient for the modelled target under these assumptions.`;
     }
 
     if (s.mode === 'detailed' && r.expenseChanges.length) {
@@ -606,14 +655,14 @@
     $('firstYearNet').textContent = `${formatINR(r.firstYearNet, true)}/mo`;
     $('projectedCorpus').textContent = formatINR(r.projectedCorpus, true);
     $('corpusGap').textContent = r.gap > 0 ? formatINR(r.gap, true) : 'No gap*';
-    $('totalMonthlyNeeded').textContent = formatINR(r.totalMonthlyNeeded);
-    $('extraMonthlyNeeded').textContent = r.extraMonthlyNeeded > 1 ? formatINR(r.extraMonthlyNeeded) : `${zeroMoney()} under assumptions`;
+    $('totalMonthlyNeeded').textContent = contributionText(r.totalMonthlyNeeded, s.contributionFrequency);
+    $('extraMonthlyNeeded').textContent = r.extraMonthlyNeeded > 1 ? contributionText(r.extraMonthlyNeeded, s.contributionFrequency) : `${zeroMoney()} under assumptions`;
 
     const fundedDisplay = Math.min(999, Math.max(0, r.fundedPct));
     $('fundedPercent').textContent = `${fundedDisplay.toFixed(0)}%`;
     $('progressFill').style.width = `${Math.min(100, fundedDisplay)}%`;
     $('fundingMessage').textContent = r.fundedPct >= 100
-      ? 'Your entered savings and current monthly investment meet or exceed the modelled target under these assumptions.'
+      ? `Your entered savings and current retirement contribution of ${contributionText(s.currentMonthlyInvestment, s.contributionFrequency)} meet or exceed the modelled target under these assumptions.`
       : `The current plan is projected to fund about ${Math.max(0, r.fundedPct).toFixed(0)}% of the modelled target.`;
 
     const [status, statusNote] = fundingStatusText(r.fundedPct);
@@ -947,7 +996,7 @@
         <strong>${formatINR(scenario.requiredCorpus, true)}</strong>
         <dl>
           <div><dt>Years to save</dt><dd>${age - s.currentAge}</dd></div>
-          <div><dt>Total monthly investment</dt><dd>${formatINR(scenario.totalMonthlyNeeded)}</dd></div>
+          <div><dt>${escapeXml(requiredContributionLabelText(s.contributionFrequency, 'Total'))}</dt><dd>${escapeXml(contributionText(scenario.totalMonthlyNeeded, s.contributionFrequency))}</dd></div>
           <div><dt>Projected funding</dt><dd>${Math.min(999, Math.max(0, scenario.fundedPct)).toFixed(0)}%</dd></div>
         </dl>
         ${current ? '<span class="current-scenario-note">Your selected retirement age</span>' : `<button type="button" class="scenario-use-button no-print" data-retirement-age="${age}">Use age ${age}</button>`}`;
@@ -958,11 +1007,11 @@
       const current = scenarios.find(x => x.age === Math.round(s.retirementAge));
       const later = scenarios.filter(x => x.age > Math.round(s.retirementAge)).sort((a,b) => a.age - b.age)[0];
       if (current && later) {
-        const monthlyReduction = current.result.totalMonthlyNeeded - later.result.totalMonthlyNeeded;
+        const contributionReduction = current.result.totalMonthlyNeeded - later.result.totalMonthlyNeeded;
         const corpusChange = later.result.requiredCorpus - current.result.requiredCorpus;
-        takeaway.innerHTML = `<span>One lever to explore</span><strong>Model retirement at age ${later.age}</strong><p>Under the same assumptions, the modelled total monthly investment changes from <b>${escapeXml(formatINR(current.result.totalMonthlyNeeded))}/mo</b> to <b>${escapeXml(formatINR(later.result.totalMonthlyNeeded))}/mo</b>${monthlyReduction > 0 ? ` — about <b>${escapeXml(formatINR(monthlyReduction))}/mo lower</b>` : ''}. The nominal corpus at retirement ${corpusChange >= 0 ? 'rises' : 'falls'} by about ${escapeXml(formatINR(Math.abs(corpusChange), true))} because each retirement target is shown in future money at its own retirement date. This is a scenario comparison, not a recommendation.</p>`;
+        takeaway.innerHTML = `<span>One lever to explore</span><strong>Model retirement at age ${later.age}</strong><p>Under the same assumptions, the modelled recurring retirement contribution changes from <b>${escapeXml(contributionText(current.result.totalMonthlyNeeded, s.contributionFrequency))}</b> to <b>${escapeXml(contributionText(later.result.totalMonthlyNeeded, s.contributionFrequency))}</b>${contributionReduction > 0 ? ` — about <b>${escapeXml(contributionText(contributionReduction, s.contributionFrequency))} lower</b>` : ''}. The nominal corpus at retirement ${corpusChange >= 0 ? 'rises' : 'falls'} by about ${escapeXml(formatINR(Math.abs(corpusChange), true))} because each retirement target is shown in future money at its own retirement date. This is a scenario comparison, not a recommendation.</p>`;
       } else {
-        takeaway.innerHTML = '<span>One lever to explore</span><strong>Change the retirement age</strong><p>Use the comparison cards above to see how a different retirement date changes the years available to save, required monthly investment and nominal corpus.</p>';
+        takeaway.innerHTML = '<span>One lever to explore</span><strong>Change the retirement age</strong><p>Use the comparison cards above to see how a different retirement date changes the years available to save, required recurring retirement contribution and nominal corpus.</p>';
       }
     }
   }
@@ -976,7 +1025,9 @@
       ['Retirement age', `${Math.round(s.retirementAge)}`],
       ['Plan until age', `${Math.round(s.planningAge)}`],
       ['Current retirement savings', formatINR(s.currentSavings)],
-      ['Current monthly retirement investment', formatINR(s.currentMonthlyInvestment)],
+      ['Pay frequency', frequencyLabel(s.payFrequency)],
+      ['Retirement contribution frequency', frequencyLabel(s.contributionFrequency)],
+      [currentContributionLabelText(s.contributionFrequency), contributionText(s.currentMonthlyInvestment, s.contributionFrequency)],
       ['Return before retirement', `${s.preReturn.toFixed(1)}% p.a.`],
       ['Return during retirement', `${s.postReturn.toFixed(1)}% p.a.`],
       ['Safety buffer', `${s.bufferRate.toFixed(0)}%`],
@@ -998,7 +1049,7 @@
     const s = r.s;
     const generatedAt = new Date();
     const monthsToRetire = Math.max(0, Math.round((s.retirementAge - s.currentAge) * 12));
-    const contributionPrincipal = s.currentMonthlyInvestment * monthsToRetire;
+    const contributionPrincipal = s.currentMonthlyInvestment * (r.contributionPeriods ?? contributionSchedule(s.preReturn, s.retirementAge - s.currentAge, s.contributionFrequency).periods);
     const modelledInvestmentGrowth = r.projectedCorpus - s.currentSavings - contributionPrincipal;
     const inflationMultiple = r.retirementLifestyleToday > 0 ? r.retirementLifestyleFuture / r.retirementLifestyleToday : 1;
     const [fundingStatus, fundingStatusNote] = fundingStatusText(r.fundedPct);
@@ -1023,6 +1074,8 @@
         retirementAge: s.retirementAge,
         planningAge: s.planningAge,
         currentSavings: s.currentSavings,
+        payFrequency: s.payFrequency,
+        contributionFrequency: s.contributionFrequency,
         currentMonthlyInvestment: s.currentMonthlyInvestment,
         preReturn: s.preReturn,
         postReturn: s.postReturn,
@@ -1083,12 +1136,12 @@
     $('reportRetirementSpendLabel').textContent = `Retirement lifestyle (today's ${currencyCode()})`;
     $('reportProjectedCorpusLabel').textContent = `Projected savings at retirement (future ${currencyCode()})`;
     $('reportFundingGapLabel').textContent = `Funding gap at retirement (future ${currencyCode()})`;
-    $('reportMonthlyNeededLabel').textContent = `Monthly investment required from now`;
+    $('reportMonthlyNeededLabel').textContent = requiredContributionLabelText(s.contributionFrequency, 'Total') + ' from now';
     $('reportTargetBasis').textContent = `Future ${currencyCode()} at retirement unless noted`;
     $('reportFundingBasis').textContent = `Future ${currencyCode()} at retirement unless noted`;
     $('reportCorpus').textContent = formatINR(r.requiredCorpus, true);
     $('reportRetireLine').textContent = `Retire at age ${Math.round(s.retirementAge)} · plan through age ${Math.round(s.planningAge)}`;
-    $('reportMonthlyNeeded').textContent = formatINR(r.totalMonthlyNeeded);
+    $('reportMonthlyNeeded').textContent = contributionText(r.totalMonthlyNeeded, s.contributionFrequency);
     $('reportTodaySpend').textContent = `${formatINR(r.currentTodayExpense)}/mo`;
     $('reportRetirementSpend').textContent = `${formatINR(r.retirementLifestyleToday)}/mo`;
     $('reportFutureSpend').textContent = `${formatINR(r.retirementLifestyleFuture)}/mo`;
@@ -1104,17 +1157,21 @@
     $('reportReduced').textContent = `${formatINR(r.monthlyReduced)}/mo`;
     $('reportIncreased').textContent = `${formatINR(r.monthlyIncreased)}/mo`;
 
-    $('reportCurrentMonthlyInvestment').textContent = formatINR(s.currentMonthlyInvestment);
-    $('reportNeededMonthlyInvestment').textContent = formatINR(r.totalMonthlyNeeded);
-    $('reportAdditionalMonthlyInvestment').textContent = r.extraMonthlyNeeded > 1 ? formatINR(r.extraMonthlyNeeded) : `${zeroMoney()} under assumptions`;
+    $('reportCurrentMonthlyInvestment').textContent = contributionText(s.currentMonthlyInvestment, s.contributionFrequency);
+    if ($('reportContributionSectionTitle')) { const title = requiredContributionLabelText(s.contributionFrequency, 'Total').replace(/^Total /, ''); $('reportContributionSectionTitle').textContent = title.charAt(0).toUpperCase() + title.slice(1) + ' by the model'; }
+    if ($('reportCurrentContributionLabel')) $('reportCurrentContributionLabel').textContent = currentContributionLabelText(s.contributionFrequency);
+    if ($('reportNeededContributionLabel')) $('reportNeededContributionLabel').textContent = requiredContributionLabelText(s.contributionFrequency, 'Total') + ' from now';
+    if ($('reportAdditionalContributionLabel')) $('reportAdditionalContributionLabel').textContent = requiredContributionLabelText(s.contributionFrequency, 'Additional');
+    $('reportNeededMonthlyInvestment').textContent = contributionText(r.totalMonthlyNeeded, s.contributionFrequency);
+    $('reportAdditionalMonthlyInvestment').textContent = r.extraMonthlyNeeded > 1 ? contributionText(r.extraMonthlyNeeded, s.contributionFrequency) : `${zeroMoney()} under assumptions`;
     const additionalRibbon = $('reportAdditionalRibbon');
     if (additionalRibbon) {
       additionalRibbon.classList.toggle('report-action-ribbon-gap', r.extraMonthlyNeeded > 1);
       additionalRibbon.classList.toggle('report-action-ribbon-ok', !(r.extraMonthlyNeeded > 1));
     }
     $('reportActionNarrative').textContent = r.extraMonthlyNeeded > 1
-      ? `Under the entered assumptions, increasing the monthly retirement investment from ${formatINR(s.currentMonthlyInvestment)} to about ${formatINR(r.totalMonthlyNeeded)} may close the modelled gap by age ${Math.round(s.retirementAge)}. This is an illustration, not a recommendation or guarantee.`
-      : `Under the entered assumptions, the current monthly retirement investment is at or above the amount required by the model for the selected retirement age. This is an illustration, not a recommendation or guarantee.`;
+      ? `Under the entered assumptions, increasing the retirement contribution from ${contributionText(s.currentMonthlyInvestment, s.contributionFrequency)} to about ${contributionText(r.totalMonthlyNeeded, s.contributionFrequency)} may close the modelled gap by age ${Math.round(s.retirementAge)}. This is an illustration, not a recommendation or guarantee.`
+      : `Under the entered assumptions, the current retirement contribution of ${contributionText(s.currentMonthlyInvestment, s.contributionFrequency)} is at or above the amount required by the model for the selected retirement age. This is an illustration, not a recommendation or guarantee.`;
 
     $('reportSavingsSources').innerHTML = [
       [`Current retirement savings`, formatINR(s.currentSavings)],
@@ -1149,8 +1206,8 @@
       [`Future value of current contributions at retirement (future ${currencyCode()})`, formatINR(r.futureCurrentContrib)],
       [`Projected savings at retirement (future ${currencyCode()})`, formatINR(r.projectedCorpus)],
       [`Funding gap at retirement (future ${currencyCode()})`, r.gap > 0 ? formatINR(r.gap) : 'No gap under assumptions'],
-      [`Total monthly investment required from now`, formatINR(r.totalMonthlyNeeded)],
-      [`Additional monthly investment required`, r.extraMonthlyNeeded > 1 ? formatINR(r.extraMonthlyNeeded) : `${zeroMoney()} under assumptions`],
+      [requiredContributionLabelText(s.contributionFrequency, 'Total') + ' from now', contributionText(r.totalMonthlyNeeded, s.contributionFrequency)],
+      [requiredContributionLabelText(s.contributionFrequency, 'Additional'), r.extraMonthlyNeeded > 1 ? contributionText(r.extraMonthlyNeeded, s.contributionFrequency) : `${zeroMoney()} under assumptions`],
       ['Modelled current-plan runway', r.projectedDepletionAge !== null && r.projectedDepletionAge < s.planningAge - 0.05 ? `Around ${formatAgeYearsMonths(Math.max(s.retirementAge, r.projectedDepletionAge), true)}` : `Through age ${Math.round(s.planningAge)}`],
     ].map(([a,b]) => reportRow(a,b)).join('');
 
@@ -1176,12 +1233,12 @@
       return `<tr class="${selected ? 'report-scenario-selected' : ''}">
         <td>${age}${selected ? ' (selected)' : ''}</td>
         <td>${escapeXml(formatINR(result.requiredCorpus))}</td>
-        <td>${escapeXml(formatINR(result.totalMonthlyNeeded))}</td>
+        <td>${escapeXml(contributionText(result.totalMonthlyNeeded, s.contributionFrequency))}</td>
         <td>${Math.max(0, result.fundedPct).toFixed(0)}%</td>
       </tr>`;
     }).join('');
     const scenarioFundingNote = $('reportScenarioFundingNote');
-    if (scenarioFundingNote) scenarioFundingNote.textContent = `Projected funding uses your current plan - ${formatINR(s.currentSavings)} already saved plus ${formatINR(s.currentMonthlyInvestment)}/mo ongoing investment, together with the entered return assumptions. It does not assume the "monthly investment required" shown in the previous column.`;
+    if (scenarioFundingNote) scenarioFundingNote.textContent = `Projected funding uses your current plan - ${formatINR(s.currentSavings)} already saved plus ${contributionText(s.currentMonthlyInvestment, s.contributionFrequency)} ongoing retirement contribution, together with the entered return assumptions. It does not assume the recurring contribution required shown in the previous column.`;
 
     const expenseStartPoint = r.expensePoints[0] || { age: s.currentAge, value: r.currentTodayExpense };
     const expenseEndPoint = r.expensePoints[r.expensePoints.length - 1] || { age: s.planningAge, value: r.retirementLifestyleFuture };
@@ -1270,6 +1327,10 @@
         'phase1Pct','phase2Pct','phase3Pct'
       ];
       scalarIds.forEach(id => { if (data[id] !== undefined && $(id)) $(id).value = data[id]; });
+      if (data.payFrequency && $('payFrequency')) { $('payFrequency').value = data.payFrequency; payFrequencyUserOverride = true; }
+      if (data.contributionFrequency && $('contributionFrequency')) { $('contributionFrequency').value = data.contributionFrequency; contributionFrequencyUserOverride = true; }
+      if (data.sameAsPayCycle !== undefined && $('sameAsPayCycle')) $('sameAsPayCycle').checked = Boolean(data.sameAsPayCycle);
+      syncFrequencyOptions();
       $('expenseRows').innerHTML = ''; (data.expenses || DEFAULT_EXPENSES).forEach(addExpenseRow);
       $('incomeRows').innerHTML = ''; (data.incomes || DEFAULT_INCOMES).forEach(addIncomeRow);
       $('goalRows').innerHTML = ''; (data.goals || DEFAULT_GOALS).forEach(addGoalRow);
@@ -1332,6 +1393,10 @@
 
   function resetPlan() {
     const currentMode = mode;
+    payFrequencyUserOverride = false;
+    contributionFrequencyUserOverride = false;
+    if ($('sameAsPayCycle')) $('sameAsPayCycle').checked = false;
+    syncFrequencyOptions();
     const indiaDemo = (!L || (L.getRegion() === 'IN' && L.getCurrency() === 'INR'));
     const defaults = indiaDemo
       ? { ...DEFAULTS, mode: currentMode }
@@ -1383,6 +1448,10 @@
       $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
+    $('payFrequency')?.addEventListener('change', () => { payFrequencyUserOverride = true; if ($('sameAsPayCycle')?.checked) $('contributionFrequency').value = $('payFrequency').value; updateFrequencyCopy(); calculateAndRender(); });
+    $('contributionFrequency')?.addEventListener('change', () => { contributionFrequencyUserOverride = true; updateFrequencyCopy(); calculateAndRender(); });
+    $('sameAsPayCycle')?.addEventListener('change', () => { if ($('sameAsPayCycle').checked) { contributionFrequencyUserOverride = false; $('contributionFrequency').value = $('payFrequency').value; } else { contributionFrequencyUserOverride = true; } $('contributionFrequency').disabled = $('sameAsPayCycle').checked; updateFrequencyCopy(); calculateAndRender(); });
+
     qsa('input', $('planner')).forEach(input => {
       if (!input.closest('tbody')) {
         input.addEventListener('input', calculateAndRender);
@@ -1403,6 +1472,9 @@
         `Country / region: ${regionLabel()}`,
         `Currency: ${currencyCode()}`,
         `Planner mode: ${r.s.mode === 'detailed' ? 'Detailed planner' : 'Quick estimate'}`,
+        `Pay frequency: ${frequencyLabel(r.s.payFrequency)}`,
+        `Retirement contribution frequency: ${frequencyLabel(r.s.contributionFrequency)}`,
+        `${currentContributionLabelText(r.s.contributionFrequency)}: ${contributionText(r.s.currentMonthlyInvestment, r.s.contributionFrequency)}`,
         `Retirement age: ${Math.round(r.s.retirementAge)}`,
         `Plan through age: ${Math.round(r.s.planningAge)}`,
         '',
@@ -1410,8 +1482,8 @@
         `Projected retirement savings (future ${currencyCode()} at retirement): ${formatINR(r.projectedCorpus)}`,
         `Funding gap at retirement (future ${currencyCode()}): ${gapText}`,
         `Projected funding: ${funded}%`,
-        `Total monthly investment required from now (current monthly ${currencyCode()}): ${formatINR(r.totalMonthlyNeeded)}`,
-        `Additional monthly investment required vs current plan (current monthly ${currencyCode()}): ${extraText}`,
+        `${requiredContributionLabelText(r.s.contributionFrequency, 'Total')} from now: ${contributionText(r.totalMonthlyNeeded, r.s.contributionFrequency)}`,
+        `${requiredContributionLabelText(r.s.contributionFrequency, 'Additional')} vs current plan: ${r.extraMonthlyNeeded > 1 ? contributionText(r.extraMonthlyNeeded, r.s.contributionFrequency) : `${zeroMoney()} under assumptions`}`,
         `Modelled current-plan runway: ${r.projectedDepletionAge !== null && r.projectedDepletionAge < r.s.planningAge - 0.05 ? `around ${formatAgeYearsMonths(Math.max(r.s.retirementAge, r.projectedDepletionAge), true)}` : `through age ${Math.round(r.s.planningAge)}`}`,
         '',
         `Today's monthly spending (current ${currencyCode()}): ${formatINR(r.currentTodayExpense)}/mo`,
@@ -1468,6 +1540,7 @@
     bindEvents();
     setMode(DEFAULTS.mode, false);
     syncLocaleLabels();
+    syncFrequencyOptions();
     const legacyYear = $('year'); if (legacyYear) legacyYear.textContent = new Date().getFullYear();
     window.addEventListener('beforeprint', preparePrintReport);
     window.addEventListener('carrowmont:localechange', () => {
@@ -1475,6 +1548,8 @@
       const countryChanged = nextRegion !== activeLocaleRegion;
       activeLocaleRegion = nextRegion;
       syncLocaleLabels();
+      if (countryChanged) { payFrequencyUserOverride = false; contributionFrequencyUserOverride = false; }
+      syncFrequencyOptions();
       if (countryChanged) clearMoneyForCountryChange();
       else calculateAndRender();
     });

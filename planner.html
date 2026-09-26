@@ -13,7 +13,7 @@
   <meta property="og:url" content="https://carrowmont.com/retirement-calculator/planner.html" />
   <link rel="canonical" href="https://carrowmont.com/retirement-calculator/planner.html" />
   <!-- SEARCH CONSOLE: paste Google's verification meta tag here after creating your Search Console property. -->
-  <link rel="stylesheet" href="styles.css?v=2.4.5" />
+  <link rel="stylesheet" href="styles.css?v=2.5.0" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -149,13 +149,23 @@
               </div>
             </div>
             <div class="two-col form-grid">
+              <label class="field-card frequency-field">Pay frequency
+                <select id="payFrequency" aria-label="Pay frequency"><option value="weekly">Weekly</option><option value="biweekly">Every 2 Weeks</option><option value="semimonthly">Twice Monthly</option><option value="fourweekly">Every 4 Weeks</option><option value="monthly" selected>Monthly</option></select>
+                <small>How often you receive income. This does not change the retirement calculation unless you choose “Same as my pay cycle”.</small>
+              </label>
+              <div class="field-card frequency-field frequency-link-field">Retirement contribution frequency
+                <select id="contributionFrequency" aria-label="Retirement contribution frequency"><option value="weekly">Weekly</option><option value="biweekly">Every 2 Weeks</option><option value="semimonthly">Twice Monthly</option><option value="fourweekly">Every 4 Weeks</option><option value="monthly" selected>Monthly</option></select>
+                <small>How often you contribute toward retirement. This frequency is used in the calculation.</small>
+                <label class="check-row" for="sameAsPayCycle"><input id="sameAsPayCycle" type="checkbox" /><span>Same as my pay cycle</span></label>
+                <small>Optional. When selected, Retirement contribution frequency follows Pay frequency.</small>
+              </div>
               <label class="field-card">Existing retirement savings
                 <div class="number-wrap money"><span data-currency-prefix>₹</span><input id="currentSavings" type="number" min="0" step="1" value="1000000" inputmode="decimal" /></div>
                 <small>Savings, retirement accounts, investments and other assets earmarked for retirement</small>
               </label>
-              <label class="field-card">Current monthly retirement investment
+              <label class="field-card"><span id="currentContributionLabel">Current monthly retirement contribution</span>
                 <div class="number-wrap money"><span data-currency-prefix>₹</span><input id="currentMonthlyInvestment" type="number" min="0" step="1" value="20000" inputmode="decimal" /></div>
-                <small>Your current monthly retirement contribution, if any</small>
+                <small id="currentContributionHelp">Enter how much you currently contribute per month toward retirement.</small>
               </label>
               <label class="field-card">Return before retirement
                 <div class="number-wrap suffix"><input id="preReturn" type="number" min="0" max="30" step="0.1" value="10" /><span>%</span></div>
@@ -277,8 +287,8 @@
             <div class="result-item"><span>Portfolio needs to provide</span><strong id="firstYearNet">—</strong></div>
             <div class="result-item"><span>Projected retirement savings</span><strong id="projectedCorpus">—</strong></div>
             <div class="result-item emphasized"><span>Retirement funding gap</span><strong id="corpusGap">—</strong></div>
-            <div class="result-item sip"><span>Total monthly investment needed from today</span><strong id="totalMonthlyNeeded">—</strong></div>
-            <div class="result-item"><span>Additional monthly investment vs current plan</span><strong id="extraMonthlyNeeded">—</strong></div>
+            <div class="result-item sip"><span id="totalContributionNeededLabel">Total monthly retirement contribution needed from today</span><strong id="totalMonthlyNeeded">—</strong></div>
+            <div class="result-item"><span id="extraContributionNeededLabel">Additional monthly retirement contribution vs current plan</span><strong id="extraMonthlyNeeded">—</strong></div>
           </div>
 
           <div class="funding-card">
@@ -365,14 +375,14 @@
           <div class="insight-grid">
             <article><span>Retirement lifestyle shift</span><strong id="insightLifestyle">—</strong><small id="insightLifestyleNote">Compared with today's listed spending.</small></article>
             <article><span>Current-plan runway</span><strong id="insightRunway">—</strong><small id="insightRunwayNote">Based on your projected retirement corpus and modelled withdrawals.</small></article>
-            <article><span>Contribution adjustment</span><strong id="insightContribution">—</strong><small id="insightContributionNote">Additional monthly investment indicated under these assumptions.</small></article>
+            <article><span>Contribution adjustment</span><strong id="insightContribution">—</strong><small id="insightContributionNote">Additional retirement contribution indicated under these assumptions.</small></article>
             <article><span>Largest expense change</span><strong id="insightExpense">—</strong><small id="insightExpenseNote">The biggest category-level shift in today's purchasing power.</small></article>
           </div>
         </div>
 
         <div class="scenario-card">
           <div class="scenario-heading"><div><span class="section-kicker">What if?</span><h2>Compare retirement ages</h2></div><p>Same assumptions, different retirement date.</p></div>
-          <p class="scenario-explainer">Retirement target figures are shown in future money at each retirement age. A later retirement can therefore show a higher nominal corpus because of inflation, while still requiring a lower monthly investment because you have more years to save.</p>
+          <p class="scenario-explainer">Retirement target figures are shown in future money at each retirement age. A later retirement can therefore show a higher nominal corpus because of inflation, while still requiring a lower recurring retirement contribution because you have more years to save.</p>
           <div id="scenarioGrid" class="scenario-grid"></div>
           <div class="scenario-takeaway" id="scenarioTakeaway" aria-live="polite"></div>
         </div>
@@ -419,7 +429,7 @@
           <div><span id="reportFutureSpendLabel">Projected monthly spending at retirement</span><strong id="reportFutureSpend">—</strong></div>
           <div><span id="reportProjectedCorpusLabel">Projected savings at retirement (future money)</span><strong id="reportProjectedCorpus">—</strong></div>
           <div><span id="reportFundingGapLabel">Funding gap at retirement (future money)</span><strong id="reportFundingGap">—</strong></div>
-          <div><span id="reportMonthlyNeededLabel">Monthly investment required from now</span><strong id="reportMonthlyNeeded">—</strong></div>
+          <div><span id="reportMonthlyNeededLabel">Monthly retirement contribution required from now</span><strong id="reportMonthlyNeeded">—</strong></div>
         </div>
 
         <section class="report-block report-two-col">
@@ -437,21 +447,21 @@
 
         <section class="report-block report-action-block">
           <div class="report-section-heading">
-            <div><span class="report-eyebrow">What you can change</span><h2>Monthly investment required by the model</h2></div>
+            <div><span class="report-eyebrow">What you can change</span><h2 id="reportContributionSectionTitle">Monthly retirement contribution required by the model</h2></div>
             <span>Same assumptions · selected retirement age</span>
           </div>
           <div class="report-action-grid report-action-grid-primary">
-            <div><span>Current monthly retirement investment</span><strong id="reportCurrentMonthlyInvestment">—</strong></div>
-            <div><span>Total monthly investment required from now</span><strong id="reportNeededMonthlyInvestment">—</strong></div>
+            <div><span id="reportCurrentContributionLabel">Current monthly retirement contribution</span><strong id="reportCurrentMonthlyInvestment">—</strong></div>
+            <div><span id="reportNeededContributionLabel">Total monthly retirement contribution required from now</span><strong id="reportNeededMonthlyInvestment">—</strong></div>
           </div>
           <div class="report-action-ribbon report-action-ribbon-gap" id="reportAdditionalRibbon">
             <div>
-              <span>Additional monthly investment required</span>
+              <span id="reportAdditionalContributionLabel">Additional monthly retirement contribution required</span>
               <small>Key action under the selected assumptions</small>
             </div>
             <strong id="reportAdditionalMonthlyInvestment">—</strong>
           </div>
-          <p class="report-explainer" id="reportActionNarrative">This is an illustrative monthly contribution under the assumptions entered, not a recommendation or guarantee.</p>
+          <p class="report-explainer" id="reportActionNarrative">This is an illustrative retirement contribution under the assumptions entered, not a recommendation or guarantee.</p>
         </section>
 
         <section class="report-block report-two-col report-source-inflation">
@@ -488,10 +498,10 @@
           <h2>Retirement-age comparison</h2>
           <table class="report-table report-scenario-table">
             <colgroup><col class="scenario-age-col"><col class="scenario-corpus-col"><col class="scenario-monthly-col"><col class="scenario-funded-col"></colgroup>
-            <thead><tr><th>Retirement age</th><th>Corpus required<br><span>(future money at that age)</span></th><th>Monthly investment required<br><span>(from now)</span></th><th>Projected funding<br><span>(from current plan before any increase)</span></th></tr></thead>
+            <thead><tr><th>Retirement age</th><th>Corpus required<br><span>(future money at that age)</span></th><th>Retirement contribution required<br><span>(from now)</span></th><th>Projected funding<br><span>(from current plan before any increase)</span></th></tr></thead>
             <tbody id="reportScenarios"></tbody>
           </table>
-          <p class="report-scenario-note" id="reportScenarioFundingNote">Projected funding is based on the current savings plan, not the monthly investment required shown in the previous column.</p>
+          <p class="report-scenario-note" id="reportScenarioFundingNote">Projected funding is based on the current savings plan, not the retirement contribution required shown in the previous column.</p>
         </section>
 
         <section class="report-block report-page-break-before" id="reportExpenseChangesBlock">
@@ -539,7 +549,7 @@
           <article><span>2</span><div><h3>Subtract retirement income</h3><p>Pension, rent and annuity income reduce the monthly withdrawal required from the retirement portfolio.</p></div></article>
           <article><span>3</span><div><h3>Insert future goals</h3><p>One-time goals that occur during retirement are inflation-adjusted to their chosen age and added to the retirement cash-flow schedule.</p></div></article>
           <article><span>4</span><div><h3>Discount every future cash flow</h3><p>The engine calculates the amount required at retirement to finance the month-by-month net cash flows while the remaining portfolio earns your assumed post-retirement return.</p></div></article>
-          <article><span>5</span><div><h3>Compare with your savings plan</h3><p>Existing savings and monthly contributions are projected to retirement to estimate the gap and the additional contribution required.</p></div></article>
+          <article><span>5</span><div><h3>Compare with your savings plan</h3><p>Existing savings and recurring retirement contributions are projected to retirement to estimate the gap and the additional contribution required.</p></div></article>
         </div>
       </div>
     </section>
@@ -581,15 +591,15 @@
   </footer>
 
 
-  <script src="site-config.js?v=2.4.2"></script>
-  <script src="locale.js?v=2.4.1"></script>
+  <script src="site-config.js?v=2.5.0"></script>
+  <script src="locale.js?v=2.5.0"></script>
   <script src="locale-ui.js?v=2.4.1"></script>
   <script src="site.js?v=2.4.1"></script>
   <script src="report-engine.js?v=1.1"></script>
   <script src="pdf-export.js?v=1.1"></script>
   <script src="report-standard.js?v=20260925.2"></script>
-  <script src="retirement-pdf-renderer.js?v=20260925.1"></script>
-  <script src="app.js?v=2.4.5"></script>
+  <script src="retirement-pdf-renderer.js?v=2.5.0"></script>
+  <script src="app.js?v=2.5.0"></script>
 <script src="analytics.js?v=1.0.1" data-carrowmont-tool="retirement_planner" data-track-tool-open="true"></script>
 </body>
 </html>
