@@ -854,3 +854,23 @@ footer { background: #0e1f33; color: #fff; padding: 27px 0; }
 .report-download-status{min-height:1.35em;margin:9px 0 0;text-align:center;color:var(--teal-dark,#08756d);font-size:.82rem;font-weight:750;line-height:1.4;}
 .report-download-status:empty{margin-top:0;min-height:0;}
 @media(max-width:620px){.result-actions{grid-template-columns:1fr}.result-actions .share-button{white-space:normal;}}
+
+
+/* Part 3B: shared frequency controls and SIP-aligned tool header. */
+.site-header .container{width:min(1480px,calc(100% - 64px));margin:auto}
+.site-header{height:76px}
+.site-header .header-inner{min-height:76px;gap:24px}
+.site-header .brand-cluster{gap:14px}
+.site-header .brand-wordmark{font-size:23px;letter-spacing:.08em;color:var(--navy)}
+.site-header .brand-divider{height:32px}
+.site-header .product-label{font-size:16px;font-weight:700;color:#62748d}
+.site-header .header-actions{gap:20px}
+.site-header .top-nav{gap:28px}
+.site-header .top-nav a{font-size:15px;font-weight:700;color:#566b85}
+.frequency-field select{width:100%;margin-top:9px;min-height:43px;border:1px solid #cbd7e0;border-radius:10px;background:#fff;color:var(--ink);font:inherit;font-weight:800;padding:9px 11px}
+.frequency-field select:focus{border-color:var(--teal);outline:3px solid rgba(14,130,122,.11)}
+.frequency-link-field{font-weight:780}
+.check-row{display:flex;align-items:center;gap:10px;margin-top:12px;color:var(--ink);font-weight:850;cursor:pointer}
+.check-row input{width:18px;height:18px;margin:0;accent-color:var(--teal)}
+.check-row span{line-height:1.25}
+@media(max-width:720px){.site-header .container{width:min(100% - 28px,1480px)}.site-header{height:auto}.site-header .header-inner{min-height:0;padding:12px 0;align-items:flex-start}.site-header .brand-divider,.site-header .product-label{display:none}.site-header .brand-wordmark{font-size:20px}}
