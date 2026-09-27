@@ -14,7 +14,7 @@
   <meta property="og:url" content="https://carrowmont.com/retirement-calculator/" />
   <meta name="twitter:card" content="summary" />
   <!-- SEARCH CONSOLE: paste Google's verification meta tag here after creating your Search Console property. -->
-  <link rel="stylesheet" href="styles.css?v=2.5.0" />
+  <link rel="stylesheet" href="styles.css?v=2.5.1" />
   <script type="application/ld+json">{
   "@context":"https://schema.org",
   "@type":"WebSite",
@@ -120,19 +120,14 @@
 </main>
 
   <footer class="site-footer">
-    <div class="container footer-grid">
-      <div class="footer-brand-block">
-        <a class="brand footer-brand carrowmont-brand" href="/"><span class="brand-wordmark">CARROWMONT</span></a>
-        <strong class="footer-product-name">Retirement Planner</strong>
-        <p>A transparent retirement-planning tool built around the expenses and income your future life may actually have.</p>
-        <span class="footer-small">Educational planning tool · Carrowmont</span>
-      </div>
-      <div><strong>Planner</strong><a href="planner.html">Retirement Planner</a><a href="how-it-works.html">How it works</a><a href="methodology.html">Methodology</a><a href="faq.html">FAQ</a></div>
-      <div><strong>Carrowmont</strong><a href="/#tools">All tools</a><a href="/#learn">Learn</a><a href="/about.html">About</a><a href="/contact.html">Contact</a></div>
-      <div><strong>Legal</strong><a href="/disclaimer.html">Disclaimer</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a></div>
-    </div>
-    <div class="container footer-bottom"><span>© <span data-current-year></span> Carrowmont · Retirement Planner</span><span>Illustrative estimates, not financial advice.</span></div>
-  </footer>
+  <div class="container footer-grid">
+    <div class="footer-brand-block"><a class="footer-wordmark" href="/">CARROWMONT</a><strong class="footer-product-name">Retirement Planner</strong><p>A transparent retirement-planning tool built around the expenses and income your future life may actually have.</p><span class="footer-small">Educational planning tool &middot; Carrowmont</span></div>
+    <div class="footer-col"><strong>Tools</strong><a class="footer-investment-link" href="/sip-calculator/">SIP Calculator</a><a href="/retirement-calculator/">Retirement Planner</a><a href="/inflation-calculator/">Inflation Calculator</a><a href="/goal-planner/">Goal Planner</a><a href="/financial-independence/">Financial Independence</a><a href="/#tools">All tools</a></div>
+    <div class="footer-col"><strong>Carrowmont</strong><a href="/learn.html">Learn</a><a href="/about.html">About</a><a href="/methodology.html">Methodology</a><a href="/contact.html">Contact</a></div>
+    <div class="footer-col"><strong>Legal</strong><a href="/disclaimer.html">Disclaimer</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a></div>
+  </div>
+  <div class="container footer-bottom"><span>&copy; 2026 Carrowmont &middot; <span class="footer-product-bottom">Retirement Planner</span></span><span>Illustrative estimates, not financial advice.</span></div>
+</footer>
 
   <script src="site-config.js?v=2.4.2"></script>
   <script src="locale.js?v=2.4.2"></script>
@@ -140,5 +135,19 @@
   <script src="site.js?v=2.4.2"></script>
 
 <script src="analytics.js?v=1.0.1" data-carrowmont-tool="retirement_planner" data-track-tool-open="false"></script>
+
+<script>
+(function(){
+  var L=window.CarrowmontLocale; if(!L) return;
+  function syncFooterInvestmentName(){
+    var india=L.getRegion&&L.getRegion()==='IN';
+    var label=india?'SIP Calculator':'Recurring Investment Calculator';
+    document.querySelectorAll('.footer-investment-link').forEach(function(el){el.textContent=label;});
+    document.querySelectorAll('.footer-investment-product-name,.footer-current-product').forEach(function(el){el.textContent=label;});
+  }
+  syncFooterInvestmentName();
+  window.addEventListener('carrowmont:localechange',syncFooterInvestmentName);
+})();
+</script>
 </body>
 </html>
