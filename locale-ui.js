@@ -19,7 +19,7 @@
     }
     if (currencySelect && !currencySelect.options.length) {
       currencySelect.innerHTML = Object.entries(L.currencies)
-        .map(([code, c]) => `<option value="${code}">${code} — ${c.label}</option>`).join('');
+        .map(([code, c]) => `<option value="${code}">${code} · ${c.label}</option>`).join('');
     }
   }
 
