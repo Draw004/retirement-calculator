@@ -53,7 +53,8 @@
       retirement:{ key:'retirement', title:'Retirement Planner', desc:'Model retirement spending, income, current savings and the amount that may be required for the retirement lifestyle you enter.', url:'carrowmont.com/retirement-calculator/' },
       goal:{ key:'goal', title:'Goal Planner', desc:'Plan for education, a home, travel, emergency savings and other financial goals using future-cost and investment assumptions.', url:'carrowmont.com/goal-planner/' },
       fi:{ key:'fi', title:'Financial Independence', desc:'Estimate a spending-based financial-independence target and compare it with your current investment path and target age.', url:'carrowmont.com/financial-independence/' },
-      inflation:{ key:'inflation', title:'Inflation Calculator', desc:'See how inflation may change future costs and purchasing power across different time horizons and currencies.', url:'carrowmont.com/inflation-calculator/' }
+      inflation:{ key:'inflation', title:'Inflation Calculator', desc:'See how inflation may change future costs and purchasing power across different time horizons and currencies.', url:'carrowmont.com/inflation-calculator/' },
+      budget:{ key:'budget', title:'Budget & Cash Flow Planner', desc:'Organize income, bills, irregular expenses, emergency reserves and safe-to-spend cash flow around the way you are actually paid.', url:'carrowmont.com/budget-cash-flow-planner/' }
     };
   }
 
@@ -177,23 +178,30 @@
     const currentTool=config.currentTool||'';
     const inv=investmentIdentity();
     const catalog=toolCatalog();
-    const tools=Object.values(catalog).filter(t=>t.key!==currentTool).slice(0,4);
+    const tools=Object.values(catalog).filter(t=>t.key!==currentTool);
     P().text(ctx,'CARROWMONT',M,58,{size:15,weight:900,color:C.teal});
     P().text(ctx,'Continue planning with Carrowmont',M,101,{size:27,weight:900,color:C.ink});
-    const intro=config.intro || `This calculation is one part of a broader financial plan. Explore ${inv.planningPhrase}, retirement, life goals, financial independence and inflation with Carrowmont.`;
+    const intro=config.intro || `This calculation is one part of a broader financial plan. Explore ${inv.planningPhrase}, retirement, life goals, financial independence, inflation and day-to-day cash flow with Carrowmont.`;
     P().wrappedText(ctx,intro,M,130,CW,{size:11,lineHeight:16,weight:500,color:C.muted,maxLines:3});
     hline(ctx,M,W-M,178,C.navy,2);
-    const gap=16,cw=(CW-gap)/2,ch=162;
+    const gapX=16,gapY=14,cw=(CW-gapX)/2,ch=142,gridTop=204;
+    const rows=Math.ceil(tools.length/2);
     tools.forEach((t,i)=>{
-      const col=i%2,row=Math.floor(i/2),x=M+col*(cw+gap),y=210+row*(ch+18);
+      const row=Math.floor(i/2);
+      const isLastOdd=tools.length%2===1 && i===tools.length-1;
+      const col=i%2;
+      const x=isLastOdd ? M+(CW-cw)/2 : M+col*(cw+gapX);
+      const y=gridTop+row*(ch+gapY);
       card(ctx,x,y,cw,ch,C.white,C.line,13);
-      P().text(ctx,t.title,x+16,y+32,{size:15,weight:900,color:C.ink});
-      P().wrappedText(ctx,t.desc,x+16,y+59,cw-32,{size:10,lineHeight:14,weight:500,color:C.muted,maxLines:4});
-      P().text(ctx,t.url,x+16,y+139,{size:9.5,weight:800,color:C.tealDark});
+      P().text(ctx,t.title,x+16,y+29,{size:13.8,weight:900,color:C.ink});
+      P().wrappedText(ctx,t.desc,x+16,y+52,cw-32,{size:9.1,lineHeight:12.3,weight:500,color:C.muted,maxLines:4});
+      P().text(ctx,t.url,x+16,y+121,{size:8.9,weight:800,color:C.tealDark});
     });
-    card(ctx,M,586,CW,92,C.pale,'#b8ddd8',12);
-    P().text(ctx,'Explore all Carrowmont tools',M+16,616,{size:14,weight:900,color:C.tealDark});
-    P().wrappedText(ctx,'Visit carrowmont.com to continue your planning. Carrowmont tools are educational illustrations and do not guarantee financial or investment outcomes.',M+16,641,CW-32,{size:9.7,lineHeight:13.5,weight:500,color:C.ink,maxLines:3});
+    const afterGrid=gridTop+rows*ch+Math.max(0,rows-1)*gapY;
+    const promoY=afterGrid+30;
+    card(ctx,M,promoY,CW,92,C.pale,'#b8ddd8',12);
+    P().text(ctx,'Explore all Carrowmont tools',M+16,promoY+30,{size:14,weight:900,color:C.tealDark});
+    P().wrappedText(ctx,'Visit carrowmont.com to continue your planning. Carrowmont tools are educational illustrations and do not guarantee financial or investment outcomes.',M+16,promoY+55,CW-32,{size:9.7,lineHeight:13.5,weight:500,color:C.ink,maxLines:3});
     footer(ctx);
     return pg.canvas;
   }
