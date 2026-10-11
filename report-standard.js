@@ -40,8 +40,22 @@
     };
   }
 
+  function housingIdentity(regionCode=region()){
+    const map={
+      IN:{title:'Home Loan Prepayment',desc:'See how extra EMI principal payments, part-prepayments or early foreclosure could change interest and remaining tenure.'},
+      US:{title:'Mortgage Payoff',desc:'See how extra principal, lump-sum payments or an earlier payoff target could change mortgage interest and time to debt-free.'},
+      CA:{title:'Mortgage Prepayment & Payoff',desc:'Explore extra payments and lump-sum prepayments using a mortgage payoff model with Canadian fixed-rate convention support.'},
+      GB:{title:'Mortgage Overpayment',desc:'Explore how mortgage overpayments or a lump sum could reduce interest and shorten the remaining term.'},
+      AU:{title:'Home Loan Extra Repayments',desc:'See how extra repayments or a lump sum could reduce home-loan interest and shorten the loan.'},
+      NZ:{title:'Home Loan Extra Repayments',desc:'See how extra repayments or a lump sum could reduce mortgage interest and shorten the remaining loan.'},
+      IE:{title:'Mortgage Overpayment',desc:'See how mortgage overpayments or an early repayment could change interest and remaining term.'}
+    };
+    return map[regionCode]||{title:'Mortgage / Home Loan Payoff',desc:'See how extra payments, prepayments or an earlier payoff target could change interest and time to debt-free.'};
+  }
+
   function toolCatalog(regionCode=region()){
     const investment = investmentIdentity(regionCode);
+    const housing = housingIdentity(regionCode);
     return {
       investment:{
         key:'investment', title:investment.toolName,
@@ -54,7 +68,8 @@
       goal:{ key:'goal', title:'Goal Planner', desc:'Plan for education, a home, travel, emergency savings and other financial goals using future-cost and investment assumptions.', url:'carrowmont.com/goal-planner/' },
       fi:{ key:'fi', title:'Financial Independence', desc:'Estimate a spending-based financial-independence target and compare it with your current investment path and target age.', url:'carrowmont.com/financial-independence/' },
       inflation:{ key:'inflation', title:'Inflation Calculator', desc:'See how inflation may change future costs and purchasing power across different time horizons and currencies.', url:'carrowmont.com/inflation-calculator/' },
-      budget:{ key:'budget', title:'Budget & Cash Flow Planner', desc:'Organize income, bills, irregular expenses, emergency reserves and safe-to-spend cash flow around the way you are actually paid.', url:'carrowmont.com/budget-cash-flow-planner/' }
+      budget:{ key:'budget', title:'Budget & Cash Flow Planner', desc:'Organize income, bills, irregular expenses, emergency reserves and safe-to-spend cash flow around the way you are actually paid.', url:'carrowmont.com/budget-cash-flow-planner/' },
+      housing:{ key:'housing', title:housing.title, desc:housing.desc, url:'carrowmont.com/mortgage-payoff-calculator/' }
     };
   }
 
@@ -181,7 +196,7 @@
     const tools=Object.values(catalog).filter(t=>t.key!==currentTool);
     P().text(ctx,'CARROWMONT',M,58,{size:15,weight:900,color:C.teal});
     P().text(ctx,'Continue planning with Carrowmont',M,101,{size:27,weight:900,color:C.ink});
-    const intro=config.intro || `This calculation is one part of a broader financial plan. Explore ${inv.planningPhrase}, retirement, life goals, financial independence, inflation and day-to-day cash flow with Carrowmont.`;
+    const intro=config.intro || `This calculation is one part of a broader financial plan. Explore ${inv.planningPhrase}, retirement, life goals, financial independence, inflation, housing debt and day-to-day cash flow with Carrowmont.`;
     P().wrappedText(ctx,intro,M,130,CW,{size:11,lineHeight:16,weight:500,color:C.muted,maxLines:3});
     hline(ctx,M,W-M,178,C.navy,2);
     const gapX=16,gapY=14,cw=(CW-gapX)/2,ch=142,gridTop=204;
@@ -208,6 +223,7 @@
 
   window.CarrowmontReportStandard={
     investmentIdentity,
+    housingIdentity,
     toolCatalog,
     guidePage,
     continuePlanningPage,
