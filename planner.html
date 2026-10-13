@@ -17,11 +17,47 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "Carrowmont Retirement Calculator & Planner",
-    "applicationCategory": "FinanceApplication",
-    "operatingSystem": "Any",
-    "description": "A retirement calculator and planner that models changing expenses, retirement income, inflation, one-time goals and portfolio withdrawals."
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://carrowmont.com/retirement-calculator/planner.html#app",
+        "name": "Carrowmont Retirement Calculator & Planner",
+        "url": "https://carrowmont.com/retirement-calculator/planner.html",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Any",
+        "description": "A retirement calculator and planner that models changing expenses, retirement income, inflation, one-time goals and portfolio withdrawals.",
+        "isPartOf": {
+          "@id": "https://carrowmont.com/#website"
+        },
+        "publisher": {
+          "@id": "https://carrowmont.com/#organization"
+        }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://carrowmont.com/retirement-calculator/planner.html#breadcrumb",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Carrowmont",
+            "item": "https://carrowmont.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Tools",
+            "item": "https://carrowmont.com/tools.html"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Retirement Calculator & Retirement Planner",
+            "item": "https://carrowmont.com/retirement-calculator/planner.html"
+          }
+        ]
+      }
+    ]
   }
   </script>
 </head>
