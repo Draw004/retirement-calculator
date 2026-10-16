@@ -69,7 +69,8 @@
       fi:{ key:'fi', title:'Financial Independence', desc:'Estimate a spending-based financial-independence target and compare it with your current investment path and target age.', url:'carrowmont.com/financial-independence/' },
       inflation:{ key:'inflation', title:'Inflation Calculator', desc:'See how inflation may change future costs and purchasing power across different time horizons and currencies.', url:'carrowmont.com/inflation-calculator/' },
       budget:{ key:'budget', title:'Budget & Cash Flow Planner', desc:'Organize income, bills, irregular expenses, emergency reserves and safe-to-spend cash flow around the way you are actually paid.', url:'carrowmont.com/budget-cash-flow-planner/' },
-      housing:{ key:'housing', title:housing.title, desc:housing.desc, url:'carrowmont.com/mortgage-payoff-calculator/' }
+      housing:{ key:'housing', title:housing.title, desc:housing.desc, url:'carrowmont.com/mortgage-payoff-calculator/' },
+      compound:{ key:'compound', title:'Compound Interest Calculator', desc:'See how a starting amount can change under a stated rate, compounding frequency and time horizon, with optional regular contributions.', url:'carrowmont.com/compound-interest-calculator/' }
     };
   }
 
@@ -196,7 +197,7 @@
     const tools=Object.values(catalog).filter(t=>t.key!==currentTool);
     P().text(ctx,'CARROWMONT',M,58,{size:15,weight:900,color:C.teal});
     P().text(ctx,'Continue planning with Carrowmont',M,101,{size:27,weight:900,color:C.ink});
-    const intro=config.intro || `This calculation is one part of a broader financial plan. Explore ${inv.planningPhrase}, retirement, life goals, financial independence, inflation, housing debt and day-to-day cash flow with Carrowmont.`;
+    const intro=config.intro || `This calculation is one part of a broader financial plan. Explore ${inv.planningPhrase}, compound growth, retirement, life goals, financial independence, inflation, housing debt and day-to-day cash flow with Carrowmont.`;
     P().wrappedText(ctx,intro,M,130,CW,{size:11,lineHeight:16,weight:500,color:C.muted,maxLines:3});
     hline(ctx,M,W-M,178,C.navy,2);
     const gapX=16,gapY=14,cw=(CW-gapX)/2,ch=142,gridTop=204;
