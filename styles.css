@@ -990,3 +990,6 @@ footer { background: #0e1f33; color: #fff; padding: 27px 0; }
   .site-header .mobile-nav summary{white-space:nowrap!important}
   .site-header .mobile-nav-links{right:0!important;max-width:min(210px,calc(100vw - 28px))!important}
 }
+
+/* RETIRE1 contextual handoff */
+.retire1-handoff-link{width:100%;margin-top:10px;box-sizing:border-box;text-align:center;}

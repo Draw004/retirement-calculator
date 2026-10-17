@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Retirement Withdrawal &amp; Drawdown Calculator | Carrowmont</title>
+  <meta name="description" content="Estimate how long retirement savings may last under regular withdrawals, investment returns and inflation, or calculate a starting withdrawal for a chosen horizon." />
+  <meta name="robots" content="index,follow" />
+  <meta name="theme-color" content="#0e827a" />
+  <meta property="og:title" content="Retirement Withdrawal &amp; Drawdown Calculator | Carrowmont" />
+  <meta property="og:description" content="Estimate how long retirement savings may last under regular withdrawals, returns and inflation, or solve for a starting withdrawal over a chosen horizon." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://carrowmont.com/retirement-calculator/withdrawal-calculator.html" />
+  <link rel="canonical" href="https://carrowmont.com/retirement-calculator/withdrawal-calculator.html" />
+  <link rel="stylesheet" href="styles.css?v=20261017-retire1" />
+  <link rel="stylesheet" href="withdrawal-calculator.css?v=20261017-retire1" />
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@graph":[
+      {
+        "@type":"WebApplication",
+        "@id":"https://carrowmont.com/retirement-calculator/withdrawal-calculator.html#app",
+        "name":"Carrowmont Retirement Withdrawal & Drawdown Calculator",
+        "url":"https://carrowmont.com/retirement-calculator/withdrawal-calculator.html",
+        "applicationCategory":"FinanceApplication",
+        "operatingSystem":"Any",
+        "description":"Estimate retirement-savings runway under user-entered withdrawals, returns and inflation, or solve for a starting withdrawal over a chosen horizon.",
+        "isPartOf":{"@id":"https://carrowmont.com/#website"},
+        "publisher":{"@id":"https://carrowmont.com/#organization"}
+      },
+      {
+        "@type":"BreadcrumbList",
+        "@id":"https://carrowmont.com/retirement-calculator/withdrawal-calculator.html#breadcrumb",
+        "itemListElement":[
+          {"@type":"ListItem","position":1,"name":"Carrowmont","item":"https://carrowmont.com/"},
+          {"@type":"ListItem","position":2,"name":"Tools","item":"https://carrowmont.com/tools.html"},
+          {"@type":"ListItem","position":3,"name":"Retirement Planner","item":"https://carrowmont.com/retirement-calculator/"},
+          {"@type":"ListItem","position":4,"name":"Retirement Withdrawal & Drawdown Calculator","item":"https://carrowmont.com/retirement-calculator/withdrawal-calculator.html"}
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body class="withdrawal-page">
+<header class="site-header">
+  <div class="container header-inner">
+    <div class="brand-cluster">
+      <a class="brand carrowmont-brand" href="/" aria-label="Carrowmont home"><span class="brand-wordmark">CARROWMONT</span></a>
+      <span class="brand-divider" aria-hidden="true"></span>
+      <a class="product-label" id="productLabel" href="withdrawal-calculator.html">Retirement Withdrawal &amp; Drawdown Calculator</a>
+    </div>
+    <div class="header-actions">
+      <nav class="top-nav" aria-label="Primary navigation">
+        <a href="planner.html">Retirement Planner</a>
+        <a href="withdrawal-calculator.html" aria-current="page">Withdrawal tool</a>
+        <a href="methodology.html">Methodology</a>
+        <a href="/tools.html">All tools</a>
+        <a href="/">Home</a>
+      </nav>
+      <details class="locale-menu" id="localeMenu">
+        <summary id="localeSummary" aria-label="Choose country and currency"><span class="locale-globe" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 4.5 6 4.5 9S15 18 12 21c-3-3-4.5-6-4.5-9S9 6 12 3z"/></svg></span><span id="localeCurrent">India · INR</span><span class="locale-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="locale-popover">
+          <h3>Country &amp; currency</h3>
+          <p>Choose the context that makes the numbers easiest to understand.</p>
+          <label>Country / region<select id="regionSelect"></select></label>
+          <label>Currency<select id="currencySelect"></select></label>
+          <div class="locale-note"><strong>Important:</strong> changing currency changes the unit and number format only. It does not convert entered values using an exchange rate or change returns, inflation, taxes or pension rules.</div>
+          <button class="locale-done-button" id="localeDoneBtn" type="button">Done</button>
+        </div>
+      </details>
+      <details class="mobile-nav">
+        <summary aria-label="Open navigation">Menu</summary>
+        <div class="mobile-nav-links"><a href="/">Carrowmont home</a><a href="/tools.html">All tools</a><a href="planner.html">Retirement Planner</a><a href="withdrawal-calculator.html">Withdrawal tool</a><a href="methodology.html">Methodology</a><a href="/learn.html">Learn</a><a href="/contact.html">Contact</a></div>
+      </details>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="withdrawal-hero">
+    <div class="container tool-breadcrumb"><a href="/tools.html">← Back to all Carrowmont tools</a></div>
+    <div class="container withdrawal-hero-grid">
+      <div>
+        <span class="eyebrow" id="heroEyebrow">Retirement income planning</span>
+        <h1>See how withdrawals, returns and inflation can change how long retirement savings may last.</h1>
+        <p class="hero-copy">Model a regular retirement withdrawal from an invested portfolio, or work backwards from a target horizon to estimate a starting withdrawal under constant assumptions.</p>
+        <div class="hero-points"><span>Month-by-month runway</span><span>Fixed or inflation-linked withdrawals</span><span>Return sensitivity — not a forecast</span></div>
+      </div>
+      <aside class="hero-card withdrawal-hero-card">
+        <div class="hero-card-label">Two questions, one engine</div>
+        <div class="withdrawal-question"><strong>How long could my savings last?</strong><span>Start with a portfolio and withdrawal.</span></div>
+        <div class="withdrawal-question"><strong>What withdrawal could this portfolio support?</strong><span>Start with a portfolio and target horizon.</span></div>
+        <p id="localeBoundaryNote" class="locale-boundary-note"></p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="withdrawal-tool-section" id="calculator">
+    <div class="container">
+      <aside class="import-panel" id="retirementImportPanel" hidden aria-live="polite">
+        <div><strong>Retirement Planner values are available</strong><p id="retirementImportCopy">Review the staged values before using them here.</p></div>
+        <div class="import-actions"><button type="button" id="useProjectedImport">Use projected savings</button><button type="button" id="useTargetImport" class="secondary-button">Use retirement target</button><button type="button" id="dismissImport" class="secondary-button">Not now</button></div>
+      </aside>
+
+      <div class="withdrawal-grid">
+        <section class="panel withdrawal-inputs" aria-labelledby="withdrawalInputsTitle">
+          <span class="section-kicker">Your assumptions</span>
+          <h2 id="withdrawalInputsTitle">Model your retirement withdrawals</h2>
+          <div class="mode-switch withdrawal-mode-switch" role="group" aria-label="Calculator mode">
+            <button class="mode-button active" id="runwayModeBtn" type="button" aria-pressed="true">How long could savings last?</button>
+            <button class="mode-button" id="supportModeBtn" type="button" aria-pressed="false">What withdrawal could savings support?</button>
+          </div>
+
+          <div class="form-grid two-col withdrawal-fields">
+            <label class="field-card"><span>Starting retirement savings</span><div class="number-wrap money"><span data-currency-prefix>₹</span><input id="startingBalance" type="number" min="0.01" step="1000" value="10000000" inputmode="decimal" /></div><small>Portfolio available at the start of the model.</small></label>
+            <label class="field-card" id="startingWithdrawalField"><span>Starting monthly withdrawal</span><div class="number-wrap money"><span data-currency-prefix>₹</span><input id="startingWithdrawal" type="number" min="0" step="100" value="50000" inputmode="decimal" /></div><small>Amount withdrawn for the first month.</small></label>
+            <label class="field-card"><span>Expected annual portfolio return</span><div class="number-wrap suffix"><input id="annualReturn" type="number" min="-99.99" max="100" step="0.1" value="6" inputmode="decimal" /><span>%</span></div><small>Effective annual return. Use a net assumption if you want fees reflected.</small></label>
+            <label class="field-card switch-field"><span>Increase withdrawals with inflation?</span><span class="toggle-row"><input id="inflationToggle" type="checkbox" checked /><span>Increase once each year</span></span><small>Turn off to keep the nominal withdrawal fixed.</small></label>
+            <label class="field-card" id="withdrawalGrowthField"><span>Annual withdrawal increase</span><div class="number-wrap suffix"><input id="withdrawalGrowth" type="number" min="-10" max="30" step="0.1" value="4" inputmode="decimal" /><span>%</span></div><small>A user assumption, not an inflation forecast.</small></label>
+            <label class="field-card"><span>Starting age <small>(optional)</small></span><div class="number-wrap suffix"><input id="startAge" type="number" min="18" max="100" step="1" value="60" inputmode="numeric" /><span>yrs</span></div><small>Used only to translate runway into an approximate age.</small></label>
+          </div>
+
+          <div id="supportFields" class="support-fields" hidden>
+            <div class="support-choice"><label><input type="radio" name="horizonMode" value="years" checked /> Target duration</label><label><input type="radio" name="horizonMode" value="age" /> Target age</label></div>
+            <div class="form-grid two-col">
+              <label class="field-card" id="targetYearsField"><span>How long should the savings last?</span><div class="number-wrap suffix"><input id="targetYears" type="number" min="0.0833" max="100" step="1" value="30" inputmode="decimal" /><span>yrs</span></div></label>
+              <label class="field-card" id="targetAgeField" hidden><span>Target age</span><div class="number-wrap suffix"><input id="targetAge" type="number" min="19" max="120" step="1" value="90" inputmode="numeric" /><span>yrs</span></div></label>
+              <label class="field-card"><span>Target ending balance</span><div class="number-wrap money"><span data-currency-prefix>₹</span><input id="targetEndingBalance" type="number" min="0" step="1000" value="0" inputmode="decimal" /></div><small>Leave at zero if the model may fully use the portfolio by the horizon.</small></label>
+            </div>
+          </div>
+
+          <details class="advanced-card">
+            <summary>Advanced assumptions</summary>
+            <div class="form-grid two-col advanced-grid">
+              <label class="field-card"><span>Withdrawal timing</span><select id="timing"><option value="beginning" selected>Beginning of month</option><option value="end">End of month</option></select><small>Beginning of month is the default planning convention.</small></label>
+              <label class="field-card" id="maxYearsField"><span>Maximum model horizon</span><div class="number-wrap suffix"><input id="maxYears" type="number" min="1" max="100" step="1" value="100" inputmode="numeric" /><span>yrs</span></div><small>If savings remain above zero, Carrowmont reports survival through this horizon.</small></label>
+            </div>
+          </details>
+          <div class="validation" id="validationMsg" role="alert" aria-live="polite"></div>
+        </section>
+
+        <aside class="panel withdrawal-results" id="results" aria-live="polite">
+          <span class="section-kicker">Your estimate</span>
+          <h2 id="primaryResultTitle">Modelled savings runway</h2>
+          <div class="primary-result withdrawal-primary-result"><span id="primaryResultLabel">Under the selected constant assumptions</span><strong id="primaryResultValue">—</strong><small id="primaryResultSub">—</small></div>
+          <div class="result-list">
+            <div class="result-item"><span>Starting monthly withdrawal</span><strong id="resultStartingWithdrawal">—</strong></div>
+            <div class="result-item"><span>First-year withdrawal rate</span><strong id="resultWithdrawalRate">—</strong></div>
+            <div class="result-item"><span id="resultTotalWithdrawalLabel">Total modelled withdrawals</span><strong id="resultTotalWithdrawals">—</strong></div>
+            <div class="result-item"><span>Modelled ending balance</span><strong id="resultEndingBalance">—</strong></div>
+          </div>
+          <div class="assumption-strip"><span id="resultReturn">Return —</span><span id="resultGrowth">Withdrawal increase —</span><span id="resultTiming">Timing —</span></div>
+          <p class="result-warning">A longer modelled runway does not mean the result is guaranteed. Real returns vary from year to year, and the order of returns can matter.</p>
+          <div class="result-actions no-print">
+            <button class="share-button" id="copyBtn" type="button">Copy Summary</button>
+            <button class="share-button" id="csvBtn" type="button">Download CSV</button>
+            <button class="share-button primary-action" id="reportBtn" type="button">Generate Retirement Withdrawal Report</button>
+          </div>
+          <div class="copy-status" id="copyStatus" aria-live="polite"></div>
+          <div class="report-download-status" id="reportDownloadStatus" role="status" aria-live="polite"></div>
+          <p class="report-action-hint">The PDF, CSV and on-screen table use the same deterministic calculation result.</p>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="withdrawal-analysis-section">
+    <div class="container">
+      <div class="dashboard-heading"><div><span class="section-kicker">Balance path</span><h2>See the modelled retirement portfolio over time</h2></div><p>Constant-return illustration, not a forecast.</p></div>
+      <div class="withdrawal-analysis-grid">
+        <article class="analysis-card withdrawal-chart-card"><div class="analysis-heading"><div><h3>Portfolio balance</h3><span id="chartCaption">Monthly model shown as annual checkpoints.</span></div></div><div id="withdrawalBalanceChart" class="withdrawal-chart" role="img" aria-label="Retirement portfolio balance over time"></div></article>
+        <article class="analysis-card"><div class="analysis-heading"><div><h3>Return sensitivity — not a forecast</h3><span>Same assumptions at selected return ±2 percentage points.</span></div></div><div id="sensitivityGrid" class="sensitivity-grid"></div></article>
+      </div>
+
+      <article class="analysis-card annual-table-card">
+        <div class="analysis-heading"><div><h3>Annual withdrawal schedule</h3><span>Opening balance, withdrawals, modelled investment change and ending balance.</span></div><span id="annualTableNote"></span></div>
+        <div class="data-table-wrap"><table class="data-table withdrawal-table"><thead><tr><th>Year</th><th>Age</th><th>Opening balance</th><th>Withdrawals</th><th>Investment change</th><th>Ending balance</th><th>Starting monthly withdrawal</th></tr></thead><tbody id="annualScheduleBody"></tbody></table></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="content-section withdrawal-context-section">
+    <div class="container withdrawal-context-grid">
+      <article class="method-cta-card"><div><span class="section-kicker">Need to build the retirement target first?</span><h2>Use the full Retirement Planner</h2><p>Model retirement expenses, retirement income, savings and the amount you may need at retirement.</p></div><a class="secondary-link-button" href="planner.html">Open Retirement Planner →</a></article>
+      <article class="method-cta-card"><div><span class="section-kicker">Understand the risk</span><h2>Returns do not arrive smoothly</h2><p>Learn why poor returns early in retirement can matter more when withdrawals are happening at the same time.</p></div><div class="context-link-stack"><a class="secondary-link-button" href="/sequence-of-returns-risk.html">Sequence of returns risk →</a><a class="secondary-link-button" href="/4-percent-rule-stress-test.html">4% Rule Stress Test →</a><a class="secondary-link-button" href="/how-long-will-retirement-savings-last.html">How long savings may last →</a></div></article>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-brand-block"><strong class="footer-wordmark">CARROWMONT</strong><p>Financial Planning, Tools &amp; Learning — practical calculators and educational resources for clearer financial decisions.</p></div>
+    <div class="footer-col" data-cm-compact-tools><strong>Tools</strong><a href="/tools.html">All financial tools</a><a class="footer-investment-link" href="/sip-calculator/">SIP Calculator</a><a href="/retirement-calculator/">Retirement Planner</a><a class="footer-housing-gateway" href="/mortgage-payoff-calculator/">Home Loan</a><a href="/budget-cash-flow-planner/">Budget &amp; Cash Flow Planner</a></div>
+    <div class="footer-col"><strong>Carrowmont</strong><a href="/learn.html">Learn</a><a href="/about.html">About</a><a href="/methodology.html">Methodology</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/contact.html">Contact</a></div>
+    <div class="footer-col"><strong>Legal</strong><a href="/privacy.html">Privacy</a><a href="/disclaimer.html">Disclaimer</a><a href="/terms.html">Terms</a></div>
+  </div>
+  <div class="container footer-bottom"><span>© 2026 Carrowmont. Financial planning tools and educational information.</span><span>Illustrative estimates, not financial advice.</span></div>
+</footer>
+
+<script src="locale.js?v=20261017-retire1"></script>
+<script src="locale-ui.js?v=20261017-retire1"></script>
+<script src="analytics.js?v=20261017-privacy2" data-carrowmont-tool="retirement-withdrawal-calculator" data-track-tool-open="true"></script>
+<script src="report-engine.js?v=2.5.0"></script>
+<script src="report-standard.js?v=20261017-retire1"></script>
+<script src="pdf-export.js?v=20261017-retire1"></script>
+<script src="withdrawal-core.js?v=20261017-retire1"></script>
+<script src="withdrawal-pdf-renderer.js?v=20261017-retire1"></script>
+<script src="withdrawal-calculator.js?v=20261017-retire1"></script>
+</body>
+</html>

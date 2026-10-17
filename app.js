@@ -1500,6 +1500,29 @@
       $('copyStatus').textContent = copied ? 'Carrowmont Summary copied.' : 'Copy is unavailable in this browser. Select the summary manually instead.';
     });
 
+    $('withdrawalPlannerBtn')?.addEventListener('click', (event) => {
+      if (!lastResult) return;
+      event.preventDefault();
+      const payload = {
+        version: 1,
+        source: 'retirement-planner',
+        createdAt: new Date().toISOString(),
+        region: L ? L.getRegion() : 'IN',
+        regionLabel: regionLabel(),
+        currency: currencyCode(),
+        retirementAge: lastResult.s.retirementAge,
+        projectedCorpus: lastResult.projectedCorpus,
+        requiredCorpus: lastResult.requiredCorpus,
+        monthlyNeed: lastResult.firstYearNet,
+        postReturn: lastResult.s.postReturn,
+        inflation: lastResult.s.mode === 'quick' ? lastResult.s.quickInflation : lastResult.s.generalInflation
+      };
+      try {
+        window.sessionStorage.setItem('carrowmont_retirement_withdrawal_handoff_v1', JSON.stringify(payload));
+      } catch (_) {}
+      window.location.href = 'withdrawal-calculator.html';
+    });
+
     $('printBtn').addEventListener('click', async () => {
       if (!lastResult) return;
       const status = $('reportStatus');
