@@ -8,6 +8,7 @@
   let mode = 'runway';
   let last = null;
   let pendingImport = null;
+  let mycmTouched = false;
 
   const finite = (value, fallback = 0) => {
     const n = Number(value);
@@ -203,7 +204,12 @@
     last = calc.ok ? calc : null;
     if (!calc.ok) renderInvalid(calc.errors || ['Review the assumptions.']);
     else renderResult(calc);
+    if (mycmTouched && last) window.CarrowmontPlanSave?.offer?.('retirement-withdrawal');
   }
+
+
+  function applyMyCarrowmontPlan(scenario){const input=scenario?.input;if(!input||typeof input!=='object')return;mode=input.mode==='support'?'support':'runway';const support=mode==='support';$('runwayModeBtn').classList.toggle('active',!support);$('supportModeBtn').classList.toggle('active',support);$('runwayModeBtn').setAttribute('aria-pressed',String(!support));$('supportModeBtn').setAttribute('aria-pressed',String(support));$('startingWithdrawalField').hidden=support;$('supportFields').hidden=!support;$('maxYearsField').hidden=support;$('primaryResultTitle').textContent=support?'Modelled starting withdrawal':'Modelled savings runway';const values=['startingBalance','startingWithdrawal','annualReturn','withdrawalGrowth','timing','startAge','targetEndingBalance'];values.forEach(id=>{if(input[id]!==undefined&&$(id))$(id).value=input[id];});if(input.maxMonths!==undefined&&$('maxYears'))$('maxYears').value=Number(input.maxMonths)/12;if($('inflationToggle'))$('inflationToggle').checked=Boolean(input.inflationLinked);const useAge=Boolean(input.useAge);const radio=document.querySelector(`input[name="horizonMode"][value="${useAge?'age':'years'}"]`);if(radio)radio.checked=true;if(useAge&&input.targetAge!==undefined)$('targetAge').value=input.targetAge;if(!useAge&&input.targetMonths!==undefined)$('targetYears').value=Number(input.targetMonths)/12;mycmTouched=false;syncHorizonFields();calculateAndRender();}
+  function configureMyCarrowmontSave(){const bridge=window.CarrowmontPlanSave;if(!bridge?.register)return;bridge.register({journey:'retirement-withdrawal',label:'Retirement withdrawal plan',toolPath:'/retirement-calculator/withdrawal-calculator.html',anchor:'.withdrawal-results',getPlan:()=>{if(!mycmTouched||!last)return null;const s=last.state,r=last.result;return {journey:'retirement-withdrawal',label:'Retirement withdrawal plan',toolPath:'/retirement-calculator/withdrawal-calculator.html',scenario:{input:inputs(),summary:{startingBalance:s.startingBalance,startingWithdrawal:mode==='support'?last.startingWithdrawal:s.startingWithdrawal,runwayMonths:r.depleted?r.depletionMonth:r.horizonMonths,endingBalance:r.endingBalance,withdrawalRatePct:r.firstYearWithdrawalRate}},profileFacts:{'retirement.currentSavings':{value:Number(s.startingBalance||0),unit:currency(),source:'Retirement Withdrawal'}}};},applyPlan:applyMyCarrowmontPlan});}
 
   function buildSummary() {
     if (!last) return '';
@@ -297,15 +303,15 @@
   }
 
   function bind() {
-    $('runwayModeBtn').addEventListener('click',()=>setMode('runway'));
-    $('supportModeBtn').addEventListener('click',()=>setMode('support'));
-    qsa('input,select',$('calculator')).forEach(el=>{el.addEventListener('input',calculateAndRender);el.addEventListener('change',calculateAndRender);});
+    $('runwayModeBtn').addEventListener('click',()=>{mycmTouched=true;setMode('runway');});
+    $('supportModeBtn').addEventListener('click',()=>{mycmTouched=true;setMode('support');});
+    qsa('input,select',$('calculator')).forEach(el=>{el.addEventListener('input',()=>{mycmTouched=true;calculateAndRender();});el.addEventListener('change',()=>{mycmTouched=true;calculateAndRender();});});
     qsa('input[name="horizonMode"]').forEach(el=>el.addEventListener('change',syncHorizonFields));
     $('copyBtn').addEventListener('click',copySummary);$('csvBtn').addEventListener('click',downloadCsv);$('reportBtn').addEventListener('click',generateReport);
     $('useProjectedImport').addEventListener('click',()=>applyImport('projected'));$('useTargetImport').addEventListener('click',()=>applyImport('target'));$('dismissImport').addEventListener('click',()=>{$('retirementImportPanel').hidden=true;pendingImport=null;});
     window.addEventListener('carrowmont:localechange',()=>{renderIdentity();calculateAndRender();});
   }
 
-  function init(){renderIdentity();bind();syncHorizonFields();consumeImport();calculateAndRender();}
+  function init(){renderIdentity();configureMyCarrowmontSave();bind();syncHorizonFields();consumeImport();calculateAndRender();}
   init();
 })();
