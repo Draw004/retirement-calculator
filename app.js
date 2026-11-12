@@ -1161,7 +1161,7 @@
         const r=lastResult,s=r.s||{};
         const meaningful=(s.currentSavings>0||s.currentMonthlyInvestment>0||r.currentTodayExpense>0); if(!meaningful)return null;
         const freq=s.contributionFrequency||'monthly',monthlyContribution=Number(s.currentMonthlyInvestment||0)*(Number(FREQUENCY_PERIODS?.[freq])||12)/12;
-        return {journey:'retirement',label:`Retirement plan - age ${Math.round(s.retirementAge||0)}`,toolPath:'/retirement-calculator/',scenario:{input:serializePlan(),summary:{retirementAge:s.retirementAge,planningAge:s.planningAge,requiredCorpus:r.requiredCorpus,projectedCorpus:r.projectedCorpus,gap:r.gap,fundedPct:r.fundedPct}},profileFacts:{
+        return {journey:'retirement',label:`Retirement plan - age ${Math.round(s.retirementAge||0)}`,toolPath:'/retirement-calculator/',scenario:{input:serializePlan(),summary:{retirementAge:s.retirementAge,planningAge:s.planningAge,requiredCorpus:r.requiredCorpus,projectedCorpus:r.projectedCorpus,gap:r.gap,fundedPct:r.fundedPct,requiredContribution:r.totalMonthlyNeeded,additionalContribution:r.extraMonthlyNeeded,contributionFrequency:s.contributionFrequency}},profileFacts:{
           'retirement.currentSavings':{value:Number(s.currentSavings||0),unit:currencyCode(),source:'Retirement Planner'},
           'retirement.monthlyContribution':{value:monthlyContribution,unit:currencyCode(),source:'Retirement Planner'},
           'assumptions.longTermReturnPct':{value:Number(s.preReturn||0),unit:'pct',source:'Retirement Planner'}
