@@ -53,6 +53,7 @@
   const DEFAULT_GOALS = [];
   let mode = DEFAULTS.mode;
   let lastResult = null;
+  let mycmTouched = false;
   let suppressCalculate = false;
   let activeLocaleRegion = L ? L.getRegion() : 'IN';
   let payFrequencyUserOverride = false;
@@ -323,6 +324,7 @@
     msg.textContent = '';
     lastResult = result;
     renderResult(result);
+    if (mycmTouched) window.CarrowmontPlanSave?.offer('retirement');
   }
 
   function fundingStatusText(fundedPct) {
@@ -1106,18 +1108,18 @@
 
   function bindDelegatedRows() {
     ['expenseRows','incomeRows','goalRows'].forEach(id => {
-      $(id).addEventListener('input', calculateAndRender);
+      $(id).addEventListener('input', () => { mycmTouched = true; calculateAndRender(); });
       $(id).addEventListener('change', (e) => {
         if (e.target.classList.contains('exp-rule')) {
           const tr = e.target.closest('tr');
           renderExpenseSetting(tr, e.target.value === 'end' ? value('retirementAge') - 5 : 100);
         }
-        calculateAndRender();
+        mycmTouched = true; calculateAndRender();
       });
       $(id).addEventListener('click', e => {
         const btn = e.target.closest('.remove-row');
         if (!btn) return;
-        btn.closest('tr').remove();
+        mycmTouched = true; btn.closest('tr').remove();
         calculateAndRender();
       });
     });
@@ -1148,6 +1150,25 @@
       suppressCalculate = false;
       calculateAndRender();
     }
+  }
+
+  function configureMyCarrowmontSave() {
+    const bridge=window.CarrowmontPlanSave; if(!bridge) return;
+    bridge.register({
+      journey:'retirement',label:'Retirement plan',toolPath:'/retirement-calculator/',anchor:'#results',
+      getPlan:()=>{
+        if(!lastResult||!mycmTouched) return null;
+        const r=lastResult,s=r.s||{};
+        const meaningful=(s.currentSavings>0||s.currentMonthlyInvestment>0||r.currentTodayExpense>0); if(!meaningful)return null;
+        const freq=s.contributionFrequency||'monthly',monthlyContribution=Number(s.currentMonthlyInvestment||0)*(Number(FREQUENCY_PERIODS?.[freq])||12)/12;
+        return {journey:'retirement',label:`Retirement plan - age ${Math.round(s.retirementAge||0)}`,toolPath:'/retirement-calculator/',scenario:{input:serializePlan(),summary:{retirementAge:s.retirementAge,planningAge:s.planningAge,requiredCorpus:r.requiredCorpus,projectedCorpus:r.projectedCorpus,gap:r.gap,fundedPct:r.fundedPct}},profileFacts:{
+          'retirement.currentSavings':{value:Number(s.currentSavings||0),unit:currencyCode(),source:'Retirement Planner'},
+          'retirement.monthlyContribution':{value:monthlyContribution,unit:currencyCode(),source:'Retirement Planner'},
+          'assumptions.longTermReturnPct':{value:Number(s.preReturn||0),unit:'pct',source:'Retirement Planner'}
+        }};
+      },
+      applyPlan:scenario=>{if(scenario?.input)applyPlan(scenario.input);}
+    });
   }
 
   function setEmptyResultState(message = '') {
@@ -1252,6 +1273,7 @@
     $('scenarioGrid').addEventListener('click', (e) => {
       const btn = e.target.closest('.scenario-use-button');
       if (!btn) return;
+      mycmTouched = true;
       $('retirementAge').value = btn.dataset.retirementAge;
       calculateAndRender();
       $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1263,8 +1285,8 @@
 
     qsa('input', $('planner')).forEach(input => {
       if (!input.closest('tbody')) {
-        input.addEventListener('input', calculateAndRender);
-        input.addEventListener('change', calculateAndRender);
+        input.addEventListener('input', () => { mycmTouched = true; calculateAndRender(); });
+        input.addEventListener('change', () => { mycmTouched = true; calculateAndRender(); });
       }
     });
 
@@ -1374,6 +1396,7 @@
     syncLocaleLabels();
     syncFrequencyOptions();
     const legacyYear = $('year'); if (legacyYear) legacyYear.textContent = new Date().getFullYear();
+    configureMyCarrowmontSave();
     window.addEventListener('beforeprint', preparePrintReport);
     window.addEventListener('carrowmont:localechange', () => {
       const nextRegion = L ? L.getRegion() : 'IN';
