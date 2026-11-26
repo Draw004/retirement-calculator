@@ -280,14 +280,23 @@
   }
 
   function consumeImport() {
-    try { const raw=sessionStorage.getItem(HANDOFF_KEY); sessionStorage.removeItem(HANDOFF_KEY); if(!raw)return; const p=JSON.parse(raw); if(!p||p.version!==1)return; pendingImport=p; }
+    try { const raw=sessionStorage.getItem(HANDOFF_KEY); sessionStorage.removeItem(HANDOFF_KEY); if(!raw)return; const p=JSON.parse(raw); if(!p||p.version!==1)return;
+      if(p.source==='ask'&&(!Number.isFinite(p.projectedCorpus)||p.projectedCorpus<=0||p.projectedCorpus>1e10||!Number.isFinite(p.expiresAt)||Date.now()>p.expiresAt))return;
+      pendingImport=p; }
     catch(_){ pendingImport=null; }
     if(!pendingImport)return;
+    const fromAsk=pendingImport.source==='ask';
     const profile=pendingImport.regionLabel || pendingImport.region || 'Retirement Planner';
-    $('retirementImportCopy').textContent=`${profile} values are staged for review: projected savings ${money(pendingImport.projectedCorpus||0)}, modelled target ${money(pendingImport.requiredCorpus||0)}, and portfolio-funded monthly need ${money(pendingImport.monthlyNeed||0)}.`;
+    if(fromAsk){
+      $('retirementImportTitle').textContent='An amount from Ask Carrowmont is ready';
+      $('retirementImportCopy').textContent=`You mentioned ${money(pendingImport.projectedCorpus)}. Select “Use amount from Ask” to apply that balance here. Review your monthly withdrawal and return assumptions separately; they have not been inferred from your question.`;
+      $('useProjectedImport').textContent='Use amount from Ask';
+    } else {
+      $('retirementImportCopy').textContent=`${profile} values are staged for review: projected savings ${money(pendingImport.projectedCorpus||0)}, modelled target ${money(pendingImport.requiredCorpus||0)}, and portfolio-funded monthly need ${money(pendingImport.monthlyNeed||0)}.`;
+    }
     $('retirementImportPanel').hidden=false;
     $('useProjectedImport').hidden=!(pendingImport.projectedCorpus>0);
-    $('useTargetImport').hidden=!(pendingImport.requiredCorpus>0);
+    $('useTargetImport').hidden=fromAsk||!(pendingImport.requiredCorpus>0);
   }
 
   function applyImport(which) {
